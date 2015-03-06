@@ -34,6 +34,7 @@ import com.devbrackets.android.recyclerview.filter.CursorFilter;
  */
 public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable,
         CursorFilter.CursorFilterClient {
+    protected static final String DEFAULT_ID_COLUMN_NAME = "_id";
 
     protected Cursor cursor;
     protected boolean isValidData;
@@ -44,11 +45,23 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
     protected DataSetObserver internalDataSetObserver;
     protected FilterQueryProvider filterQueryProvider;
 
+    @Nullable
+    private String idColumnName;
+
     /**
      * @param cursor The cursor from which to get the data.
      */
     public RecyclerCursorAdapter(Cursor cursor) {
-        setupCursor(cursor);
+        setupCursor(cursor, null);
+    }
+
+    /**
+     * @param cursor The cursor from which to get the data.
+     * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
+     */
+    public RecyclerCursorAdapter(Cursor cursor, String idColumnName) {
+        this.idColumnName = idColumnName != null ? idColumnName : DEFAULT_ID_COLUMN_NAME;
+        setupCursor(cursor, idColumnName);
     }
 
     @Override
@@ -164,7 +177,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
             }
         }
 
-        setupCursor(newCursor);
+        setupCursor(newCursor, idColumnName);
         if (newCursor != null) {
             notifyDataSetChanged();
         }
@@ -263,10 +276,10 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      *
      * @param cursor The cursor from which to get the data
      */
-    private void setupCursor(Cursor cursor) {
+    private void setupCursor(Cursor cursor, String idColumnName) {
         this.cursor = cursor;
         isValidData = cursor != null;
-        idColumn = isValidData ? cursor.getColumnIndexOrThrow("_id") : -1;
+        idColumn = isValidData ? cursor.getColumnIndexOrThrow(idColumnName) : -1;
 
         //Makes sure the observers aren't null
         if (internalChangeObserver == null) {
