@@ -36,8 +36,8 @@ import com.devbrackets.android.recyclerview.layout.Lanes.LaneInfo;
  *
  */
 public class StaggeredGridLayoutManager extends GridLayoutManager {
-    private static final int DEFAULT_NUM_COLS = 2;
-    private static final int DEFAULT_NUM_ROWS = 2;
+    private static final int DEFAULT_COLUMN_COUNT = 2;
+    private static final int DEFAULT_ROW_COUNT = 2;
 
     protected static class StaggeredItemEntry extends BaseLayoutManager.ItemEntry {
         private final int span;
@@ -86,7 +86,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
     }
 
     public StaggeredGridLayoutManager(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle, DEFAULT_NUM_COLS, DEFAULT_NUM_ROWS);
+        super(context, attrs, defStyle, DEFAULT_COLUMN_COUNT, DEFAULT_ROW_COUNT);
     }
 
     public StaggeredGridLayoutManager(LayoutOrientation orientation, int numColumns, int numRows) {
@@ -101,7 +101,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
 
     @Override
     public int getLaneSpanForPosition(int position) {
-        final StaggeredItemEntry entry = (StaggeredItemEntry) getItemEntryForPosition(position);
+        StaggeredItemEntry entry = (StaggeredItemEntry) getItemEntryForPosition(position);
         if (entry == null) {
             throw new IllegalStateException("Could not find span for position " + position);
         }
@@ -111,7 +111,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
 
     @Override
     public void getLaneForPosition(LaneInfo outInfo, int position, LayoutDirection direction) {
-        final StaggeredItemEntry entry = (StaggeredItemEntry) getItemEntryForPosition(position);
+        StaggeredItemEntry entry = (StaggeredItemEntry) getItemEntryForPosition(position);
         if (entry != null) {
             outInfo.set(entry.startLane, entry.anchorLane);
             return;
@@ -130,8 +130,8 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
 
     @Override
     public void moveLayoutToPosition(int position, int offset, Recycler recycler, State state) {
-        final boolean isVertical = isVertical();
-        final Lanes lanes = getLanes();
+        boolean isVertical = isVertical();
+        Lanes lanes = getLanes();
 
         lanes.reset(0);
 
@@ -139,18 +139,18 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
             StaggeredItemEntry entry = (StaggeredItemEntry) getItemEntryForPosition(i);
 
             if (entry != null) {
-                mTempLaneInfo.set(entry.startLane, entry.anchorLane);
+                tempLaneInfo.set(entry.startLane, entry.anchorLane);
 
                 // The lanes might have been invalidated because an added or
                 // removed item. See BaseLayoutManager.invalidateItemLanes().
-                if (mTempLaneInfo.isUndefined()) {
-                    lanes.findLane(mTempLaneInfo, getLaneSpanForPosition(i), LayoutDirection.END);
-                    entry.setLane(mTempLaneInfo);
+                if (tempLaneInfo.isUndefined()) {
+                    lanes.findLane(tempLaneInfo, getLaneSpanForPosition(i), LayoutDirection.END);
+                    entry.setLane(tempLaneInfo);
                 }
 
-                lanes.getChildFrame(mTempRect, entry.width, entry.height, mTempLaneInfo, LayoutDirection.END);
+                lanes.getChildFrame(tempRect, entry.width, entry.height, tempLaneInfo, LayoutDirection.END);
             } else {
-                final View child = recycler.getViewForPosition(i);
+                View child = recycler.getViewForPosition(i);
 
                 // XXX: This might potentially cause stalls in the main
                 // thread if the layout ends up having to measure tons of
@@ -163,44 +163,42 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
                 // this position.
                 entry = (StaggeredItemEntry) getItemEntryForPosition(i);
 
-                mTempLaneInfo.set(entry.startLane, entry.anchorLane);
-                lanes.getChildFrame(mTempRect, getDecoratedMeasuredWidth(child),
-                        getDecoratedMeasuredHeight(child), mTempLaneInfo, LayoutDirection.END);
+                tempLaneInfo.set(entry.startLane, entry.anchorLane);
+                lanes.getChildFrame(tempRect, getDecoratedMeasuredWidth(child), getDecoratedMeasuredHeight(child), tempLaneInfo, LayoutDirection.END);
 
-                cacheItemFrame(entry, mTempRect);
+                cacheItemFrame(entry, tempRect);
             }
 
             if (i != position) {
-                pushChildFrame(entry, mTempRect, entry.startLane, entry.span, LayoutDirection.END);
+                pushChildFrame(entry, tempRect, entry.startLane, entry.span, LayoutDirection.END);
             }
         }
 
-        lanes.getLane(mTempLaneInfo.startLane, mTempRect);
+        lanes.getLane(tempLaneInfo.startLane, tempRect);
         lanes.reset(LayoutDirection.END);
-        lanes.offset(offset - (isVertical ? mTempRect.bottom : mTempRect.right));
+        lanes.offset(offset - (isVertical ? tempRect.bottom : tempRect.right));
     }
 
     @Override
     public ItemEntry cacheChildLaneAndSpan(View child, LayoutDirection direction) {
-        final int position = getPosition(child);
+        int position = getPosition(child);
 
-        mTempLaneInfo.setUndefined();
+        tempLaneInfo.setUndefined();
 
         StaggeredItemEntry entry = (StaggeredItemEntry) getItemEntryForPosition(position);
         if (entry != null) {
-            mTempLaneInfo.set(entry.startLane, entry.anchorLane);
+            tempLaneInfo.set(entry.startLane, entry.anchorLane);
         }
 
-        if (mTempLaneInfo.isUndefined()) {
-            getLaneForChild(mTempLaneInfo, child, direction);
+        if (tempLaneInfo.isUndefined()) {
+            getLaneForChild(tempLaneInfo, child, direction);
         }
 
         if (entry == null) {
-            entry = new StaggeredItemEntry(mTempLaneInfo.startLane, mTempLaneInfo.anchorLane,
-                    getLaneSpanForChild(child));
+            entry = new StaggeredItemEntry(tempLaneInfo.startLane, tempLaneInfo.anchorLane, getLaneSpanForChild(child));
             setItemEntryForPosition(position, entry);
         } else {
-            entry.setLane(mTempLaneInfo);
+            entry.setLane(tempLaneInfo);
         }
 
         return entry;
@@ -226,7 +224,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
     public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
         boolean result = super.checkLayoutParams(lp);
         if (lp instanceof LayoutParams) {
-            final LayoutParams staggeredLp = (LayoutParams) lp;
+            LayoutParams staggeredLp = (LayoutParams) lp;
             result &= (staggeredLp.span >= 1 && staggeredLp.span <= getLaneCount());
         }
 
@@ -244,7 +242,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
 
     @Override
     public LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
-        final LayoutParams staggeredLp = new LayoutParams((ViewGroup.MarginLayoutParams) lp);
+        LayoutParams staggeredLp = new LayoutParams((ViewGroup.MarginLayoutParams) lp);
         if (isVertical()) {
             staggeredLp.width = LayoutParams.MATCH_PARENT;
             staggeredLp.height = lp.height;
@@ -254,7 +252,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
         }
 
         if (lp instanceof LayoutParams) {
-            final LayoutParams other = (LayoutParams) lp;
+            LayoutParams other = (LayoutParams) lp;
             staggeredLp.span = Math.max(1, Math.min(other.span, getLaneCount()));
         }
 
@@ -296,7 +294,7 @@ public class StaggeredGridLayoutManager extends GridLayoutManager {
 
         private void init(ViewGroup.LayoutParams other) {
             if (other instanceof LayoutParams) {
-                final LayoutParams lp = (LayoutParams) other;
+                LayoutParams lp = (LayoutParams) other;
                 span = lp.span;
             } else {
                 span = DEFAULT_SPAN;

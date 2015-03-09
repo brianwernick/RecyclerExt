@@ -35,8 +35,8 @@ import com.devbrackets.android.recyclerview.layout.Lanes.LaneInfo;
  *
  */
 public class SpannableGridLayoutManager extends GridLayoutManager {
-    private static final int DEFAULT_NUM_COLS = 3;
-    private static final int DEFAULT_NUM_ROWS = 3;
+    private static final int DEFAULT_COLUMN_COUNT = 3;
+    private static final int DEFAULT_ROW_COUNT = 3;
 
     protected static class SpannableItemEntry extends BaseLayoutManager.ItemEntry {
         private final int colSpan;
@@ -85,7 +85,7 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
     }
 
     public SpannableGridLayoutManager(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle, DEFAULT_NUM_COLS, DEFAULT_NUM_ROWS);
+        super(context, attrs, defStyle, DEFAULT_COLUMN_COUNT, DEFAULT_ROW_COUNT);
     }
 
     public SpannableGridLayoutManager(LayoutOrientation orientation, int numColumns, int numRows) {
@@ -125,7 +125,7 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
 
     @Override
     public int getLaneSpanForPosition(int position) {
-        final SpannableItemEntry entry = (SpannableItemEntry) getItemEntryForPosition(position);
+        SpannableItemEntry entry = (SpannableItemEntry) getItemEntryForPosition(position);
         if (entry == null) {
             throw new IllegalStateException("Could not find span for position " + position);
         }
@@ -135,7 +135,7 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
 
     @Override
     public void getLaneForPosition(LaneInfo outInfo, int position, LayoutDirection direction) {
-        final SpannableItemEntry entry = (SpannableItemEntry) getItemEntryForPosition(position);
+        SpannableItemEntry entry = (SpannableItemEntry) getItemEntryForPosition(position);
         if (entry != null) {
             outInfo.set(entry.startLane, entry.anchorLane);
             return;
@@ -153,12 +153,12 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
     }
 
     private int getWidthUsed(View child) {
-        final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+        LayoutParams lp = (LayoutParams) child.getLayoutParams();
         return getWidth() - getPaddingLeft() - getPaddingRight() - getChildWidth(lp.colSpan);
     }
 
     private int getHeightUsed(View child) {
-        final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+        LayoutParams lp = (LayoutParams) child.getLayoutParams();
         return getHeight() - getPaddingTop() - getPaddingBottom() - getChildHeight(lp.rowSpan);
     }
 
@@ -173,63 +173,60 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
 
     @Override
     public void moveLayoutToPosition(int position, int offset, Recycler recycler, State state) {
-        final boolean isVertical = isVertical();
-        final Lanes lanes = getLanes();
+        boolean isVertical = isVertical();
+        Lanes lanes = getLanes();
 
         lanes.reset(0);
 
         for (int i = 0; i <= position; i++) {
             SpannableItemEntry entry = (SpannableItemEntry) getItemEntryForPosition(i);
             if (entry == null) {
-                final View child = recycler.getViewForPosition(i);
+                View child = recycler.getViewForPosition(i);
                 entry = (SpannableItemEntry) cacheChildLaneAndSpan(child, LayoutDirection.END);
             }
 
-            mTempLaneInfo.set(entry.startLane, entry.anchorLane);
+            tempLaneInfo.set(entry.startLane, entry.anchorLane);
 
             // The lanes might have been invalidated because an added or
             // removed item. See BaseLayoutManager.invalidateItemLanes().
-            if (mTempLaneInfo.isUndefined()) {
-                lanes.findLane(mTempLaneInfo, getLaneSpanForPosition(i), LayoutDirection.END);
-                entry.setLane(mTempLaneInfo);
+            if (tempLaneInfo.isUndefined()) {
+                lanes.findLane(tempLaneInfo, getLaneSpanForPosition(i), LayoutDirection.END);
+                entry.setLane(tempLaneInfo);
             }
 
-            lanes.getChildFrame(mTempRect, getChildWidth(entry.colSpan),
-                    getChildHeight(entry.rowSpan), mTempLaneInfo, LayoutDirection.END);
+            lanes.getChildFrame(tempRect, getChildWidth(entry.colSpan), getChildHeight(entry.rowSpan), tempLaneInfo, LayoutDirection.END);
 
             if (i != position) {
-                pushChildFrame(entry, mTempRect, entry.startLane, getLaneSpan(entry, isVertical),
-                        LayoutDirection.END);
+                pushChildFrame(entry, tempRect, entry.startLane, getLaneSpan(entry, isVertical), LayoutDirection.END);
             }
         }
 
-        lanes.getLane(mTempLaneInfo.startLane, mTempRect);
+        lanes.getLane(tempLaneInfo.startLane, tempRect);
         lanes.reset(LayoutDirection.END);
-        lanes.offset(offset - (isVertical ? mTempRect.bottom : mTempRect.right));
+        lanes.offset(offset - (isVertical ? tempRect.bottom : tempRect.right));
     }
 
     @Override
     public ItemEntry cacheChildLaneAndSpan(View child, LayoutDirection direction) {
-        final int position = getPosition(child);
+        int position = getPosition(child);
 
-        mTempLaneInfo.setUndefined();
+        tempLaneInfo.setUndefined();
 
         SpannableItemEntry entry = (SpannableItemEntry) getItemEntryForPosition(position);
         if (entry != null) {
-            mTempLaneInfo.set(entry.startLane, entry.anchorLane);
+            tempLaneInfo.set(entry.startLane, entry.anchorLane);
         }
 
-        if (mTempLaneInfo.isUndefined()) {
-            getLaneForChild(mTempLaneInfo, child, direction);
+        if (tempLaneInfo.isUndefined()) {
+            getLaneForChild(tempLaneInfo, child, direction);
         }
 
         if (entry == null) {
             final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            entry = new SpannableItemEntry(mTempLaneInfo.startLane, mTempLaneInfo.anchorLane,
-                    lp.colSpan, lp.rowSpan);
+            entry = new SpannableItemEntry(tempLaneInfo.startLane, tempLaneInfo.anchorLane, lp.colSpan, lp.rowSpan);
             setItemEntryForPosition(position, entry);
         } else {
-            entry.setLane(mTempLaneInfo);
+            entry.setLane(tempLaneInfo);
         }
 
         return entry;
@@ -237,13 +234,12 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
 
     @Override
     public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
-        if (lp.width != LayoutParams.MATCH_PARENT ||
-                lp.height != LayoutParams.MATCH_PARENT) {
+        if (lp.width != LayoutParams.MATCH_PARENT || lp.height != LayoutParams.MATCH_PARENT) {
             return false;
         }
 
         if (lp instanceof LayoutParams) {
-            final LayoutParams spannableLp = (LayoutParams) lp;
+            LayoutParams spannableLp = (LayoutParams) lp;
 
             if (isVertical()) {
                 return (spannableLp.rowSpan >= 1 && spannableLp.colSpan >= 1 &&
@@ -264,12 +260,12 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
 
     @Override
     public LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
-        final LayoutParams spannableLp = new LayoutParams((ViewGroup.MarginLayoutParams) lp);
+        LayoutParams spannableLp = new LayoutParams((ViewGroup.MarginLayoutParams) lp);
         spannableLp.width = LayoutParams.MATCH_PARENT;
         spannableLp.height = LayoutParams.MATCH_PARENT;
 
         if (lp instanceof LayoutParams) {
-            final LayoutParams other = (LayoutParams) lp;
+            LayoutParams other = (LayoutParams) lp;
             if (isVertical()) {
                 spannableLp.colSpan = Math.max(1, Math.min(other.colSpan, getLaneCount()));
                 spannableLp.rowSpan = Math.max(1, other.rowSpan);
@@ -320,7 +316,7 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
 
         private void init(ViewGroup.LayoutParams other) {
             if (other instanceof LayoutParams) {
-                final LayoutParams lp = (LayoutParams) other;
+                LayoutParams lp = (LayoutParams) other;
                 rowSpan = lp.rowSpan;
                 colSpan = lp.colSpan;
             } else {

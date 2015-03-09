@@ -42,15 +42,15 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
         MOVE
     }
 
-    private Lanes mLanes;
-    private Lanes mLanesToRestore;
+    private Lanes lanes;
+    private Lanes lanesToRestore;
 
-    private ItemEntries mItemEntries;
-    private ItemEntries mItemEntriesToRestore;
+    private ItemEntries itemEntries;
+    private ItemEntries itemEntriesToRestore;
 
-    protected final Rect mChildFrame = new Rect();
-    protected final Rect mTempRect = new Rect();
-    protected final LaneInfo mTempLaneInfo = new LaneInfo();
+    protected final Rect childFrame = new Rect();
+    protected final Rect tempRect = new Rect();
+    protected final LaneInfo tempLaneInfo = new LaneInfo();
 
     public BaseLayoutManager(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -64,37 +64,34 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
         super(orientation);
     }
 
-    protected void pushChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan,
-                                  LayoutDirection direction) {
-        final boolean shouldSetMargins = (direction == LayoutDirection.END &&
-                entry != null && !entry.hasSpanMargins());
+    protected void pushChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan, LayoutDirection direction) {
+        boolean shouldSetMargins = (direction == LayoutDirection.END && entry != null && !entry.hasSpanMargins());
 
         for (int i = lane; i < lane + laneSpan; i++) {
-            final int spanMargin;
+            int spanMargin;
             if (entry != null && direction != LayoutDirection.END) {
                 spanMargin = entry.getSpanMargin(i - lane);
             } else {
                 spanMargin = 0;
             }
 
-            final int margin = mLanes.pushChildFrame(childFrame, i, spanMargin, direction);
+            int margin = lanes.pushChildFrame(childFrame, i, spanMargin, direction);
             if (laneSpan > 1 && shouldSetMargins) {
                 entry.setSpanMargin(i - lane, margin, laneSpan);
             }
         }
     }
 
-    private void popChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan,
-                               LayoutDirection direction) {
+    private void popChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan, LayoutDirection direction) {
         for (int i = lane; i < lane + laneSpan; i++) {
-            final int spanMargin;
+            int spanMargin;
             if (entry != null && direction != LayoutDirection.END) {
                 spanMargin = entry.getSpanMargin(i - lane);
             } else {
                 spanMargin = 0;
             }
 
-            mLanes.popChildFrame(childFrame, i, spanMargin, direction);
+            lanes.popChildFrame(childFrame, i, spanMargin, direction);
         }
     }
 
@@ -110,40 +107,40 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
     }
 
     public Lanes getLanes() {
-        return mLanes;
+        return lanes;
     }
 
     public void setItemEntryForPosition(int position, ItemEntry entry) {
-        if (mItemEntries != null) {
-            mItemEntries.putItemEntry(position, entry);
+        if (itemEntries != null) {
+            itemEntries.putItemEntry(position, entry);
         }
     }
 
     public ItemEntry getItemEntryForPosition(int position) {
-        return (mItemEntries != null ? mItemEntries.getItemEntry(position) : null);
+        return itemEntries != null ? itemEntries.getItemEntry(position) : null;
     }
 
     public void clearItemEntries() {
-        if (mItemEntries != null) {
-            mItemEntries.clear();
+        if (itemEntries != null) {
+            itemEntries.clear();
         }
     }
 
     public void invalidateItemLanesAfter(int position) {
-        if (mItemEntries != null) {
-            mItemEntries.invalidateItemLanesAfter(position);
+        if (itemEntries != null) {
+            itemEntries.invalidateItemLanesAfter(position);
         }
     }
 
     public void offsetForAddition(int positionStart, int itemCount) {
-        if (mItemEntries != null) {
-            mItemEntries.offsetForAddition(positionStart, itemCount);
+        if (itemEntries != null) {
+            itemEntries.offsetForAddition(positionStart, itemCount);
         }
     }
 
     public void offsetForRemoval(int positionStart, int itemCount) {
-        if (mItemEntries != null) {
-            mItemEntries.offsetForRemoval(positionStart, itemCount);
+        if (itemEntries != null) {
+            itemEntries.offsetForRemoval(positionStart, itemCount);
         }
     }
 
@@ -152,9 +149,9 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             return;
         }
 
-        final int position = getFirstVisiblePosition();
-        final View firstChild = findViewByPosition(position);
-        final int offset = (firstChild != null ? getChildStart(firstChild) : 0);
+        int position = getFirstVisiblePosition();
+        View firstChild = findViewByPosition(position);
+        int offset = (firstChild != null ? getChildStart(firstChild) : 0);
 
         setPendingScrollPositionWithOffset(position, offset);
     }
@@ -164,34 +161,31 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             return false;
         }
 
-        final int laneCount = getLaneCount();
-        final int laneSize = Lanes.calculateLaneSize(this, laneCount);
+        int laneCount = getLaneCount();
+        int laneSize = Lanes.calculateLaneSize(this, laneCount);
 
-        return (lanes.getOrientation() == getOrientation() &&
-                lanes.getCount() == laneCount &&
-                lanes.getLaneSize() == laneSize);
+        return lanes.getOrientation() == getOrientation() && lanes.getCount() == laneCount && lanes.getLaneSize() == laneSize;
     }
 
     private boolean ensureLayoutState() {
-        final int laneCount = getLaneCount();
-        if (laneCount == 0 || getWidth() == 0 || getHeight() == 0 || canUseLanes(mLanes)) {
+        int laneCount = getLaneCount();
+        if (laneCount == 0 || getWidth() == 0 || getHeight() == 0 || canUseLanes(lanes)) {
             return false;
         }
 
-        final Lanes oldLanes = mLanes;
-        mLanes = new Lanes(this, laneCount);
+        Lanes oldLanes = lanes;
+        lanes = new Lanes(this, laneCount);
 
         requestMoveLayout();
 
-        if (mItemEntries == null) {
-            mItemEntries = new ItemEntries();
+        if (itemEntries == null) {
+            itemEntries = new ItemEntries();
         }
 
-        if (oldLanes != null && oldLanes.getOrientation() == mLanes.getOrientation() &&
-                oldLanes.getLaneSize() == mLanes.getLaneSize()) {
+        if (oldLanes != null && oldLanes.getOrientation() == lanes.getOrientation() && oldLanes.getLaneSize() == lanes.getLaneSize()) {
             invalidateItemLanesAfter(0);
         } else {
-            mItemEntries.clear();
+            itemEntries.clear();
         }
 
         return true;
@@ -227,7 +221,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
     @Override
     public void offsetChildrenHorizontal(int offset) {
         if (!isVertical()) {
-            mLanes.offset(offset);
+            lanes.offset(offset);
         }
 
         super.offsetChildrenHorizontal(offset);
@@ -238,52 +232,52 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
         super.offsetChildrenVertical(offset);
 
         if (isVertical()) {
-            mLanes.offset(offset);
+            lanes.offset(offset);
         }
     }
 
     @Override
     public void onLayoutChildren(Recycler recycler, State state) {
-        final boolean restoringLanes = (mLanesToRestore != null);
+        boolean restoringLanes = (lanesToRestore != null);
         if (restoringLanes) {
-            mLanes = mLanesToRestore;
-            mItemEntries = mItemEntriesToRestore;
+            lanes = lanesToRestore;
+            itemEntries = itemEntriesToRestore;
 
-            mLanesToRestore = null;
-            mItemEntriesToRestore = null;
+            lanesToRestore = null;
+            itemEntriesToRestore = null;
         }
 
-        final boolean refreshingLanes = ensureLayoutState();
+        boolean refreshingLanes = ensureLayoutState();
 
         // Still not able to create lanes, nothing we can do here,
         // just bail for now.
-        if (mLanes == null) {
+        if (lanes == null) {
             return;
         }
 
-        final int itemCount = state.getItemCount();
+        int itemCount = state.getItemCount();
 
-        if (mItemEntries != null) {
-            mItemEntries.setAdapterSize(itemCount);
+        if (itemEntries != null) {
+            itemEntries.setAdapterSize(itemCount);
         }
 
-        final int anchorItemPosition = getAnchorItemPosition(state);
+        int anchorItemPosition = getAnchorItemPosition(state);
 
         // Only move layout if we're not restoring a layout state.
         if (anchorItemPosition > 0 && (refreshingLanes || !restoringLanes)) {
             moveLayoutToPosition(anchorItemPosition, getPendingScrollOffset(), recycler, state);
         }
 
-        mLanes.reset(LayoutDirection.START);
+        lanes.reset(LayoutDirection.START);
 
         super.onLayoutChildren(recycler, state);
     }
 
     @Override
     protected void onLayoutScrapList(Recycler recycler, State state) {
-        mLanes.save();
+        lanes.save();
         super.onLayoutScrapList(recycler, state);
-        mLanes.restore();
+        lanes.restore();
     }
 
     @Override
@@ -318,31 +312,31 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
 
     @Override
     public Parcelable onSaveInstanceState() {
-        final Parcelable superState = super.onSaveInstanceState();
-        final LanedSavedState state = new LanedSavedState(superState);
+        Parcelable superState = super.onSaveInstanceState();
+        LanedSavedState state = new LanedSavedState(superState);
 
-        final int laneCount = (mLanes != null ? mLanes.getCount() : 0);
+        int laneCount = (lanes != null ? lanes.getCount() : 0);
         state.lanes = new Rect[laneCount];
         for (int i = 0; i < laneCount; i++) {
-            final Rect laneRect = new Rect();
-            mLanes.getLane(i, laneRect);
+            Rect laneRect = new Rect();
+            lanes.getLane(i, laneRect);
             state.lanes[i] = laneRect;
         }
 
         state.orientation = getOrientation();
-        state.laneSize = (mLanes != null ? mLanes.getLaneSize() : 0);
-        state.itemEntries = mItemEntries;
+        state.laneSize = (lanes != null ? lanes.getLaneSize() : 0);
+        state.itemEntries = itemEntries;
 
         return state;
     }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        final LanedSavedState ss = (LanedSavedState) state;
+        LanedSavedState ss = (LanedSavedState) state;
 
         if (ss.lanes != null && ss.laneSize > 0) {
-            mLanesToRestore = new Lanes(ss.orientation, ss.lanes, ss.laneSize);
-            mItemEntriesToRestore = ss.itemEntries;
+            lanesToRestore = new Lanes(ss.orientation, ss.lanes, ss.laneSize);
+            itemEntriesToRestore = ss.itemEntries;
         }
 
         super.onRestoreInstanceState(ss.getSuperState());
@@ -351,9 +345,9 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
     @Override
     protected boolean canAddMoreViews(LayoutDirection direction, int limit) {
         if (direction == LayoutDirection.START) {
-            return (mLanes.getInnerStart() > limit);
+            return (lanes.getInnerStart() > limit);
         } else {
-            return (mLanes.getInnerEnd() < limit);
+            return (lanes.getInnerEnd() < limit);
         }
     }
 
@@ -362,7 +356,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             return 0;
         }
 
-        final int size = getLanes().getLaneSize() * getLaneSpanForChild(child);
+        int size = getLanes().getLaneSize() * getLaneSpanForChild(child);
         return getWidth() - getPaddingLeft() - getPaddingRight() - size;
     }
 
@@ -371,7 +365,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             return 0;
         }
 
-        final int size = getLanes().getLaneSize() * getLaneSpanForChild(child);
+        int size = getLanes().getLaneSize() * getLaneSpanForChild(child);
         return getHeight() - getPaddingTop() - getPaddingBottom() - size;
     }
 
@@ -387,30 +381,26 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
 
     @Override
     protected void layoutChild(View child, LayoutDirection direction) {
-        getLaneForChild(mTempLaneInfo, child, direction);
+        getLaneForChild(tempLaneInfo, child, direction);
 
-        mLanes.getChildFrame(mChildFrame, getDecoratedMeasuredWidth(child),
-                getDecoratedMeasuredHeight(child), mTempLaneInfo, direction);
-        final ItemEntry entry = cacheChildFrame(child, mChildFrame);
+        lanes.getChildFrame(childFrame, getDecoratedMeasuredWidth(child), getDecoratedMeasuredHeight(child), tempLaneInfo, direction);
+        ItemEntry entry = cacheChildFrame(child, childFrame);
 
-        layoutDecorated(child, mChildFrame.left, mChildFrame.top, mChildFrame.right,
-                mChildFrame.bottom);
+        layoutDecorated(child, childFrame.left, childFrame.top, childFrame.right, childFrame.bottom);
 
         final LayoutParams lp = (LayoutParams) child.getLayoutParams();
         if (!lp.isItemRemoved()) {
-            pushChildFrame(entry, mChildFrame, mTempLaneInfo.startLane,
-                    getLaneSpanForChild(child), direction);
+            pushChildFrame(entry, childFrame, tempLaneInfo.startLane, getLaneSpanForChild(child), direction);
         }
     }
 
     @Override
     protected void detachChild(View child, LayoutDirection direction) {
-        final int position = getPosition(child);
-        getLaneForPosition(mTempLaneInfo, position, direction);
-        getDecoratedChildFrame(child, mChildFrame);
+        int position = getPosition(child);
+        getLaneForPosition(tempLaneInfo, position, direction);
+        getDecoratedChildFrame(child, childFrame);
 
-        popChildFrame(getItemEntryForPosition(position), mChildFrame, mTempLaneInfo.startLane,
-                getLaneSpanForChild(child), direction);
+        popChildFrame(getItemEntryForPosition(position), childFrame, tempLaneInfo.startLane, getLaneSpanForChild(child), direction);
     }
 
     public void getLaneForChild(LaneInfo outInfo, View child, LayoutDirection direction) {
@@ -476,6 +466,10 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
     public abstract void getLaneForPosition(LaneInfo outInfo, int position, LayoutDirection direction);
     public abstract void moveLayoutToPosition(int position, int offset, Recycler recycler, State state);
 
+
+
+
+
     protected static class LanedSavedState extends SavedState {
         private LayoutOrientation orientation;
         private Rect[] lanes;
@@ -492,7 +486,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             orientation = LayoutOrientation.values()[in.readInt()];
             laneSize = in.readInt();
 
-            final int laneCount = in.readInt();
+            int laneCount = in.readInt();
             if (laneCount > 0) {
                 lanes = new Rect[laneCount];
                 for (int i = 0; i < laneCount; i++) {
@@ -502,7 +496,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
                 }
             }
 
-            final int itemEntriesCount = in.readInt();
+            int itemEntriesCount = in.readInt();
             if (itemEntriesCount > 0) {
                 itemEntries = new ItemEntries();
                 for (int i = 0; i < itemEntriesCount; i++) {
@@ -519,14 +513,14 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             out.writeInt(orientation.ordinal());
             out.writeInt(laneSize);
 
-            final int laneCount = (lanes != null ? lanes.length : 0);
+            int laneCount = (lanes != null ? lanes.length : 0);
             out.writeInt(laneCount);
 
             for (int i = 0; i < laneCount; i++) {
                 lanes[i].writeToParcel(out, Rect.PARCELABLE_WRITE_RETURN_VALUE);
             }
 
-            final int itemEntriesCount = (itemEntries != null ? itemEntries.size() : 0);
+            int itemEntriesCount = (itemEntries != null ? itemEntries.size() : 0);
             out.writeInt(itemEntriesCount);
 
             for (int i = 0; i < itemEntriesCount; i++) {
@@ -534,8 +528,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             }
         }
 
-        public static final Parcelable.Creator<LanedSavedState> CREATOR
-                = new Parcelable.Creator<LanedSavedState>() {
+        public static final Parcelable.Creator<LanedSavedState> CREATOR = new Parcelable.Creator<LanedSavedState>() {
             @Override
             public LanedSavedState createFromParcel(Parcel in) {
                 return new LanedSavedState(in);
@@ -563,7 +556,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             startLane = in.readInt();
             anchorLane = in.readInt();
 
-            final int marginCount = in.readInt();
+            int marginCount = in.readInt();
             if (marginCount > 0) {
                 spanMargins = new int[marginCount];
                 for (int i = 0; i < marginCount; i++) {
@@ -582,7 +575,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             out.writeInt(startLane);
             out.writeInt(anchorLane);
 
-            final int marginCount = (spanMargins != null ? spanMargins.length : 0);
+            int marginCount = (spanMargins != null ? spanMargins.length : 0);
             out.writeInt(marginCount);
 
             for (int i = 0; i < marginCount; i++) {
@@ -621,8 +614,7 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
             spanMargins[index] = margin;
         }
 
-        public static final Creator<ItemEntry> CREATOR
-                = new Creator<ItemEntry>() {
+        public static final Creator<ItemEntry> CREATOR = new Creator<ItemEntry>() {
             @Override
             public ItemEntry createFromParcel(Parcel in) {
                 return new ItemEntry(in);

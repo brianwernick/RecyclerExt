@@ -30,10 +30,10 @@ import android.view.View;
  *
  */
 public abstract class ItemClickTouchListener implements OnItemTouchListener {
-    private final GestureDetectorCompat mGestureDetector;
+    private final GestureDetectorCompat gestureDetector;
 
     ItemClickTouchListener(RecyclerView hostView) {
-        mGestureDetector = new ItemClickGestureDetector(hostView.getContext(), new ItemClickGestureListener(hostView));
+        gestureDetector = new ItemClickGestureDetector(hostView.getContext(), new ItemClickGestureListener(hostView));
     }
 
     private boolean isAttachedToWindow(RecyclerView hostView) {
@@ -54,7 +54,7 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
             return false;
         }
 
-        mGestureDetector.onTouchEvent(event);
+        gestureDetector.onTouchEvent(event);
         return false;
     }
 
@@ -93,11 +93,11 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
     }
 
     private class ItemClickGestureListener extends SimpleOnGestureListener {
-        private final RecyclerView mHostView;
-        private View mTargetChild;
+        private final RecyclerView hostView;
+        private View targetView;
 
         public ItemClickGestureListener(RecyclerView hostView) {
-            mHostView = hostView;
+            this.hostView = hostView;
         }
 
         public void dispatchSingleTapUpIfNeeded(MotionEvent event) {
@@ -105,7 +105,7 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
             // returns false, the target child will be left around to be
             // handled later. In this case, we should still treat the gesture
             // as potential item click.
-            if (mTargetChild != null) {
+            if (targetView != null) {
                 onSingleTapUp(event);
             }
         }
@@ -115,14 +115,14 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
             int x = (int) event.getX();
             int y = (int) event.getY();
 
-            mTargetChild = mHostView.findChildViewUnder(x, y);
-            return mTargetChild != null;
+            targetView = hostView.findChildViewUnder(x, y);
+            return targetView != null;
         }
 
         @Override
         public void onShowPress(MotionEvent event) {
-            if (mTargetChild != null) {
-                mTargetChild.setPressed(true);
+            if (targetView != null) {
+                targetView.setPressed(true);
             }
         }
 
@@ -130,14 +130,14 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
         public boolean onSingleTapUp(MotionEvent event) {
             boolean handled = false;
 
-            if (mTargetChild != null) {
-                mTargetChild.setPressed(false);
+            if (targetView != null) {
+                targetView.setPressed(false);
 
-                int position = mHostView.getChildPosition(mTargetChild);
-                long id = mHostView.getAdapter().getItemId(position);
-                handled = performItemClick(mHostView, mTargetChild, position, id);
+                int position = hostView.getChildPosition(targetView);
+                long id = hostView.getAdapter().getItemId(position);
+                handled = performItemClick(hostView, targetView, position, id);
 
-                mTargetChild = null;
+                targetView = null;
             }
 
             return handled;
@@ -145,9 +145,9 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
 
         @Override
         public boolean onScroll(MotionEvent event, MotionEvent event2, float v, float v2) {
-            if (mTargetChild != null) {
-                mTargetChild.setPressed(false);
-                mTargetChild = null;
+            if (targetView != null) {
+                targetView.setPressed(false);
+                targetView = null;
 
                 return true;
             }
@@ -157,17 +157,17 @@ public abstract class ItemClickTouchListener implements OnItemTouchListener {
 
         @Override
         public void onLongPress(MotionEvent event) {
-            if (mTargetChild == null) {
+            if (targetView == null) {
                 return;
             }
 
-            int position = mHostView.getChildPosition(mTargetChild);
-            long id = mHostView.getAdapter().getItemId(position);
-            boolean handled = performItemLongClick(mHostView, mTargetChild, position, id);
+            int position = hostView.getChildPosition(targetView);
+            long id = hostView.getAdapter().getItemId(position);
+            boolean handled = performItemLongClick(hostView, targetView, position, id);
 
             if (handled) {
-                mTargetChild.setPressed(false);
-                mTargetChild = null;
+                targetView.setPressed(false);
+                targetView = null;
             }
         }
     }

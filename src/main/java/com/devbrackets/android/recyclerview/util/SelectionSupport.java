@@ -50,27 +50,27 @@ public class SelectionSupport {
         MULTIPLE
     }
 
-    private final RecyclerView mRecyclerView;
-    private final TouchListener mTouchListener;
+    private final RecyclerView recyclerView;
+    private final TouchListener touchListener;
 
-    private ChoiceMode mChoiceMode = ChoiceMode.NONE;
-    private CheckedStates mCheckedStates;
-    private CheckedIdStates mCheckedIdStates;
-    private int mCheckedCount;
+    private ChoiceMode choiceMode = ChoiceMode.NONE;
+    private CheckedStates checkedStates;
+    private CheckedIdStates checkedIdStates;
+    private int checkedCount;
 
     private SelectionSupport(RecyclerView recyclerView) {
-        mRecyclerView = recyclerView;
+        this.recyclerView = recyclerView;
 
-        mTouchListener = new TouchListener(recyclerView);
-        recyclerView.addOnItemTouchListener(mTouchListener);
+        touchListener = new TouchListener(recyclerView);
+        recyclerView.addOnItemTouchListener(touchListener);
     }
 
     private void updateOnScreenCheckedViews() {
-        final int count = mRecyclerView.getChildCount();
+        int count = recyclerView.getChildCount();
         for (int i = 0; i < count; i++) {
-            final View child = mRecyclerView.getChildAt(i);
-            final int position = mRecyclerView.getChildPosition(child);
-            setViewChecked(child, mCheckedStates.get(position));
+            View child = recyclerView.getChildAt(i);
+            int position = recyclerView.getChildPosition(child);
+            setViewChecked(child, checkedStates.get(position));
         }
     }
 
@@ -88,7 +88,7 @@ public class SelectionSupport {
      * @see #getCheckedItemIds()
      */
     public int getCheckedItemCount() {
-        return mCheckedCount;
+        return checkedCount;
     }
 
     /**
@@ -103,11 +103,7 @@ public class SelectionSupport {
      * @see #setChoiceMode(ChoiceMode)
      */
     public boolean isItemChecked(int position) {
-        if (mChoiceMode != ChoiceMode.NONE && mCheckedStates != null) {
-            return mCheckedStates.get(position);
-        }
-
-        return false;
+        return choiceMode != ChoiceMode.NONE && checkedStates != null && checkedStates.get(position);
     }
 
     /**
@@ -120,8 +116,8 @@ public class SelectionSupport {
      * @see #setChoiceMode(ChoiceMode)
      */
     public int getCheckedItemPosition() {
-        if (mChoiceMode == ChoiceMode.SINGLE && mCheckedStates != null && mCheckedStates.size() == 1) {
-            return mCheckedStates.keyAt(0);
+        if (choiceMode == ChoiceMode.SINGLE && checkedStates != null && checkedStates.size() == 1) {
+            return checkedStates.keyAt(0);
         }
 
         return INVALID_POSITION;
@@ -137,8 +133,8 @@ public class SelectionSupport {
      *          {@link ChoiceMode#NONE}.
      */
     public SparseBooleanArray getCheckedItemPositions() {
-        if (mChoiceMode != ChoiceMode.NONE) {
-            return mCheckedStates;
+        if (choiceMode != ChoiceMode.NONE) {
+            return checkedStates;
         }
 
         return null;
@@ -155,16 +151,15 @@ public class SelectionSupport {
      * @see android.support.v7.widget.RecyclerView.Adapter#hasStableIds()
      */
     public long[] getCheckedItemIds() {
-        if (mChoiceMode == ChoiceMode.NONE
-                || mCheckedIdStates == null || mRecyclerView.getAdapter() == null) {
+        if (choiceMode == ChoiceMode.NONE || checkedIdStates == null || recyclerView.getAdapter() == null) {
             return new long[0];
         }
 
-        final int count = mCheckedIdStates.size();
-        final long[] ids = new long[count];
+        int count = checkedIdStates.size();
+        long[] ids = new long[count];
 
         for (int i = 0; i < count; i++) {
-            ids[i] = mCheckedIdStates.keyAt(i);
+            ids[i] = checkedIdStates.keyAt(i);
         }
 
         return ids;
@@ -179,56 +174,56 @@ public class SelectionSupport {
      * @param checked The new checked state for the item
      */
     public void setItemChecked(int position, boolean checked) {
-        if (mChoiceMode == ChoiceMode.NONE) {
+        if (choiceMode == ChoiceMode.NONE) {
             return;
         }
 
-        final Adapter adapter = mRecyclerView.getAdapter();
+        Adapter adapter = recyclerView.getAdapter();
 
-        if (mChoiceMode == ChoiceMode.MULTIPLE) {
-            boolean oldValue = mCheckedStates.get(position);
-            mCheckedStates.put(position, checked);
+        if (choiceMode == ChoiceMode.MULTIPLE) {
+            boolean oldValue = checkedStates.get(position);
+            checkedStates.put(position, checked);
 
-            if (mCheckedIdStates != null && adapter.hasStableIds()) {
+            if (checkedIdStates != null && adapter.hasStableIds()) {
                 if (checked) {
-                    mCheckedIdStates.put(adapter.getItemId(position), position);
+                    checkedIdStates.put(adapter.getItemId(position), position);
                 } else {
-                    mCheckedIdStates.delete(adapter.getItemId(position));
+                    checkedIdStates.delete(adapter.getItemId(position));
                 }
             }
 
             if (oldValue != checked) {
                 if (checked) {
-                    mCheckedCount++;
+                    checkedCount++;
                 } else {
-                    mCheckedCount--;
+                    checkedCount--;
                 }
             }
         } else {
-            boolean updateIds = mCheckedIdStates != null && adapter.hasStableIds();
+            boolean updateIds = checkedIdStates != null && adapter.hasStableIds();
 
             // Clear all values if we're checking something, or unchecking the currently
             // selected item
             if (checked || isItemChecked(position)) {
-                mCheckedStates.clear();
+                checkedStates.clear();
 
                 if (updateIds) {
-                    mCheckedIdStates.clear();
+                    checkedIdStates.clear();
                 }
             }
 
             // This may end up selecting the checked we just cleared but this way
             // we ensure length of mCheckStates is 1, a fact getCheckedItemPosition relies on
             if (checked) {
-                mCheckedStates.put(position, true);
+                checkedStates.put(position, true);
 
                 if (updateIds) {
-                    mCheckedIdStates.put(adapter.getItemId(position), position);
+                    checkedIdStates.put(adapter.getItemId(position), position);
                 }
 
-                mCheckedCount = 1;
-            } else if (mCheckedStates.size() == 0 || !mCheckedStates.valueAt(0)) {
-                mCheckedCount = 0;
+                checkedCount = 1;
+            } else if (checkedStates.size() == 0 || !checkedStates.valueAt(0)) {
+                checkedCount = 0;
             }
         }
 
@@ -248,15 +243,15 @@ public class SelectionSupport {
      * Clears any choices previously set.
      */
     public void clearChoices() {
-        if (mCheckedStates != null) {
-            mCheckedStates.clear();
+        if (checkedStates != null) {
+            checkedStates.clear();
         }
 
-        if (mCheckedIdStates != null) {
-            mCheckedIdStates.clear();
+        if (checkedIdStates != null) {
+            checkedIdStates.clear();
         }
 
-        mCheckedCount = 0;
+        checkedCount = 0;
         updateOnScreenCheckedViews();
     }
 
@@ -266,7 +261,7 @@ public class SelectionSupport {
      * @see #setChoiceMode(ChoiceMode)
      */
     public ChoiceMode getChoiceMode() {
-        return mChoiceMode;
+        return choiceMode;
     }
 
     /**
@@ -279,83 +274,83 @@ public class SelectionSupport {
      * {@link ChoiceMode#MULTIPLE}
      */
     public void setChoiceMode(ChoiceMode choiceMode) {
-        if (mChoiceMode == choiceMode) {
+        if (this.choiceMode == choiceMode) {
             return;
         }
 
-        mChoiceMode = choiceMode;
+        this.choiceMode = choiceMode;
 
-        if (mChoiceMode != ChoiceMode.NONE) {
-            if (mCheckedStates == null) {
-                mCheckedStates = new CheckedStates();
+        if (this.choiceMode != ChoiceMode.NONE) {
+            if (checkedStates == null) {
+                checkedStates = new CheckedStates();
             }
 
-            final Adapter adapter = mRecyclerView.getAdapter();
-            if (mCheckedIdStates == null && adapter != null && adapter.hasStableIds()) {
-                mCheckedIdStates = new CheckedIdStates();
+            Adapter adapter = recyclerView.getAdapter();
+            if (checkedIdStates == null && adapter != null && adapter.hasStableIds()) {
+                checkedIdStates = new CheckedIdStates();
             }
         }
     }
 
     public void onAdapterDataChanged() {
-        final Adapter adapter = mRecyclerView.getAdapter();
-        if (mChoiceMode == ChoiceMode.NONE || adapter == null || !adapter.hasStableIds()) {
+        Adapter adapter = recyclerView.getAdapter();
+        if (choiceMode == ChoiceMode.NONE || adapter == null || !adapter.hasStableIds()) {
             return;
         }
 
-        final int itemCount = adapter.getItemCount();
+        int itemCount = adapter.getItemCount();
 
         // Clear out the positional check states, we'll rebuild it below from IDs.
-        mCheckedStates.clear();
+        checkedStates.clear();
 
-        for (int checkedIndex = 0; checkedIndex < mCheckedIdStates.size(); checkedIndex++) {
-            final long currentId = mCheckedIdStates.keyAt(checkedIndex);
-            final int currentPosition = mCheckedIdStates.valueAt(checkedIndex);
+        for (int checkedIndex = 0; checkedIndex < checkedIdStates.size(); checkedIndex++) {
+            long currentId = checkedIdStates.keyAt(checkedIndex);
+            int currentPosition = checkedIdStates.valueAt(checkedIndex);
 
-            final long newPositionId = adapter.getItemId(currentPosition);
+            long newPositionId = adapter.getItemId(currentPosition);
             if (currentId != newPositionId) {
                 // Look around to see if the ID is nearby. If not, uncheck it.
-                final int start = Math.max(0, currentPosition - CHECK_POSITION_SEARCH_DISTANCE);
-                final int end = Math.min(currentPosition + CHECK_POSITION_SEARCH_DISTANCE, itemCount);
+                int start = Math.max(0, currentPosition - CHECK_POSITION_SEARCH_DISTANCE);
+                int end = Math.min(currentPosition + CHECK_POSITION_SEARCH_DISTANCE, itemCount);
 
                 boolean found = false;
                 for (int searchPos = start; searchPos < end; searchPos++) {
-                    final long searchId = adapter.getItemId(searchPos);
+                    long searchId = adapter.getItemId(searchPos);
                     if (currentId == searchId) {
                         found = true;
-                        mCheckedStates.put(searchPos, true);
-                        mCheckedIdStates.setValueAt(checkedIndex, searchPos);
+                        checkedStates.put(searchPos, true);
+                        checkedIdStates.setValueAt(checkedIndex, searchPos);
                         break;
                     }
                 }
 
                 if (!found) {
-                    mCheckedIdStates.delete(currentId);
-                    mCheckedCount--;
+                    checkedIdStates.delete(currentId);
+                    checkedCount--;
                     checkedIndex--;
                 }
             } else {
-                mCheckedStates.put(currentPosition, true);
+                checkedStates.put(currentPosition, true);
             }
         }
     }
 
     public Bundle onSaveInstanceState() {
-        final Bundle state = new Bundle();
+        Bundle state = new Bundle();
 
-        state.putInt(STATE_KEY_CHOICE_MODE, mChoiceMode.ordinal());
-        state.putParcelable(STATE_KEY_CHECKED_STATES, mCheckedStates);
-        state.putParcelable(STATE_KEY_CHECKED_ID_STATES, mCheckedIdStates);
-        state.putInt(STATE_KEY_CHECKED_COUNT, mCheckedCount);
+        state.putInt(STATE_KEY_CHOICE_MODE, choiceMode.ordinal());
+        state.putParcelable(STATE_KEY_CHECKED_STATES, checkedStates);
+        state.putParcelable(STATE_KEY_CHECKED_ID_STATES, checkedIdStates);
+        state.putInt(STATE_KEY_CHECKED_COUNT, checkedCount);
 
         return state;
     }
 
     public void onRestoreInstanceState(Bundle state) {
-        mChoiceMode = ChoiceMode.values()[state.getInt(STATE_KEY_CHOICE_MODE)];
-        mCheckedStates = state.getParcelable(STATE_KEY_CHECKED_STATES);
-        mCheckedIdStates = state.getParcelable(STATE_KEY_CHECKED_ID_STATES);
-        mCheckedCount = state.getInt(STATE_KEY_CHECKED_COUNT);
+        choiceMode = ChoiceMode.values()[state.getInt(STATE_KEY_CHOICE_MODE)];
+        checkedStates = state.getParcelable(STATE_KEY_CHECKED_STATES);
+        checkedIdStates = state.getParcelable(STATE_KEY_CHECKED_ID_STATES);
+        checkedCount = state.getInt(STATE_KEY_CHECKED_COUNT);
 
         // TODO confirm ids here
     }
@@ -371,14 +366,14 @@ public class SelectionSupport {
     }
 
     public static void removeFrom(RecyclerView recyclerView) {
-        final SelectionSupport itemSelection = from(recyclerView);
+        SelectionSupport itemSelection = from(recyclerView);
         if (itemSelection == null) {
             return;
         }
 
         itemSelection.clearChoices();
 
-        recyclerView.removeOnItemTouchListener(itemSelection.mTouchListener);
+        recyclerView.removeOnItemTouchListener(itemSelection.touchListener);
         recyclerView.setTag(R.id.recyclerExt_item_selection_support, null);
     }
 
@@ -399,11 +394,11 @@ public class SelectionSupport {
         }
 
         private CheckedStates(Parcel in) {
-            final int size = in.readInt();
+            int size = in.readInt();
             if (size > 0) {
                 for (int i = 0; i < size; i++) {
-                    final int key = in.readInt();
-                    final boolean value = (in.readInt() == TRUE);
+                    int key = in.readInt();
+                    boolean value = (in.readInt() == TRUE);
                     put(key, value);
                 }
             }
@@ -416,7 +411,7 @@ public class SelectionSupport {
 
         @Override
         public void writeToParcel(Parcel parcel, int flags) {
-            final int size = size();
+            int size = size();
             parcel.writeInt(size);
 
             for (int i = 0; i < size; i++) {
@@ -425,8 +420,7 @@ public class SelectionSupport {
             }
         }
 
-        public static final Parcelable.Creator<CheckedStates> CREATOR
-                = new Parcelable.Creator<CheckedStates>() {
+        public static final Parcelable.Creator<CheckedStates> CREATOR = new Parcelable.Creator<CheckedStates>() {
             @Override
             public CheckedStates createFromParcel(Parcel in) {
                 return new CheckedStates(in);
@@ -445,11 +439,11 @@ public class SelectionSupport {
         }
 
         private CheckedIdStates(Parcel in) {
-            final int size = in.readInt();
+            int size = in.readInt();
             if (size > 0) {
                 for (int i = 0; i < size; i++) {
-                    final long key = in.readLong();
-                    final int value = in.readInt();
+                    long key = in.readLong();
+                    int value = in.readInt();
                     put(key, value);
                 }
             }
@@ -462,7 +456,7 @@ public class SelectionSupport {
 
         @Override
         public void writeToParcel(Parcel parcel, int flags) {
-            final int size = size();
+            int size = size();
             parcel.writeInt(size);
 
             for (int i = 0; i < size; i++) {
@@ -471,8 +465,7 @@ public class SelectionSupport {
             }
         }
 
-        public static final Creator<CheckedIdStates> CREATOR
-                = new Creator<CheckedIdStates>() {
+        public static final Creator<CheckedIdStates> CREATOR = new Creator<CheckedIdStates>() {
             @Override
             public CheckedIdStates createFromParcel(Parcel in) {
                 return new CheckedIdStates(in);
@@ -492,42 +485,42 @@ public class SelectionSupport {
 
         @Override
         protected boolean performItemClick(RecyclerView parent, View view, int position, long id) {
-            final Adapter adapter = mRecyclerView.getAdapter();
+            Adapter adapter = recyclerView.getAdapter();
             boolean checkedStateChanged = false;
 
-            if (mChoiceMode == ChoiceMode.MULTIPLE) {
-                boolean checked = !mCheckedStates.get(position, false);
-                mCheckedStates.put(position, checked);
+            if (choiceMode == ChoiceMode.MULTIPLE) {
+                boolean checked = !checkedStates.get(position, false);
+                checkedStates.put(position, checked);
 
-                if (mCheckedIdStates != null && adapter.hasStableIds()) {
+                if (checkedIdStates != null && adapter.hasStableIds()) {
                     if (checked) {
-                        mCheckedIdStates.put(adapter.getItemId(position), position);
+                        checkedIdStates.put(adapter.getItemId(position), position);
                     } else {
-                        mCheckedIdStates.delete(adapter.getItemId(position));
+                        checkedIdStates.delete(adapter.getItemId(position));
                     }
                 }
 
                 if (checked) {
-                    mCheckedCount++;
+                    checkedCount++;
                 } else {
-                    mCheckedCount--;
+                    checkedCount--;
                 }
 
                 checkedStateChanged = true;
-            } else if (mChoiceMode == ChoiceMode.SINGLE) {
-                boolean checked = !mCheckedStates.get(position, false);
+            } else if (choiceMode == ChoiceMode.SINGLE) {
+                boolean checked = !checkedStates.get(position, false);
                 if (checked) {
-                    mCheckedStates.clear();
-                    mCheckedStates.put(position, true);
+                    checkedStates.clear();
+                    checkedStates.put(position, true);
 
-                    if (mCheckedIdStates != null && adapter.hasStableIds()) {
-                        mCheckedIdStates.clear();
-                        mCheckedIdStates.put(adapter.getItemId(position), position);
+                    if (checkedIdStates != null && adapter.hasStableIds()) {
+                        checkedIdStates.clear();
+                        checkedIdStates.put(adapter.getItemId(position), position);
                     }
 
-                    mCheckedCount = 1;
-                } else if (mCheckedStates.size() == 0 || !mCheckedStates.valueAt(0)) {
-                    mCheckedCount = 0;
+                    checkedCount = 1;
+                } else if (checkedStates.size() == 0 || !checkedStates.valueAt(0)) {
+                    checkedCount = 0;
                 }
 
                 checkedStateChanged = true;

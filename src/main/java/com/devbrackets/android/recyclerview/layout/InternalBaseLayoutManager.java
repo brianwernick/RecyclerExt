@@ -42,21 +42,21 @@ import java.util.List;
  *
  */
 abstract class InternalBaseLayoutManager extends LayoutManager {
-    private RecyclerView mRecyclerView;
+    private RecyclerView recyclerView;
 
-    private boolean mIsVertical = true;
+    private boolean isLayoutVertical = true;
 
-    private SavedState mPendingSavedState = null;
+    private SavedState pendingSavedState = null;
 
-    private int mPendingScrollPosition = RecyclerView.NO_POSITION;
-    private int mPendingScrollOffset = 0;
+    private int pendingScrollPosition = RecyclerView.NO_POSITION;
+    private int pendingScrollOffset = 0;
 
-    private int mLayoutStart;
-    private int mLayoutEnd;
+    private int layoutStart;
+    private int layoutEnd;
 
 
     public InternalBaseLayoutManager(LayoutOrientation orientation) {
-        mIsVertical = (orientation == LayoutOrientation.VERTICAL);
+        isLayoutVertical = orientation == LayoutOrientation.VERTICAL;
     }
 
     public InternalBaseLayoutManager(Context context, AttributeSet attrs) {
@@ -64,14 +64,14 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     public InternalBaseLayoutManager(Context context, AttributeSet attrs, int defStyle) {
-        final TypedArray a =  context.obtainStyledAttributes(attrs, R.styleable.recyclerExt_LayoutManager, defStyle, 0);
+        TypedArray a =  context.obtainStyledAttributes(attrs, R.styleable.recyclerExt_LayoutManager, defStyle, 0);
 
-        final int indexCount = a.getIndexCount();
+        int indexCount = a.getIndexCount();
         for (int i = 0; i < indexCount; i++) {
-            final int attr = a.getIndex(i);
+            int attr = a.getIndex(i);
 
             if (attr == R.styleable.recyclerExt_LayoutManager_android_orientation) {
-                final int orientation = a.getInt(attr, -1);
+                int orientation = a.getInt(attr, -1);
                 if (orientation >= 0) {
                     setOrientation(LayoutOrientation.values()[orientation]);
                 }
@@ -83,64 +83,63 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public int getDecoratedMeasuredWidth(View child) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
         return super.getDecoratedMeasuredWidth(child) + lp.leftMargin + lp.rightMargin;
     }
 
     @Override
     public int getDecoratedMeasuredHeight(View child) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
         return super.getDecoratedMeasuredHeight(child) + lp.topMargin + lp.bottomMargin;
     }
 
     @Override
     public int getDecoratedLeft(View child) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
         return super.getDecoratedLeft(child) - lp.leftMargin;
     }
 
     @Override
     public int getDecoratedTop(View child) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
         return super.getDecoratedTop(child) - lp.topMargin;
     }
 
     @Override
     public int getDecoratedRight(View child) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
         return super.getDecoratedRight(child) + lp.rightMargin;
     }
 
     @Override
     public int getDecoratedBottom(View child) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
         return super.getDecoratedBottom(child) + lp.bottomMargin;
     }
 
     @Override
     public void layoutDecorated(View child, int left, int top, int right, int bottom) {
-        final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
-        super.layoutDecorated(child, left + lp.leftMargin, top + lp.topMargin,
-                right - lp.rightMargin, bottom - lp.bottomMargin);
+        MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+        super.layoutDecorated(child, left + lp.leftMargin, top + lp.topMargin, right - lp.rightMargin, bottom - lp.bottomMargin);
     }
 
     @Override
     public void onAttachedToWindow(RecyclerView view) {
         super.onAttachedToWindow(view);
-        mRecyclerView = view;
+        recyclerView = view;
     }
 
     @Override
     public void onDetachedFromWindow(RecyclerView view, Recycler recycler) {
         super.onDetachedFromWindow(view, recycler);
-        mRecyclerView = null;
+        recyclerView = null;
     }
 
     @Override
     public void onAdapterChanged(RecyclerView.Adapter oldAdapter, RecyclerView.Adapter newAdapter) {
         super.onAdapterChanged(oldAdapter, newAdapter);
 
-        final SelectionSupport itemSelectionSupport = SelectionSupport.from(mRecyclerView);
+        SelectionSupport itemSelectionSupport = SelectionSupport.from(recyclerView);
         if (oldAdapter != null && itemSelectionSupport != null) {
             itemSelectionSupport.clearChoices();
         }
@@ -148,9 +147,9 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public void onLayoutChildren(Recycler recycler, State state) {
-        final SelectionSupport itemSelection = SelectionSupport.from(mRecyclerView);
+        SelectionSupport itemSelection = SelectionSupport.from(recyclerView);
         if (itemSelection != null) {
-            final Bundle itemSelectionState = getPendingItemSelectionState();
+            Bundle itemSelectionState = getPendingItemSelectionState();
             if (itemSelectionState != null) {
                 itemSelection.onRestoreInstanceState(itemSelectionState);
             }
@@ -160,14 +159,14 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
             }
         }
 
-        final int anchorItemPosition = getAnchorItemPosition(state);
+        int anchorItemPosition = getAnchorItemPosition(state);
         detachAndScrapAttachedViews(recycler);
         fillSpecific(anchorItemPosition, recycler, state);
 
         onLayoutScrapList(recycler, state);
 
         setPendingScrollPositionWithOffset(RecyclerView.NO_POSITION, 0);
-        mPendingSavedState = null;
+        pendingSavedState = null;
     }
 
     @Override
@@ -197,7 +196,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public RecyclerView.LayoutParams generateDefaultLayoutParams() {
-        if (mIsVertical) {
+        if (isLayoutVertical) {
             return new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         } else {
             return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
@@ -211,7 +210,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public int scrollHorizontallyBy(int dx, Recycler recycler, State state) {
-        if (mIsVertical) {
+        if (isLayoutVertical) {
             return 0;
         }
 
@@ -220,7 +219,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
-        if (!mIsVertical) {
+        if (!isLayoutVertical) {
             return 0;
         }
 
@@ -229,12 +228,12 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public boolean canScrollHorizontally() {
-        return !mIsVertical;
+        return !isLayoutVertical;
     }
 
     @Override
     public boolean canScrollVertically() {
-        return mIsVertical;
+        return isLayoutVertical;
     }
 
     @Override
@@ -249,15 +248,15 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public void smoothScrollToPosition(RecyclerView recyclerView, State state, int position) {
-        final LinearSmoothScroller scroller = new LinearSmoothScroller(recyclerView.getContext()) {
+        LinearSmoothScroller scroller = new LinearSmoothScroller(recyclerView.getContext()) {
             @Override
             public PointF computeScrollVectorForPosition(int targetPosition) {
                 if (getChildCount() == 0) {
                     return null;
                 }
 
-                final int direction = targetPosition < getFirstVisiblePosition() ? -1 : 1;
-                if (mIsVertical) {
+                int direction = targetPosition < getFirstVisiblePosition() ? -1 : 1;
+                if (isLayoutVertical) {
                     return new PointF(0, direction);
                 } else {
                     return new PointF(direction, 0);
@@ -324,7 +323,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public Parcelable onSaveInstanceState() {
-        final SavedState state = new SavedState(SavedState.EMPTY_STATE);
+        SavedState state = new SavedState(SavedState.EMPTY_STATE);
 
         int anchorItemPosition = getPendingScrollPosition();
         if (anchorItemPosition == RecyclerView.NO_POSITION) {
@@ -332,7 +331,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
         }
         state.anchorItemPosition = anchorItemPosition;
 
-        final SelectionSupport itemSelection = SelectionSupport.from(mRecyclerView);
+        SelectionSupport itemSelection = SelectionSupport.from(recyclerView);
         if (itemSelection != null) {
             state.itemSelectionState = itemSelection.onSaveInstanceState();
         } else {
@@ -344,21 +343,21 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        mPendingSavedState = (SavedState) state;
+        pendingSavedState = (SavedState) state;
         requestLayout();
     }
 
     public LayoutOrientation getOrientation() {
-        return (mIsVertical ? LayoutOrientation.VERTICAL : LayoutOrientation.HORIZONTAL);
+        return (isLayoutVertical ? LayoutOrientation.VERTICAL : LayoutOrientation.HORIZONTAL);
     }
 
     public void setOrientation(LayoutOrientation orientation) {
-        final boolean isVertical = (orientation == LayoutOrientation.VERTICAL);
-        if (this.mIsVertical == isVertical) {
+        boolean isVertical = (orientation == LayoutOrientation.VERTICAL);
+        if (this.isLayoutVertical == isVertical) {
             return;
         }
 
-        this.mIsVertical = isVertical;
+        this.isLayoutVertical = isVertical;
         requestLayout();
     }
 
@@ -371,7 +370,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     public int getLastVisiblePosition() {
-        final int childCount = getChildCount();
+        int childCount = getChildCount();
         if (childCount == 0) {
             return 0;
         }
@@ -384,12 +383,12 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     protected abstract boolean canAddMoreViews(LayoutDirection direction, int limit);
 
     protected void onLayoutScrapList(Recycler recycler, State state) {
-        final int childCount = getChildCount();
+        int childCount = getChildCount();
         if (childCount == 0 || state.isPreLayout() || !supportsPredictiveItemAnimations()) {
             return;
         }
 
-        final List<ViewHolder> scrapList = recycler.getScrapList();
+        List<ViewHolder> scrapList = recycler.getScrapList();
         fillFromScrapList(scrapList, LayoutDirection.START);
         fillFromScrapList(scrapList, LayoutDirection.END);
     }
@@ -399,11 +398,11 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     protected int getStartWithPadding() {
-        return (mIsVertical ? getPaddingTop() : getPaddingLeft());
+        return (isLayoutVertical ? getPaddingTop() : getPaddingLeft());
     }
 
     protected int getEndWithPadding() {
-        if (mIsVertical) {
+        if (isLayoutVertical) {
             return (getHeight() - getPaddingBottom());
         } else {
             return (getWidth() - getPaddingRight());
@@ -411,15 +410,15 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     protected int getChildStart(View child) {
-        return (mIsVertical ? getDecoratedTop(child) : getDecoratedLeft(child));
+        return (isLayoutVertical ? getDecoratedTop(child) : getDecoratedLeft(child));
     }
 
     protected int getChildEnd(View child) {
-        return (mIsVertical ?  getDecoratedBottom(child) : getDecoratedRight(child));
+        return (isLayoutVertical ?  getDecoratedBottom(child) : getDecoratedRight(child));
     }
 
     protected RecyclerView.Adapter getAdapter() {
-        return (mRecyclerView != null ? mRecyclerView.getAdapter() : null);
+        return (recyclerView != null ? recyclerView.getAdapter() : null);
     }
 
     protected int getExtraLayoutSpace(State state) {
@@ -431,28 +430,28 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     protected void setPendingScrollPositionWithOffset(int position, int offset) {
-        mPendingScrollPosition = position;
-        mPendingScrollOffset = offset;
+        pendingScrollPosition = position;
+        pendingScrollOffset = offset;
     }
 
     protected int getPendingScrollPosition() {
-        if (mPendingSavedState != null) {
-            return mPendingSavedState.anchorItemPosition;
+        if (pendingSavedState != null) {
+            return pendingSavedState.anchorItemPosition;
         }
 
-        return mPendingScrollPosition;
+        return pendingScrollPosition;
     }
 
     protected int getPendingScrollOffset() {
-        if (mPendingSavedState != null) {
+        if (pendingSavedState != null) {
             return 0;
         }
 
-        return mPendingScrollOffset;
+        return pendingScrollOffset;
     }
 
     protected int getAnchorItemPosition(State state) {
-        final int itemCount = state.getItemCount();
+        int itemCount = state.getItemCount();
 
         int pendingPosition = getPendingScrollPosition();
         if (pendingPosition != RecyclerView.NO_POSITION) {
@@ -472,7 +471,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
 
     private int getTotalSpace() {
-        if (mIsVertical) {
+        if (isLayoutVertical) {
             return getHeight() - getPaddingBottom() - getPaddingTop();
         } else {
             return getWidth() - getPaddingRight() - getPaddingLeft();
@@ -480,14 +479,14 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void offsetChildren(int offset) {
-        if (mIsVertical) {
+        if (isLayoutVertical) {
             offsetChildrenVertical(offset);
         } else {
             offsetChildrenHorizontal(offset);
         }
 
-        mLayoutStart += offset;
-        mLayoutEnd += offset;
+        layoutStart += offset;
+        layoutEnd += offset;
     }
 
     private void recycleChildrenOutOfBounds(LayoutDirection direction, Recycler recycler) {
@@ -499,13 +498,13 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void recycleChildrenFromStart(LayoutDirection direction, Recycler recycler) {
-        final int childCount = getChildCount();
-        final int childrenStart = getStartWithPadding();
+        int childCount = getChildCount();
+        int childrenStart = getStartWithPadding();
 
         int detachedCount = 0;
         for (int i = 0; i < childCount; i++) {
-            final View child = getChildAt(i);
-            final int childEnd = getChildEnd(child);
+            View child = getChildAt(i);
+            int childEnd = getChildEnd(child);
 
             if (childEnd >= childrenStart) {
                 break;
@@ -517,21 +516,21 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
         }
 
         while (--detachedCount >= 0) {
-            final View child = getChildAt(0);
+            View child = getChildAt(0);
             removeAndRecycleView(child, recycler);
             updateLayoutEdgesFromRemovedChild(child, direction);
         }
     }
 
     private void recycleChildrenFromEnd(LayoutDirection direction, Recycler recycler) {
-        final int childrenEnd = getEndWithPadding();
-        final int childCount = getChildCount();
+        int childrenEnd = getEndWithPadding();
+        int childCount = getChildCount();
 
         int firstDetachedPos = 0;
         int detachedCount = 0;
         for (int i = childCount - 1; i >= 0; i--) {
-            final View child = getChildAt(i);
-            final int childStart = getChildStart(child);
+            View child = getChildAt(i);
+            int childStart = getChildStart(child);
 
             if (childStart <= childrenEnd) {
                 break;
@@ -544,33 +543,31 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
         }
 
         while (--detachedCount >= 0) {
-            final View child = getChildAt(firstDetachedPos);
+            View child = getChildAt(firstDetachedPos);
             removeAndRecycleViewAt(firstDetachedPos, recycler);
             updateLayoutEdgesFromRemovedChild(child, direction);
         }
     }
 
     private int scrollBy(int delta, Recycler recycler, State state) {
-        final int childCount = getChildCount();
+        int childCount = getChildCount();
         if (childCount == 0 || delta == 0) {
             return 0;
         }
 
-        final int start = getStartWithPadding();
-        final int end = getEndWithPadding();
-        final int firstPosition = getFirstVisiblePosition();
+        int start = getStartWithPadding();
+        int end = getEndWithPadding();
+        int firstPosition = getFirstVisiblePosition();
 
-        final int totalSpace = getTotalSpace();
+        int totalSpace = getTotalSpace();
         if (delta < 0) {
             delta = Math.max(-(totalSpace - 1), delta);
         } else {
             delta = Math.min(totalSpace - 1, delta);
         }
 
-        final boolean cannotScrollBackward = (firstPosition == 0 &&
-                mLayoutStart >= start && delta <= 0);
-        final boolean cannotScrollForward = (firstPosition + childCount == state.getItemCount() &&
-                mLayoutEnd <= end && delta >= 0);
+        boolean cannotScrollBackward = firstPosition == 0 && layoutStart >= start && delta <= 0;
+        boolean cannotScrollForward = (firstPosition + childCount == state.getItemCount() && layoutEnd <= end && delta >= 0);
 
         if (cannotScrollForward || cannotScrollBackward) {
             return 0;
@@ -578,10 +575,10 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
         offsetChildren(-delta);
 
-        final LayoutDirection direction = (delta > 0 ? LayoutDirection.END : LayoutDirection.START);
+        LayoutDirection direction = (delta > 0 ? LayoutDirection.END : LayoutDirection.START);
         recycleChildrenOutOfBounds(direction, recycler);
 
-        final int absDelta = Math.abs(delta);
+        int absDelta = Math.abs(delta);
         if (canAddMoreViews(LayoutDirection.START, start - absDelta) ||
                 canAddMoreViews(LayoutDirection.END, end + absDelta)) {
             fillGap(direction, recycler, state);
@@ -591,9 +588,9 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void fillGap(LayoutDirection direction, Recycler recycler, State state) {
-        final int childCount = getChildCount();
-        final int extraSpace = getExtraLayoutSpace(state);
-        final int firstPosition = getFirstVisiblePosition();
+        int childCount = getChildCount();
+        int extraSpace = getExtraLayoutSpace(state);
+        int firstPosition = getFirstVisiblePosition();
 
         if (direction == LayoutDirection.END) {
             fillAfter(firstPosition + childCount, recycler, state, extraSpace);
@@ -609,7 +606,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void fillBefore(int position, Recycler recycler, int extraSpace) {
-        final int limit = getStartWithPadding() - extraSpace;
+        int limit = getStartWithPadding() - extraSpace;
 
         while (canAddMoreViews(LayoutDirection.START, limit) && position >= 0) {
             makeAndAddView(position, LayoutDirection.START, recycler);
@@ -622,9 +619,9 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void fillAfter(int position, Recycler recycler, State state, int extraSpace) {
-        final int limit = getEndWithPadding() + extraSpace;
+        int limit = getEndWithPadding() + extraSpace;
 
-        final int itemCount = state.getItemCount();
+        int itemCount = state.getItemCount();
         while (canAddMoreViews(LayoutDirection.END, limit) && position < itemCount) {
             makeAndAddView(position, LayoutDirection.END, recycler);
             position++;
@@ -638,10 +635,10 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
         makeAndAddView(position, LayoutDirection.END, recycler);
 
-        final int extraSpaceBefore;
-        final int extraSpaceAfter;
+        int extraSpaceBefore;
+        int extraSpaceAfter;
 
-        final int extraSpace = getExtraLayoutSpace(state);
+        int extraSpace = getExtraLayoutSpace(state);
         if (state.getTargetScrollPosition() < position) {
             extraSpaceAfter = 0;
             extraSpaceBefore = extraSpace;
@@ -663,26 +660,26 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     private void correctTooHigh(int childCount, Recycler recycler, State state) {
         // First see if the last item is visible. If it is not, it is OK for the
         // top of the list to be pushed up.
-        final int lastPosition = getLastVisiblePosition();
+        int lastPosition = getLastVisiblePosition();
         if (lastPosition != state.getItemCount() - 1 || childCount == 0) {
             return;
         }
 
         // This is bottom of our drawable area.
-        final int start = getStartWithPadding();
-        final int end = getEndWithPadding();
-        final int firstPosition = getFirstVisiblePosition();
+        int start = getStartWithPadding();
+        int end = getEndWithPadding();
+        int firstPosition = getFirstVisiblePosition();
 
         // This is how far the end edge of the last view is from the end of the
         // drawable area.
-        int endOffset = end - mLayoutEnd;
+        int endOffset = end - layoutEnd;
 
         // Make sure we are 1) Too high, and 2) Either there are more rows above the
         // first row or the first row is scrolled off the top of the drawable area
-        if (endOffset > 0 && (firstPosition > 0 || mLayoutStart < start))  {
+        if (endOffset > 0 && (firstPosition > 0 || layoutStart < start))  {
             if (firstPosition == 0) {
                 // Don't pull the top too far down.
-                endOffset = Math.min(endOffset, start - mLayoutStart);
+                endOffset = Math.min(endOffset, start - layoutStart);
             }
 
             // Move everything down
@@ -702,28 +699,28 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     private void correctTooLow(int childCount, Recycler recycler, State state) {
         // First see if the first item is visible. If it is not, it is OK for the
         // end of the list to be pushed forward.
-        final int firstPosition = getFirstVisiblePosition();
+        int firstPosition = getFirstVisiblePosition();
         if (firstPosition != 0 || childCount == 0) {
             return;
         }
 
-        final int start = getStartWithPadding();
-        final int end = getEndWithPadding();
-        final int itemCount = state.getItemCount();
-        final int lastPosition = getLastVisiblePosition();
+        int start = getStartWithPadding();
+        int end = getEndWithPadding();
+        int itemCount = state.getItemCount();
+        int lastPosition = getLastVisiblePosition();
 
         // This is how far the start edge of the first view is from the start of the
         // drawable area.
-        int startOffset = mLayoutStart - start;
+        int startOffset = layoutStart - start;
 
         // Make sure we are 1) Too low, and 2) Either there are more columns/rows below the
         // last column/row or the last column/row is scrolled off the end of the
         // drawable area.
         if (startOffset > 0) {
-            if (lastPosition < itemCount - 1 || mLayoutEnd > end)  {
+            if (lastPosition < itemCount - 1 || layoutEnd > end)  {
                 if (lastPosition == itemCount - 1) {
                     // Don't pull the bottom too far up.
-                    startOffset = Math.min(startOffset, mLayoutEnd - end);
+                    startOffset = Math.min(startOffset, layoutEnd - end);
                 }
 
                 // Move everything up.
@@ -748,7 +745,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
             return;
         }
 
-        int delta = mLayoutStart - getStartWithPadding();
+        int delta = layoutStart - getStartWithPadding();
         if (delta < 0) {
             // We only are looking to see if we are too low, not too high
             delta = 0;
@@ -759,23 +756,22 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
         }
     }
 
-    private static View findNextScrapView(List<ViewHolder> scrapList, LayoutDirection direction,
-                                          int position) {
-        final int scrapCount = scrapList.size();
+    private static View findNextScrapView(List<ViewHolder> scrapList, LayoutDirection direction, int position) {
+        int scrapCount = scrapList.size();
 
         ViewHolder closest = null;
         int closestDistance = Integer.MAX_VALUE;
 
         for (int i = 0; i < scrapCount; i++) {
-            final ViewHolder holder = scrapList.get(i);
+            ViewHolder holder = scrapList.get(i);
 
-            final int distance = holder.getPosition() - position;
+            int distance = holder.getPosition() - position;
             if ((distance < 0 && direction == LayoutDirection.END) ||
                     (distance > 0 && direction == LayoutDirection.START)) {
                 continue;
             }
 
-            final int absDistance = Math.abs(distance);
+            int absDistance = Math.abs(distance);
             if (absDistance < closestDistance) {
                 closest = holder;
                 closestDistance = absDistance;
@@ -794,7 +790,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void fillFromScrapList(List<ViewHolder> scrapList, LayoutDirection direction) {
-        final int firstPosition = getFirstVisiblePosition();
+        int firstPosition = getFirstVisiblePosition();
 
         int position;
         if (direction == LayoutDirection.END) {
@@ -811,9 +807,9 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void setupChild(View child, LayoutDirection direction) {
-        final SelectionSupport itemSelection = SelectionSupport.from(mRecyclerView);
+        SelectionSupport itemSelection = SelectionSupport.from(recyclerView);
         if (itemSelection != null) {
-            final int position = getPosition(child);
+            int position = getPosition(child);
             itemSelection.setViewChecked(child, itemSelection.isItemChecked(position));
         }
 
@@ -822,8 +818,8 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private View makeAndAddView(int position, LayoutDirection direction, Recycler recycler) {
-        final View child = recycler.getViewForPosition(position);
-        final boolean isItemRemoved = ((LayoutParams) child.getLayoutParams()).isItemRemoved();
+        View child = recycler.getViewForPosition(position);
+        boolean isItemRemoved = ((LayoutParams) child.getLayoutParams()).isItemRemoved();
 
         if (!isItemRemoved) {
             addView(child, (direction == LayoutDirection.END ? -1 : 0));
@@ -842,8 +838,8 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
         // Refresh state by requesting layout without changing the
         // first visible position. This will ensure the layout will
         // sync with the adapter changes.
-        final int firstPosition = getFirstVisiblePosition();
-        final View firstChild = findViewByPosition(firstPosition);
+        int firstPosition = getFirstVisiblePosition();
+        View firstChild = findViewByPosition(firstPosition);
         if (firstChild != null) {
             setPendingScrollPositionWithOffset(firstPosition, getChildStart(firstChild));
         } else {
@@ -852,54 +848,54 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void updateLayoutEdgesFromNewChild(View newChild) {
-        final int childStart = getChildStart(newChild);
-        if (childStart < mLayoutStart) {
-            mLayoutStart = childStart;
+        int childStart = getChildStart(newChild);
+        if (childStart < layoutStart) {
+            layoutStart = childStart;
         }
 
-        final int childEnd = getChildEnd(newChild);
-        if (childEnd > mLayoutEnd) {
-            mLayoutEnd = childEnd;
+        int childEnd = getChildEnd(newChild);
+        if (childEnd > layoutEnd) {
+            layoutEnd = childEnd;
         }
     }
 
     private void updateLayoutEdgesFromRemovedChild(View removedChild, LayoutDirection direction) {
-        final int childCount = getChildCount();
+        int childCount = getChildCount();
         if (childCount == 0) {
             resetLayoutEdges();
             return;
         }
 
-        final int removedChildStart = getChildStart(removedChild);
-        final int removedChildEnd = getChildEnd(removedChild);
+        int removedChildStart = getChildStart(removedChild);
+        int removedChildEnd = getChildEnd(removedChild);
 
-        if (removedChildStart > mLayoutStart && removedChildEnd < mLayoutEnd) {
+        if (removedChildStart > layoutStart && removedChildEnd < layoutEnd) {
             return;
         }
 
         int index;
-        final int limit;
+        int limit;
         if (direction == LayoutDirection.END) {
             // Scrolling towards the end of the layout, child view being
             // removed from the start.
-            mLayoutStart = Integer.MAX_VALUE;
+            layoutStart = Integer.MAX_VALUE;
             index = 0;
             limit = removedChildEnd;
         } else {
             // Scrolling towards the start of the layout, child view being
             // removed from the end.
-            mLayoutEnd = Integer.MIN_VALUE;
+            layoutEnd = Integer.MIN_VALUE;
             index = childCount - 1;
             limit = removedChildStart;
         }
 
         while (index >= 0 && index <= childCount - 1) {
-            final View child = getChildAt(index);
+            View child = getChildAt(index);
 
             if (direction == LayoutDirection.END) {
-                final int childStart = getChildStart(child);
-                if (childStart < mLayoutStart) {
-                    mLayoutStart = childStart;
+                int childStart = getChildStart(child);
+                if (childStart < layoutStart) {
+                    layoutStart = childStart;
                 }
 
                 // Checked enough child views to update the minimum
@@ -910,9 +906,9 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
 
                 index++;
             } else {
-                final int childEnd = getChildEnd(child);
-                if (childEnd > mLayoutEnd) {
-                    mLayoutEnd = childEnd;
+                int childEnd = getChildEnd(child);
+                if (childEnd > layoutEnd) {
+                    layoutEnd = childEnd;
                 }
 
                 // Checked enough child views to update the minimum
@@ -927,23 +923,23 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
     }
 
     private void resetLayoutEdges() {
-        mLayoutStart = getStartWithPadding();
-        mLayoutEnd = mLayoutStart;
+        layoutStart = getStartWithPadding();
+        layoutEnd = layoutStart;
     }
 
     private Bundle getPendingItemSelectionState() {
-        if (mPendingSavedState != null) {
-            return mPendingSavedState.itemSelectionState;
+        if (pendingSavedState != null) {
+            return pendingSavedState.itemSelectionState;
         }
 
         return null;
     }
 
     private int findFirstValidChildPosition(int itemCount) {
-        final int childCount = getChildCount();
+        int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
-            final View view = getChildAt(i);
-            final int position = getPosition(view);
+            View view = getChildAt(i);
+            int position = getPosition(view);
             if (position >= 0 && position < itemCount) {
                 return position;
             }
@@ -996,8 +992,7 @@ abstract class InternalBaseLayoutManager extends LayoutManager {
             out.writeParcelable(itemSelectionState, flags);
         }
 
-        public static final Parcelable.Creator<SavedState> CREATOR
-                = new Parcelable.Creator<SavedState>() {
+        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
             @Override
             public SavedState createFromParcel(Parcel in) {
                 return new SavedState(in);

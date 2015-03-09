@@ -30,17 +30,17 @@ import com.devbrackets.android.recyclerview.listener.OnItemLongClickListener;
  *
  */
 public class ItemClickSupport {
-    private final RecyclerView mRecyclerView;
-    private final TouchListener mTouchListener;
+    private final RecyclerView recyclerView;
+    private final TouchListener touchListener;
 
-    private OnItemClickListener mItemClickListener;
-    private OnItemLongClickListener mItemLongClickListener;
+    private OnItemClickListener itemClickListener;
+    private OnItemLongClickListener itemLongClickListener;
 
     private ItemClickSupport(RecyclerView recyclerView) {
-        mRecyclerView = recyclerView;
+        this.recyclerView = recyclerView;
 
-        mTouchListener = new TouchListener(recyclerView);
-        recyclerView.addOnItemTouchListener(mTouchListener);
+        touchListener = new TouchListener(recyclerView);
+        recyclerView.addOnItemTouchListener(touchListener);
     }
 
     /**
@@ -50,7 +50,7 @@ public class ItemClickSupport {
      * @param listener The callback that will be invoked.
      */
     public void setOnItemClickListener(OnItemClickListener listener) {
-        mItemClickListener = listener;
+        itemClickListener = listener;
     }
 
     /**
@@ -60,11 +60,11 @@ public class ItemClickSupport {
      * @param listener The callback that will be invoked.
      */
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        if (!mRecyclerView.isLongClickable()) {
-            mRecyclerView.setLongClickable(true);
+        if (!recyclerView.isLongClickable()) {
+            recyclerView.setLongClickable(true);
         }
 
-        mItemLongClickListener = listener;
+        itemLongClickListener = listener;
     }
 
     public static ItemClickSupport addTo(RecyclerView recyclerView) {
@@ -78,12 +78,12 @@ public class ItemClickSupport {
     }
 
     public static void removeFrom(RecyclerView recyclerView) {
-        final ItemClickSupport itemClickSupport = from(recyclerView);
+        ItemClickSupport itemClickSupport = from(recyclerView);
         if (itemClickSupport == null) {
             return;
         }
 
-        recyclerView.removeOnItemTouchListener(itemClickSupport.mTouchListener);
+        recyclerView.removeOnItemTouchListener(itemClickSupport.touchListener);
         recyclerView.setTag(R.id.recyclerExt_item_click_support, null);
     }
 
@@ -106,9 +106,9 @@ public class ItemClickSupport {
 
         @Override
         protected boolean performItemClick(RecyclerView parent, View view, int position, long id) {
-            if (mItemClickListener != null) {
+            if (itemClickListener != null) {
                 view.playSoundEffect(SoundEffectConstants.CLICK);
-                mItemClickListener.onItemClick(parent, view, position, id);
+                itemClickListener.onItemClick(parent, view, position, id);
                 return true;
             }
 
@@ -117,9 +117,9 @@ public class ItemClickSupport {
 
         @Override
         protected boolean performItemLongClick(RecyclerView parent, View view, int position, long id) {
-            if (mItemLongClickListener != null) {
+            if (itemLongClickListener != null) {
                 view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                return mItemLongClickListener.onItemLongClick(parent, view, position, id);
+                return itemLongClickListener.onItemLongClick(parent, view, position, id);
             }
 
             return false;

@@ -14,20 +14,20 @@ import com.devbrackets.android.recyclerview.layout.StaggeredGridLayoutManager;
  *
  */
 class SpacingOffsets {
-    private final int mVerticalSpacing;
-    private final int mHorizontalSpacing;
+    private final int verticalSpacing;
+    private final int horizontalSpacing;
 
-    private boolean mAddSpacingAtEnd;
+    private boolean addEndSpacing;
 
-    private final LaneInfo mTempLaneInfo = new LaneInfo();
+    private final LaneInfo tempLaneInfo = new LaneInfo();
 
     public SpacingOffsets(int verticalSpacing, int horizontalSpacing) {
         if (verticalSpacing < 0 || horizontalSpacing < 0) {
             throw new IllegalArgumentException("Spacings should be equal or greater than 0");
         }
 
-        mVerticalSpacing = verticalSpacing;
-        mHorizontalSpacing = horizontalSpacing;
+        this.verticalSpacing = verticalSpacing;
+        this.horizontalSpacing = horizontalSpacing;
     }
 
     /**
@@ -42,8 +42,8 @@ class SpacingOffsets {
         int previousLane = Lanes.NO_LANE;
         int previousPosition = itemPosition - 1;
         while (previousPosition >= 0) {
-            layoutManager.getLaneForPosition(mTempLaneInfo, previousPosition, LayoutDirection.END);
-            previousLane = mTempLaneInfo.startLane;
+            layoutManager.getLaneForPosition(tempLaneInfo, previousPosition, LayoutDirection.END);
+            previousLane = tempLaneInfo.startLane;
             if (previousLane != lane) {
                 break;
             }
@@ -52,18 +52,14 @@ class SpacingOffsets {
         }
 
         final int previousLaneSpan = layoutManager.getLaneSpanForPosition(previousPosition);
-        if (previousLane == 0) {
-            return (lane == previousLane + previousLaneSpan);
-        }
-
-        return false;
+        return previousLane == 0 && (lane == previousLane + previousLaneSpan);
     }
 
     /**
      * Checks whether the given position is placed at the start of a layout lane.
      */
     private static boolean isFirstChildInLane(BaseLayoutManager lm, int itemPosition) {
-        final int laneCount = lm.getLanes().getCount();
+        int laneCount = lm.getLanes().getCount();
         if (itemPosition >= laneCount) {
             return false;
         }
@@ -83,22 +79,18 @@ class SpacingOffsets {
      * Checks whether the given position is placed at the end of a layout lane.
      */
     private static boolean isLastChildInLane(BaseLayoutManager lm, int itemPosition, int itemCount) {
-        final int laneCount = lm.getLanes().getCount();
+        int laneCount = lm.getLanes().getCount();
         if (itemPosition < itemCount - laneCount) {
             return false;
         }
 
         // TODO: Figure out a robust way to compute this for layouts
         // that are dynamically placed and might span multiple lanes.
-        if (lm instanceof SpannableGridLayoutManager ||  lm instanceof StaggeredGridLayoutManager) {
-            return false;
-        }
-
-        return true;
+        return !(lm instanceof SpannableGridLayoutManager || lm instanceof StaggeredGridLayoutManager);
     }
 
     public void setAddSpacingAtEnd(boolean spacingAtEnd) {
-        mAddSpacingAtEnd = spacingAtEnd;
+        addEndSpacing = spacingAtEnd;
     }
 
     /**
@@ -108,26 +100,26 @@ class SpacingOffsets {
      * items depending on their position in the layout.
      */
     public void getItemOffsets(Rect outRect, int itemPosition, RecyclerView parent) {
-        final BaseLayoutManager layoutManager = (BaseLayoutManager) parent.getLayoutManager();
+        BaseLayoutManager layoutManager = (BaseLayoutManager) parent.getLayoutManager();
 
-        layoutManager.getLaneForPosition(mTempLaneInfo, itemPosition, LayoutDirection.END);
-        final int lane = mTempLaneInfo.startLane;
-        final int laneSpan = layoutManager.getLaneSpanForPosition(itemPosition);
-        final int laneCount = layoutManager.getLanes().getCount();
-        final int itemCount = parent.getAdapter().getItemCount();
+        layoutManager.getLaneForPosition(tempLaneInfo, itemPosition, LayoutDirection.END);
+        int lane = tempLaneInfo.startLane;
+        int laneSpan = layoutManager.getLaneSpanForPosition(itemPosition);
+        int laneCount = layoutManager.getLanes().getCount();
+        int itemCount = parent.getAdapter().getItemCount();
 
-        final boolean isVertical = layoutManager.isVertical();
+        boolean isVertical = layoutManager.isVertical();
 
-        final boolean firstLane = (lane == 0);
-        final boolean secondLane = isSecondLane(layoutManager, itemPosition, lane);
+        boolean firstLane = (lane == 0);
+        boolean secondLane = isSecondLane(layoutManager, itemPosition, lane);
 
-        final boolean lastLane = (lane + laneSpan == laneCount);
-        final boolean beforeLastLane = (lane + laneSpan == laneCount - 1);
+        boolean lastLane = (lane + laneSpan == laneCount);
+        boolean beforeLastLane = (lane + laneSpan == laneCount - 1);
 
-        final int laneSpacing = (isVertical ? mHorizontalSpacing : mVerticalSpacing);
+        int laneSpacing = (isVertical ? horizontalSpacing : verticalSpacing);
 
-        final int laneOffsetStart;
-        final int laneOffsetEnd;
+        int laneOffsetStart;
+        int laneOffsetEnd;
 
         if (firstLane) {
             laneOffsetStart = 0;
@@ -149,19 +141,18 @@ class SpacingOffsets {
             laneOffsetEnd = (int) (laneSpacing * 0.5);
         }
 
-        final boolean isFirstInLane = isFirstChildInLane(layoutManager, itemPosition);
-        final boolean isLastInLane = !mAddSpacingAtEnd &&
-                isLastChildInLane(layoutManager, itemPosition, itemCount);
+        boolean isFirstInLane = isFirstChildInLane(layoutManager, itemPosition);
+        boolean isLastInLane = !addEndSpacing && isLastChildInLane(layoutManager, itemPosition, itemCount);
 
         if (isVertical) {
             outRect.left = laneOffsetStart;
-            outRect.top = (isFirstInLane ? 0 : mVerticalSpacing / 2);
+            outRect.top = (isFirstInLane ? 0 : verticalSpacing / 2);
             outRect.right = laneOffsetEnd;
-            outRect.bottom = (isLastInLane ? 0 : mVerticalSpacing / 2);
+            outRect.bottom = (isLastInLane ? 0 : verticalSpacing / 2);
         } else {
-            outRect.left = (isFirstInLane ? 0 : mHorizontalSpacing / 2);
+            outRect.left = (isFirstInLane ? 0 : horizontalSpacing / 2);
             outRect.top = laneOffsetStart;
-            outRect.right = (isLastInLane ? 0 : mHorizontalSpacing / 2);
+            outRect.right = (isLastInLane ? 0 : horizontalSpacing / 2);
             outRect.bottom = laneOffsetEnd;
         }
     }

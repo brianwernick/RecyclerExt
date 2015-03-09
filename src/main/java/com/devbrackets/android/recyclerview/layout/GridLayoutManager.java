@@ -30,70 +30,69 @@ import com.devbrackets.android.recyclerview.layout.Lanes.LaneInfo;
  *
  */
 public class GridLayoutManager extends BaseLayoutManager {
-    private static final int DEFAULT_NUM_COLS = 2;
-    private static final int DEFAULT_NUM_ROWS = 2;
+    private static final int DEFAULT_COLUMN_COUNT = 2;
+    private static final int DEFAULT_ROW_COUNT = 2;
 
-    private int mNumColumns;
-    private int mNumRows;
+    private int columnCount;
+    private int rowCount;
 
     public GridLayoutManager(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
     public GridLayoutManager(Context context, AttributeSet attrs, int defStyle) {
-        this(context, attrs, defStyle, DEFAULT_NUM_COLS, DEFAULT_NUM_ROWS);
+        this(context, attrs, defStyle, DEFAULT_COLUMN_COUNT, DEFAULT_ROW_COUNT);
     }
 
     protected GridLayoutManager(Context context, AttributeSet attrs, int defStyle, int defaultNumColumns, int defaultNumRows) {
         super(context, attrs, defStyle);
 
-        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.recyclerExt_GridLayoutManager, defStyle, 0);
-        mNumColumns = Math.max(1, a.getInt(R.styleable.recyclerExt_GridLayoutManager_numColumns, defaultNumColumns));
-        mNumRows = Math.max(1, a.getInt(R.styleable.recyclerExt_GridLayoutManager_numRows, defaultNumRows));
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.recyclerExt_GridLayoutManager, defStyle, 0);
+        columnCount = Math.max(1, a.getInt(R.styleable.recyclerExt_GridLayoutManager_numColumns, defaultNumColumns));
+        rowCount = Math.max(1, a.getInt(R.styleable.recyclerExt_GridLayoutManager_numRows, defaultNumRows));
         a.recycle();
     }
 
     public GridLayoutManager(LayoutOrientation orientation, int numColumns, int numRows) {
         super(orientation);
-        mNumColumns = numColumns;
-        mNumRows = numRows;
+        columnCount = numColumns;
+        rowCount = numRows;
 
-        if (mNumColumns < 1) {
+        if (columnCount < 1) {
             throw new IllegalArgumentException("GridLayoutManager must have at least 1 column");
         }
 
-        if (mNumRows < 1) {
+        if (rowCount < 1) {
             throw new IllegalArgumentException("GridLayoutManager must have at least 1 row");
         }
     }
 
     @Override
     public int getLaneCount() {
-        return (isVertical() ? mNumColumns : mNumRows);
+        return (isVertical() ? columnCount : rowCount);
     }
 
     @Override
     public void getLaneForPosition(LaneInfo outInfo, int position, LayoutDirection direction) {
-        final int lane = (position % getLaneCount());
+        int lane = (position % getLaneCount());
         outInfo.set(lane, lane);
     }
 
     @Override
     public void moveLayoutToPosition(int position, int offset, Recycler recycler, State state) {
-        final Lanes lanes = getLanes();
+        Lanes lanes = getLanes();
         lanes.reset(offset);
 
-        getLaneForPosition(mTempLaneInfo, position, LayoutDirection.END);
-        final int lane = mTempLaneInfo.startLane;
+        getLaneForPosition(tempLaneInfo, position, LayoutDirection.END);
+        int lane = tempLaneInfo.startLane;
         if (lane == 0) {
             return;
         }
 
-        final View child = recycler.getViewForPosition(position);
+        View child = recycler.getViewForPosition(position);
         measureChild(child, LayoutDirection.END);
 
-        final int dimension =
-                (isVertical() ? getDecoratedMeasuredHeight(child) : getDecoratedMeasuredWidth(child));
+        int dimension = isVertical() ? getDecoratedMeasuredHeight(child) : getDecoratedMeasuredWidth(child);
 
         for (int i = lane - 1; i >= 0; i--) {
             lanes.offset(i, dimension);
@@ -101,30 +100,30 @@ public class GridLayoutManager extends BaseLayoutManager {
     }
 
     public int getNumColumns() {
-        return mNumColumns;
+        return columnCount;
     }
 
     public void setNumColumns(int numColumns) {
-        if (mNumColumns == numColumns) {
+        if (columnCount == numColumns) {
             return;
         }
 
-        mNumColumns = numColumns;
+        columnCount = numColumns;
         if (isVertical()) {
             requestLayout();
         }
     }
 
     public int getNumRows() {
-        return mNumRows;
+        return rowCount;
     }
 
     public void setNumRows(int numRows) {
-        if (mNumRows == numRows) {
+        if (rowCount == numRows) {
             return;
         }
 
-        mNumRows = numRows;
+        rowCount = numRows;
         if (!isVertical()) {
             requestLayout();
         }

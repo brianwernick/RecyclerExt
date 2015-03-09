@@ -31,71 +31,71 @@ import java.util.Arrays;
 class ItemEntries {
     private static final int MIN_SIZE = 10;
 
-    private ItemEntry[] mItemEntries;
-    private int mAdapterSize;
-    private boolean mRestoringItem;
+    private ItemEntry[] entries;
+    private int adapterSize;
+    private boolean restoringItem;
 
     private int sizeForPosition(int position) {
-        int len = mItemEntries.length;
+        int len = entries.length;
         while (len <= position) {
             len *= 2;
         }
 
         // We don't apply any constraints while restoring
         // item entries.
-        if (!mRestoringItem && len > mAdapterSize) {
-            len = mAdapterSize;
+        if (!restoringItem && len > adapterSize) {
+            len = adapterSize;
         }
 
         return len;
     }
 
     private void ensureSize(int position) {
-        if (mItemEntries == null) {
-            mItemEntries = new ItemEntry[Math.max(position, MIN_SIZE) + 1];
-            Arrays.fill(mItemEntries, null);
-        } else if (position >= mItemEntries.length) {
-            ItemEntry[] oldItemEntries = mItemEntries;
-            mItemEntries = new ItemEntry[sizeForPosition(position)];
-            System.arraycopy(oldItemEntries, 0, mItemEntries, 0, oldItemEntries.length);
-            Arrays.fill(mItemEntries, oldItemEntries.length, mItemEntries.length, null);
+        if (entries == null) {
+            entries = new ItemEntry[Math.max(position, MIN_SIZE) + 1];
+            Arrays.fill(entries, null);
+        } else if (position >= entries.length) {
+            ItemEntry[] oldItemEntries = entries;
+            entries = new ItemEntry[sizeForPosition(position)];
+            System.arraycopy(oldItemEntries, 0, entries, 0, oldItemEntries.length);
+            Arrays.fill(entries, oldItemEntries.length, entries.length, null);
         }
     }
 
     public ItemEntry getItemEntry(int position) {
-        if (mItemEntries == null || position >= mItemEntries.length) {
+        if (entries == null || position >= entries.length) {
             return null;
         }
 
-        return mItemEntries[position];
+        return entries[position];
     }
 
     public void putItemEntry(int position, ItemEntry entry) {
         ensureSize(position);
-        mItemEntries[position] = entry;
+        entries[position] = entry;
     }
 
     public void restoreItemEntry(int position, ItemEntry entry) {
-        mRestoringItem = true;
+        restoringItem = true;
         putItemEntry(position, entry);
-        mRestoringItem = false;
+        restoringItem = false;
     }
 
     public int size() {
-        return (mItemEntries != null ? mItemEntries.length : 0);
+        return (entries != null ? entries.length : 0);
     }
 
     public void setAdapterSize(int adapterSize) {
-        mAdapterSize = adapterSize;
+        this.adapterSize = adapterSize;
     }
 
     public void invalidateItemLanesAfter(int position) {
-        if (mItemEntries == null || position >= mItemEntries.length) {
+        if (entries == null || position >= entries.length) {
             return;
         }
 
-        for (int i = position; i < mItemEntries.length; i++) {
-            final ItemEntry entry = mItemEntries[i];
+        for (int i = position; i < entries.length; i++) {
+            final ItemEntry entry = entries[i];
             if (entry != null) {
                 entry.invalidateLane();
             }
@@ -103,30 +103,30 @@ class ItemEntries {
     }
 
     public void clear() {
-        if (mItemEntries != null) {
-            Arrays.fill(mItemEntries, null);
+        if (entries != null) {
+            Arrays.fill(entries, null);
         }
     }
 
     void offsetForRemoval(int positionStart, int itemCount) {
-        if (mItemEntries == null || positionStart >= mItemEntries.length) {
+        if (entries == null || positionStart >= entries.length) {
             return;
         }
 
         ensureSize(positionStart + itemCount);
 
-        System.arraycopy(mItemEntries, positionStart + itemCount, mItemEntries, positionStart, mItemEntries.length - positionStart - itemCount);
-        Arrays.fill(mItemEntries, mItemEntries.length - itemCount, mItemEntries.length, null);
+        System.arraycopy(entries, positionStart + itemCount, entries, positionStart, entries.length - positionStart - itemCount);
+        Arrays.fill(entries, entries.length - itemCount, entries.length, null);
     }
 
     void offsetForAddition(int positionStart, int itemCount) {
-        if (mItemEntries == null || positionStart >= mItemEntries.length) {
+        if (entries == null || positionStart >= entries.length) {
             return;
         }
 
         ensureSize(positionStart + itemCount);
 
-        System.arraycopy(mItemEntries, positionStart, mItemEntries, positionStart + itemCount, mItemEntries.length - positionStart - itemCount);
-        Arrays.fill(mItemEntries, positionStart, positionStart + itemCount, null);
+        System.arraycopy(entries, positionStart, entries, positionStart + itemCount, entries.length - positionStart - itemCount);
+        Arrays.fill(entries, positionStart, positionStart + itemCount, null);
     }
 }

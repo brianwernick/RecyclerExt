@@ -31,10 +31,6 @@ import java.lang.reflect.Constructor;
  *
  */
 public class RecyclerExt extends RecyclerView {
-    private static final Class<?>[] sConstructorSignature = new Class[]{Context.class, AttributeSet.class};
-
-    final Object[] sConstructorArgs = new Object[2];
-
     public RecyclerExt(Context context) {
         this(context, null);
     }
@@ -66,13 +62,13 @@ public class RecyclerExt extends RecyclerView {
                 name = packageName + "." + name;
             }
 
+            Class<?>[] constructorSignature = new Class[]{Context.class, AttributeSet.class};
+            Object[] constructionArgs = new Object[]{context, attrs};
+
             Class<? extends BaseLayoutManager> clazz = context.getClassLoader().loadClass(name).asSubclass(BaseLayoutManager.class);
-            Constructor<? extends BaseLayoutManager> constructor = clazz.getConstructor(sConstructorSignature);
+            Constructor<? extends BaseLayoutManager> constructor = clazz.getConstructor(constructorSignature);
 
-            sConstructorArgs[0] = context;
-            sConstructorArgs[1] = attrs;
-
-            setLayoutManager(constructor.newInstance(sConstructorArgs));
+            setLayoutManager(constructor.newInstance(constructionArgs));
         } catch (Exception e) {
             throw new IllegalStateException("Could not load BaseLayoutManager from class: " + name, e);
         }
