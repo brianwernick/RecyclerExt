@@ -1,5 +1,6 @@
 /build
 library/build
+demo/build
 
 # Android generated
 bin
