@@ -1,1 +1,16 @@
 /build
+library/build
+
+# Android generated
+bin
+gen
+lint.xml
+local.properties
+
+# IntelliJ IDEA
+.idea
+*.iml
+*.ipr
+*.iws
+classes
+gen-external-apklibs

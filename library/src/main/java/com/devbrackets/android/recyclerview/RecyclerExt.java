@@ -59,7 +59,7 @@ public class RecyclerExt extends RecyclerView {
                 name = "com.devbrackets.android.recyclerview.layout." + name;
             } else if (dotIndex == 0) {
                 final String packageName = context.getPackageName();
-                name = packageName + "." + name;
+                name = packageName + "" + name;
             }
 
             Class<?>[] constructorSignature = new Class[]{Context.class, AttributeSet.class};
