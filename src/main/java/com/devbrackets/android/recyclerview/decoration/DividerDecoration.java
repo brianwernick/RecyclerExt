@@ -33,7 +33,7 @@ import com.devbrackets.android.recyclerview.R;
 import com.devbrackets.android.recyclerview.layout.BaseLayoutManager;
 
 /**
- *
+ * An ItemDecoration where the spacing between items can be specified with drawables
  */
 public class DividerDecoration extends ItemDecoration {
     private final SpacingOffsets spacingOffsets;

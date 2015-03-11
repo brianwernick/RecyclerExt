@@ -27,7 +27,7 @@ import android.view.View;
 import com.devbrackets.android.recyclerview.R;
 
 /**
- *
+ * An ItemDecoration that allows blank space between items
  */
 public class SpacingDecoration extends ItemDecoration {
     private final SpacingOffsets spacingOffsets;

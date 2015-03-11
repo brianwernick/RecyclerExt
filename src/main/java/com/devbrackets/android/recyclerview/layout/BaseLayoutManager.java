@@ -64,35 +64,157 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
         super(orientation);
     }
 
-    protected void pushChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan, LayoutDirection direction) {
-        boolean shouldSetMargins = (direction == LayoutDirection.END && entry != null && !entry.hasSpanMargins());
-
-        for (int i = lane; i < lane + laneSpan; i++) {
-            int spanMargin;
-            if (entry != null && direction != LayoutDirection.END) {
-                spanMargin = entry.getSpanMargin(i - lane);
-            } else {
-                spanMargin = 0;
-            }
-
-            int margin = lanes.pushChildFrame(childFrame, i, spanMargin, direction);
-            if (laneSpan > 1 && shouldSetMargins) {
-                entry.setSpanMargin(i - lane, margin, laneSpan);
-            }
+    @Override
+    public boolean checkLayoutParams(LayoutParams lp) {
+        if (isVertical()) {
+            return (lp.width == LayoutParams.MATCH_PARENT);
+        } else {
+            return (lp.height == LayoutParams.MATCH_PARENT);
         }
     }
 
-    private void popChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan, LayoutDirection direction) {
-        for (int i = lane; i < lane + laneSpan; i++) {
-            int spanMargin;
-            if (entry != null && direction != LayoutDirection.END) {
-                spanMargin = entry.getSpanMargin(i - lane);
-            } else {
-                spanMargin = 0;
-            }
-
-            lanes.popChildFrame(childFrame, i, spanMargin, direction);
+    @Override
+    public LayoutParams generateDefaultLayoutParams() {
+        if (isVertical()) {
+            return new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        } else {
+            return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
         }
+    }
+
+    @Override
+    public LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
+        final LayoutParams lanedLp = new LayoutParams((MarginLayoutParams) lp);
+        if (isVertical()) {
+            lanedLp.width = LayoutParams.MATCH_PARENT;
+            lanedLp.height = lp.height;
+        } else {
+            lanedLp.width = lp.width;
+            lanedLp.height = LayoutParams.MATCH_PARENT;
+        }
+
+        return lanedLp;
+    }
+
+    @Override
+    public LayoutParams generateLayoutParams(Context c, AttributeSet attrs) {
+        return new LayoutParams(c, attrs);
+    }
+
+    @Override
+    public void offsetChildrenHorizontal(int offset) {
+        if (!isVertical()) {
+            lanes.offset(offset);
+        }
+
+        super.offsetChildrenHorizontal(offset);
+    }
+
+    @Override
+    public void offsetChildrenVertical(int offset) {
+        super.offsetChildrenVertical(offset);
+
+        if (isVertical()) {
+            lanes.offset(offset);
+        }
+    }
+
+    @Override
+    public void onLayoutChildren(Recycler recycler, State state) {
+        boolean restoringLanes = (lanesToRestore != null);
+        if (restoringLanes) {
+            lanes = lanesToRestore;
+            itemEntries = itemEntriesToRestore;
+
+            lanesToRestore = null;
+            itemEntriesToRestore = null;
+        }
+
+        boolean refreshingLanes = ensureLayoutState();
+
+        // Still not able to create lanes, nothing we can do here, just bail for now.
+        if (lanes == null) {
+            return;
+        }
+
+        int itemCount = state.getItemCount();
+
+        if (itemEntries != null) {
+            itemEntries.setAdapterSize(itemCount);
+        }
+
+        int anchorItemPosition = getAnchorItemPosition(state);
+
+        // Only move layout if we're not restoring a layout state.
+        if (anchorItemPosition > 0 && (refreshingLanes || !restoringLanes)) {
+            moveLayoutToPosition(anchorItemPosition, getPendingScrollOffset(), recycler, state);
+        }
+
+        lanes.reset(LayoutDirection.START);
+
+        super.onLayoutChildren(recycler, state);
+    }
+
+    @Override
+    public void onItemsAdded(RecyclerView recyclerView, int positionStart, int itemCount) {
+        handleUpdate(positionStart, itemCount, UpdateOp.ADD);
+        super.onItemsAdded(recyclerView, positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemsRemoved(RecyclerView recyclerView, int positionStart, int itemCount) {
+        handleUpdate(positionStart, itemCount, UpdateOp.REMOVE);
+        super.onItemsRemoved(recyclerView, positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemsUpdated(RecyclerView recyclerView, int positionStart, int itemCount) {
+        handleUpdate(positionStart, itemCount, UpdateOp.UPDATE);
+        super.onItemsUpdated(recyclerView, positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemsMoved(RecyclerView recyclerView, int from, int to, int itemCount) {
+        handleUpdate(from, to, UpdateOp.MOVE);
+        super.onItemsMoved(recyclerView, from, to, itemCount);
+    }
+
+    @Override
+    public void onItemsChanged(RecyclerView recyclerView) {
+        clearItemEntries();
+        super.onItemsChanged(recyclerView);
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        LanedSavedState state = new LanedSavedState(superState);
+
+        int laneCount = (lanes != null ? lanes.getCount() : 0);
+        state.lanes = new Rect[laneCount];
+        for (int i = 0; i < laneCount; i++) {
+            Rect laneRect = new Rect();
+            lanes.getLane(i, laneRect);
+            state.lanes[i] = laneRect;
+        }
+
+        state.orientation = getOrientation();
+        state.laneSize = (lanes != null ? lanes.getLaneSize() : 0);
+        state.itemEntries = itemEntries;
+
+        return state;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        LanedSavedState ss = (LanedSavedState) state;
+
+        if (ss.lanes != null && ss.laneSize > 0) {
+            lanesToRestore = new Lanes(ss.orientation, ss.lanes, ss.laneSize);
+            itemEntriesToRestore = ss.itemEntries;
+        }
+
+        super.onRestoreInstanceState(ss.getSuperState());
     }
 
     public void getDecoratedChildFrame(View child, Rect childFrame) {
@@ -141,6 +263,109 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
     public void offsetForRemoval(int positionStart, int itemCount) {
         if (itemEntries != null) {
             itemEntries.offsetForRemoval(positionStart, itemCount);
+        }
+    }
+
+    public void getLaneForChild(LaneInfo outInfo, View child, LayoutDirection direction) {
+        getLaneForPosition(outInfo, getPosition(child), direction);
+    }
+
+    public int getLaneSpanForChild(View child) {
+        return 1;
+    }
+
+    public int getLaneSpanForPosition(int position) {
+        return 1;
+    }
+
+    public ItemEntry cacheChildLaneAndSpan(View child, LayoutDirection direction) {
+        // Do nothing by default.
+        return null;
+    }
+
+    public ItemEntry cacheChildFrame(View child, Rect childFrame) {
+        // Do nothing by default.
+        return null;
+    }
+
+    @Override
+    protected void onLayoutScrapList(Recycler recycler, State state) {
+        lanes.save();
+        super.onLayoutScrapList(recycler, state);
+        lanes.restore();
+    }
+
+    @Override
+    protected boolean canAddMoreViews(LayoutDirection direction, int limit) {
+        if (direction == LayoutDirection.START) {
+            return (lanes.getInnerStart() > limit);
+        } else {
+            return (lanes.getInnerEnd() < limit);
+        }
+    }
+
+    @Override
+    protected void measureChild(View child, LayoutDirection direction) {
+        cacheChildLaneAndSpan(child, direction);
+        measureChildWithMargins(child);
+    }
+
+    @Override
+    protected void layoutChild(View child, LayoutDirection direction) {
+        getLaneForChild(tempLaneInfo, child, direction);
+
+        lanes.getChildFrame(childFrame, getDecoratedMeasuredWidth(child), getDecoratedMeasuredHeight(child), tempLaneInfo, direction);
+        ItemEntry entry = cacheChildFrame(child, childFrame);
+
+        layoutDecorated(child, childFrame.left, childFrame.top, childFrame.right, childFrame.bottom);
+
+        final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+        if (!lp.isItemRemoved()) {
+            pushChildFrame(entry, childFrame, tempLaneInfo.startLane, getLaneSpanForChild(child), direction);
+        }
+    }
+
+    @Override
+    protected void detachChild(View child, LayoutDirection direction) {
+        int position = getPosition(child);
+        getLaneForPosition(tempLaneInfo, position, direction);
+        getDecoratedChildFrame(child, childFrame);
+
+        popChildFrame(getItemEntryForPosition(position), childFrame, tempLaneInfo.startLane, getLaneSpanForChild(child), direction);
+    }
+
+    protected void measureChildWithMargins(View child) {
+        measureChildWithMargins(child, getWidthUsed(child), getHeightUsed(child));
+    }
+
+    protected void pushChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan, LayoutDirection direction) {
+        boolean shouldSetMargins = (direction == LayoutDirection.END && entry != null && !entry.hasSpanMargins());
+
+        for (int i = lane; i < lane + laneSpan; i++) {
+            int spanMargin;
+            if (entry != null && direction != LayoutDirection.END) {
+                spanMargin = entry.getSpanMargin(i - lane);
+            } else {
+                spanMargin = 0;
+            }
+
+            int margin = lanes.pushChildFrame(childFrame, i, spanMargin, direction);
+            if (laneSpan > 1 && shouldSetMargins) {
+                entry.setSpanMargin(i - lane, margin, laneSpan);
+            }
+        }
+    }
+
+    private void popChildFrame(ItemEntry entry, Rect childFrame, int lane, int laneSpan, LayoutDirection direction) {
+        for (int i = lane; i < lane + laneSpan; i++) {
+            int spanMargin;
+            if (entry != null && direction != LayoutDirection.END) {
+                spanMargin = entry.getSpanMargin(i - lane);
+            } else {
+                spanMargin = 0;
+            }
+
+            lanes.popChildFrame(childFrame, i, spanMargin, direction);
         }
     }
 
@@ -218,139 +443,6 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
         }
     }
 
-    @Override
-    public void offsetChildrenHorizontal(int offset) {
-        if (!isVertical()) {
-            lanes.offset(offset);
-        }
-
-        super.offsetChildrenHorizontal(offset);
-    }
-
-    @Override
-    public void offsetChildrenVertical(int offset) {
-        super.offsetChildrenVertical(offset);
-
-        if (isVertical()) {
-            lanes.offset(offset);
-        }
-    }
-
-    @Override
-    public void onLayoutChildren(Recycler recycler, State state) {
-        boolean restoringLanes = (lanesToRestore != null);
-        if (restoringLanes) {
-            lanes = lanesToRestore;
-            itemEntries = itemEntriesToRestore;
-
-            lanesToRestore = null;
-            itemEntriesToRestore = null;
-        }
-
-        boolean refreshingLanes = ensureLayoutState();
-
-        // Still not able to create lanes, nothing we can do here,
-        // just bail for now.
-        if (lanes == null) {
-            return;
-        }
-
-        int itemCount = state.getItemCount();
-
-        if (itemEntries != null) {
-            itemEntries.setAdapterSize(itemCount);
-        }
-
-        int anchorItemPosition = getAnchorItemPosition(state);
-
-        // Only move layout if we're not restoring a layout state.
-        if (anchorItemPosition > 0 && (refreshingLanes || !restoringLanes)) {
-            moveLayoutToPosition(anchorItemPosition, getPendingScrollOffset(), recycler, state);
-        }
-
-        lanes.reset(LayoutDirection.START);
-
-        super.onLayoutChildren(recycler, state);
-    }
-
-    @Override
-    protected void onLayoutScrapList(Recycler recycler, State state) {
-        lanes.save();
-        super.onLayoutScrapList(recycler, state);
-        lanes.restore();
-    }
-
-    @Override
-    public void onItemsAdded(RecyclerView recyclerView, int positionStart, int itemCount) {
-        handleUpdate(positionStart, itemCount, UpdateOp.ADD);
-        super.onItemsAdded(recyclerView, positionStart, itemCount);
-    }
-
-    @Override
-    public void onItemsRemoved(RecyclerView recyclerView, int positionStart, int itemCount) {
-        handleUpdate(positionStart, itemCount, UpdateOp.REMOVE);
-        super.onItemsRemoved(recyclerView, positionStart, itemCount);
-    }
-
-    @Override
-    public void onItemsUpdated(RecyclerView recyclerView, int positionStart, int itemCount) {
-        handleUpdate(positionStart, itemCount, UpdateOp.UPDATE);
-        super.onItemsUpdated(recyclerView, positionStart, itemCount);
-    }
-
-    @Override
-    public void onItemsMoved(RecyclerView recyclerView, int from, int to, int itemCount) {
-        handleUpdate(from, to, UpdateOp.MOVE);
-        super.onItemsMoved(recyclerView, from, to, itemCount);
-    }
-
-    @Override
-    public void onItemsChanged(RecyclerView recyclerView) {
-        clearItemEntries();
-        super.onItemsChanged(recyclerView);
-    }
-
-    @Override
-    public Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-        LanedSavedState state = new LanedSavedState(superState);
-
-        int laneCount = (lanes != null ? lanes.getCount() : 0);
-        state.lanes = new Rect[laneCount];
-        for (int i = 0; i < laneCount; i++) {
-            Rect laneRect = new Rect();
-            lanes.getLane(i, laneRect);
-            state.lanes[i] = laneRect;
-        }
-
-        state.orientation = getOrientation();
-        state.laneSize = (lanes != null ? lanes.getLaneSize() : 0);
-        state.itemEntries = itemEntries;
-
-        return state;
-    }
-
-    @Override
-    public void onRestoreInstanceState(Parcelable state) {
-        LanedSavedState ss = (LanedSavedState) state;
-
-        if (ss.lanes != null && ss.laneSize > 0) {
-            lanesToRestore = new Lanes(ss.orientation, ss.lanes, ss.laneSize);
-            itemEntriesToRestore = ss.itemEntries;
-        }
-
-        super.onRestoreInstanceState(ss.getSuperState());
-    }
-
-    @Override
-    protected boolean canAddMoreViews(LayoutDirection direction, int limit) {
-        if (direction == LayoutDirection.START) {
-            return (lanes.getInnerStart() > limit);
-        } else {
-            return (lanes.getInnerEnd() < limit);
-        }
-    }
-
     private int getWidthUsed(View child) {
         if (!isVertical()) {
             return 0;
@@ -367,99 +459,6 @@ public abstract class BaseLayoutManager extends InternalBaseLayoutManager {
 
         int size = getLanes().getLaneSize() * getLaneSpanForChild(child);
         return getHeight() - getPaddingTop() - getPaddingBottom() - size;
-    }
-
-    void measureChildWithMargins(View child) {
-        measureChildWithMargins(child, getWidthUsed(child), getHeightUsed(child));
-    }
-
-    @Override
-    protected void measureChild(View child, LayoutDirection direction) {
-        cacheChildLaneAndSpan(child, direction);
-        measureChildWithMargins(child);
-    }
-
-    @Override
-    protected void layoutChild(View child, LayoutDirection direction) {
-        getLaneForChild(tempLaneInfo, child, direction);
-
-        lanes.getChildFrame(childFrame, getDecoratedMeasuredWidth(child), getDecoratedMeasuredHeight(child), tempLaneInfo, direction);
-        ItemEntry entry = cacheChildFrame(child, childFrame);
-
-        layoutDecorated(child, childFrame.left, childFrame.top, childFrame.right, childFrame.bottom);
-
-        final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-        if (!lp.isItemRemoved()) {
-            pushChildFrame(entry, childFrame, tempLaneInfo.startLane, getLaneSpanForChild(child), direction);
-        }
-    }
-
-    @Override
-    protected void detachChild(View child, LayoutDirection direction) {
-        int position = getPosition(child);
-        getLaneForPosition(tempLaneInfo, position, direction);
-        getDecoratedChildFrame(child, childFrame);
-
-        popChildFrame(getItemEntryForPosition(position), childFrame, tempLaneInfo.startLane, getLaneSpanForChild(child), direction);
-    }
-
-    public void getLaneForChild(LaneInfo outInfo, View child, LayoutDirection direction) {
-        getLaneForPosition(outInfo, getPosition(child), direction);
-    }
-
-    public int getLaneSpanForChild(View child) {
-        return 1;
-    }
-
-    public int getLaneSpanForPosition(int position) {
-        return 1;
-    }
-
-    public ItemEntry cacheChildLaneAndSpan(View child, LayoutDirection direction) {
-        // Do nothing by default.
-        return null;
-    }
-
-    public ItemEntry cacheChildFrame(View child, Rect childFrame) {
-        // Do nothing by default.
-        return null;
-    }
-
-    @Override
-    public boolean checkLayoutParams(LayoutParams lp) {
-        if (isVertical()) {
-            return (lp.width == LayoutParams.MATCH_PARENT);
-        } else {
-            return (lp.height == LayoutParams.MATCH_PARENT);
-        }
-    }
-
-    @Override
-    public LayoutParams generateDefaultLayoutParams() {
-        if (isVertical()) {
-            return new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        } else {
-            return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
-        }
-    }
-
-    @Override
-    public LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
-        final LayoutParams lanedLp = new LayoutParams((MarginLayoutParams) lp);
-        if (isVertical()) {
-            lanedLp.width = LayoutParams.MATCH_PARENT;
-            lanedLp.height = lp.height;
-        } else {
-            lanedLp.width = lp.width;
-            lanedLp.height = LayoutParams.MATCH_PARENT;
-        }
-
-        return lanedLp;
-    }
-
-    @Override
-    public LayoutParams generateLayoutParams(Context c, AttributeSet attrs) {
-        return new LayoutParams(c, attrs);
     }
 
     public abstract int getLaneCount();

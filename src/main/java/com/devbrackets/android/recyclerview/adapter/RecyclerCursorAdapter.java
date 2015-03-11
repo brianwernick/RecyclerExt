@@ -31,6 +31,10 @@ import com.devbrackets.android.recyclerview.filter.CursorFilter;
 
 /**
  * A base cursor adapter for the RecyclerView
+ *
+ * TODO: when adding reordering support (it might not be in this file) see Jordan's comment below
+ * A Markov chain of moves. Then going through that with each lookup.
+ * That is the smallest space wise and has the best update time. Mainly because it handles the case of and update being affected by another move
  */
 public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable,
         CursorFilter.CursorFilterClient {

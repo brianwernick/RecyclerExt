@@ -42,9 +42,9 @@ public class RecyclerExt extends RecyclerView {
     public RecyclerExt(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.recyclerExt, defStyle, 0);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.recyclerExt, defStyle, 0);
 
-        final String name = a.getString(R.styleable.recyclerExt_layoutManager);
+        String name = a.getString(R.styleable.recyclerExt_layoutManager);
         if (!TextUtils.isEmpty(name)) {
             loadLayoutManagerFromName(context, attrs, name);
         }
@@ -77,7 +77,7 @@ public class RecyclerExt extends RecyclerView {
     @Override
     public void setLayoutManager(LayoutManager layout) {
         if (!(layout instanceof BaseLayoutManager)) {
-            throw new IllegalArgumentException("TwoWayView can only use BaseLayoutManager subclasses as its layout manager");
+            throw new IllegalArgumentException("RecyclerExt can only use BaseLayoutManager subclasses as its layout manager");
         }
 
         super.setLayoutManager(layout);

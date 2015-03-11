@@ -163,7 +163,7 @@ public class SpannableGridLayoutManager extends GridLayoutManager {
     }
 
     @Override
-    void measureChildWithMargins(View child) {
+    protected void measureChildWithMargins(View child) {
         // XXX: This will disable scrolling while measuring this child to ensure that
         // both width and height can use MATCH_PARENT properly.
         mMeasuring = true;
