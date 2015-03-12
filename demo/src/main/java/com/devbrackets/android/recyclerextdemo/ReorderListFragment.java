@@ -14,7 +14,7 @@ import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
 import com.devbrackets.android.recyclerext.layout.ListLayoutManager;
 import com.devbrackets.android.recyclerextdemo.util.ReorderDetector;
-import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
+import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHolder;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,6 +47,7 @@ public class ReorderListFragment extends Fragment {
         recyclerExt.setAdapter(new ListAdapter(getActivity()));
 
         reorderDecoration = new ReorderDecoration(recyclerExt);
+        reorderDecoration.setDragHandleId(R.id.simple_drag_item_handle);
         recyclerExt.addItemDecoration(reorderDecoration);
         recyclerExt.addOnItemTouchListener(reorderDecoration);
         recyclerExt.setItemAnimator(null);
@@ -71,7 +72,7 @@ public class ReorderListFragment extends Fragment {
 
     //TODO: as it currently sits, we need to watch the motionEvents to look for an up-event to stop reordering...
     //      Is there a way around this?
-    private class ListAdapter extends RecyclerView.Adapter<SimpleTextViewHolder> implements View.OnTouchListener, ReorderDetector.ReorderDetectorListener {
+    private class ListAdapter extends RecyclerView.Adapter<SimpleDragItemViewHolder> implements View.OnTouchListener, ReorderDetector.ReorderDetectorListener {
         private List<String> examples;
         private LayoutInflater inflater;
         private ReorderDetector reorderDetector;
@@ -88,17 +89,17 @@ public class ReorderListFragment extends Fragment {
         }
 
         @Override
-        public SimpleTextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, null);
+        public SimpleDragItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = inflater.inflate(R.layout.simple_drag_item, null);
 
-            return new SimpleTextViewHolder(view);
+            return new SimpleDragItemViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(SimpleTextViewHolder holder, int position) {
+        public void onBindViewHolder(SimpleDragItemViewHolder holder, int position) {
             holder.setText(examples.get(position));
             holder.setPosition(position);
-            holder.setOnTouchListener(this);
+            //holder.setOnTouchListener(this);
         }
 
         @Override
@@ -113,7 +114,7 @@ public class ReorderListFragment extends Fragment {
 
         @Override
         public void onCancel(View view) {
-            reorderDecoration.cancelReorder();
+            reorderDecoration.endReorder();
         }
 
         @Override
@@ -124,7 +125,8 @@ public class ReorderListFragment extends Fragment {
         @Override
         public void onDone(View view) {
             reorderStarted = false;
-            int newPosition = reorderDecoration.endReorder();
+            int newPosition = reorderDecoration.calculateNewPosition();
+            reorderDecoration.endReorder();
         }
 
         @Override

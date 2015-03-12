@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
@@ -34,14 +35,15 @@ import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
  */
 public class ReorderDecoration extends RecyclerView.ItemDecoration implements RecyclerView.OnItemTouchListener {
     public static final int NO_POSITION = -1;
+    public static final int INVALID_RESOURCE_ID = 0;
+
     private static final float MAX_EDGE_DETECTION_THRESHOLD = 0.5f;
     private static final float DEFAULT_EDGE_SCROLL_SPEED = 0.5f;
-    private static final float DEFAULT_EDGE_DETECTION_THRESHOLD = 0.1f;
+    private static final float DEFAULT_EDGE_DETECTION_THRESHOLD = 0.01f;
 
     private enum DragState {
         DRAGGING,
-        ENDED,
-        CANCELED
+        ENDED
     }
 
     private RecyclerView recyclerView;
@@ -54,20 +56,17 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     private float edgeScrollSpeed = DEFAULT_EDGE_SCROLL_SPEED;
 
     @Nullable
-    private PointF fingerLocation;
+    private PointF fingerOffset;
     private BitmapDrawable dragItem;
 
     private int selectedDragItemPosition = NO_POSITION;
-    private Rect floatingItemStatingBounds;
+    private Rect floatingItemStartingBounds;
     private Rect floatingItemBounds;
+
+    private int dragHandleId = INVALID_RESOURCE_ID;
 
     public ReorderDecoration(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
-    }
-
-    @Override
-    public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        super.onDraw(c, parent, state);
     }
 
     @Override
@@ -101,9 +100,43 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         setHorizontalOffsets(view, itemPosition, middle, outRect);
     }
 
+    /**
+     * This will determine two things.
+     *  1. If we need to handle the touch event
+     *  2. If reordering needs to start due to dragHandle being clicked
+     */
     @Override
     public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent event) {
-        return dragState == DragState.DRAGGING;
+        if (dragState == DragState.DRAGGING) {
+            return true;
+        }
+
+        if (dragHandleId == INVALID_RESOURCE_ID) {
+            return false;
+        }
+
+        View itemView = recyclerView.findChildViewUnder(event.getX(), event.getY());
+        if (itemView == null) {
+            return false;
+        }
+
+        View handleView = itemView.findViewById(dragHandleId);
+        if (handleView == null || handleView.getVisibility() != View.VISIBLE) {
+            return false;
+        }
+
+
+        int[] handlePosition = new int[2];
+        handleView.getLocationOnScreen(handlePosition);
+
+        //Determine if the MotionEvent is inside the handle
+        if ((event.getRawX() >= handlePosition[0] && event.getRawX() <= handlePosition[0] + handleView.getWidth()) &&
+                (event.getRawY() >= handlePosition[1] && event.getRawY() <= handlePosition[1] + handleView.getHeight())) {
+            startReorder(itemView, event);
+            return true;
+        }
+
+        return false;
     }
 
     //TODO: optimize object creation (since this will be called quite often)
@@ -113,11 +146,22 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
             return;
         }
 
-        PointF position =  new PointF(event.getX(), event.getY());
-        if (fingerLocation != null) {
-            position.x -= fingerLocation.x;
-            position.y -= fingerLocation.y;
+        //Makes sure to perform the end reorder operations...
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_UP:
+                if (selectedDragItemPosition != NO_POSITION) {
+                    int newPos = calculateNewPosition();
+                    //TODO: inform the listener that the view has a new position
+                }
+                //Purposefully fall through
+
+            case MotionEvent.ACTION_CANCEL:
+                endReorder();
+                return;
         }
+
+        //Finds the new location
+        PointF position = new PointF(event.getX(), event.getY());
 
         //Updates the floating views bounds
         if (dragItem != null) {
@@ -132,7 +176,17 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         //Perform the edge scrolling if necessary
         performVerticalEdgeScroll(position);
         performHorizontalEdgeScroll(position);
-        //Purposefully left blank
+    }
+
+    /**
+     * Sets the id for the view that will act as an immediate drag handle.
+     * This means that once the view has been touched that the drag will be
+     * started.
+     *
+     * @param handleId The Resource ID for the drag handle or {@link #INVALID_RESOURCE_ID}
+     */
+    public void setDragHandleId(@IdRes int handleId) {
+        dragHandleId = handleId;
     }
 
     /**
@@ -157,7 +211,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
     /**
      * Sets the percent amount in relation to the size of the recyclerView
-     * for the edge scrolling to use. (TODO: per what?)
+     * for the edge scrolling to use.
      *
      * @param speed The percent amount [0.0 - 1.0]
      */
@@ -222,53 +276,46 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         return orientation;
     }
 
-    public void startReorder(View view) {
-        startReorder(view, null);
-    }
-
+    /**
+     * Manually starts the reorder process for the specified view.  This should not be used if the {@link #setDragHandleId(int)} is
+     * set and should control the reordering.
+     *
+     * @param view The View to start reordering
+     * @param startMotionEvent The MotionEvent that starts the reorder
+     */
     public void startReorder(View view, @Nullable MotionEvent startMotionEvent) {
         if (dragState == DragState.DRAGGING) {
             return;
         }
 
         if (startMotionEvent != null) {
-            fingerLocation = new PointF(startMotionEvent.getRawX(), startMotionEvent.getRawY());
+            fingerOffset = new PointF(startMotionEvent.getRawX(), startMotionEvent.getRawY());
 
             int[] rawViewLoc = new int[2];
             view.getLocationOnScreen(rawViewLoc);
-            fingerLocation.x = rawViewLoc[0] - fingerLocation.x;
-            fingerLocation.y = rawViewLoc[1] - fingerLocation.y;
+            fingerOffset.x = rawViewLoc[0] - fingerOffset.x;
+            fingerOffset.y = rawViewLoc[1] - fingerOffset.y;
         }
 
         dragState = DragState.DRAGGING;
         dragItem = createDragBitmap(view);
-        //This should be called when the view is expected to be able to drag (e.g. long click, or a specific child view clicked)
     }
 
     /**
-     * Ends the reordering process and returns the new position for the item.
-     *
-     * @return The items new position or {@link #NO_POSITION} if no view is currently being reordered
+     * Ends the reorder process.  This should only be called if {@link #startReorder(View, MotionEvent)} has been
+     * manually called.
      */
-    public int endReorder() {
-        if (dragState != DragState.DRAGGING) {
-            return NO_POSITION;
-        }
-
-        dragState = DragState.ENDED;
-        fingerLocation = null;
-        return calculateNewPosition();
-        //this should be called when a view is currently in reorder and the user has lifted their finger.
-    }
-
-    public void cancelReorder() {
+    public void endReorder() {
         if (dragState != DragState.DRAGGING) {
             return;
         }
 
-        dragState = DragState.CANCELED;
-        fingerLocation = null;
-        //this should be called when a view is currently in reorder and an event occurs that cancels the drag
+        dragState = DragState.ENDED;
+        fingerOffset = null;
+        dragItem = null;
+
+        selectedDragItemPosition = NO_POSITION;
+        recyclerView.invalidateItemDecorations();
     }
 
     /**
@@ -334,8 +381,8 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
     private PointF getFloatingItemCenter() {
         PointF center = new PointF(0, 0);
-        center.x = (floatingItemBounds.left + floatingItemBounds.width()) / 2;
-        center.y = (floatingItemBounds.top + floatingItemBounds.height()) / 2;
+        center.x = floatingItemBounds.left + (floatingItemStartingBounds.width() / 2);
+        center.y = floatingItemBounds.top + (floatingItemStartingBounds.height() / 2);
 
         return center;
     }
@@ -385,7 +432,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     }
 
     private void performVerticalEdgeScroll(PointF fingerPosition) {
-        if (!edgeScrollingEnabled) {
+        if (!edgeScrollingEnabled || orientation == LayoutOrientation.HORIZONTAL) {
             return;
         }
 
@@ -403,7 +450,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     }
 
     private void performHorizontalEdgeScroll(PointF fingerPosition) {
-        if (!edgeScrollingEnabled) {
+        if (!edgeScrollingEnabled || orientation == LayoutOrientation.VERTICAL) {
             return;
         }
 
@@ -426,12 +473,15 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         }
 
         floatingItemBounds.top = (int)fingerPosition.y;
+        if (fingerOffset != null) {
+            floatingItemBounds.top += fingerOffset.y;
+        }
 
-        if (fingerPosition.y < -viewMiddle.y) {
+        if (floatingItemBounds.top < -viewMiddle.y) {
             floatingItemBounds.top = -(int)viewMiddle.y;
         }
 
-        floatingItemBounds.bottom = floatingItemBounds.top + floatingItemStatingBounds.height();
+        floatingItemBounds.bottom = floatingItemBounds.top + floatingItemStartingBounds.height();
     }
 
     private void updateHorizontalBounds(PointF fingerPosition, PointF viewMiddle) {
@@ -440,12 +490,15 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         }
 
         floatingItemBounds.left = (int)fingerPosition.x;
+        if (fingerOffset != null) {
+            floatingItemBounds.left += fingerOffset.x;
+        }
 
-        if (fingerPosition.x < -viewMiddle.x) {
+        if (floatingItemBounds.left < -viewMiddle.x) {
             floatingItemBounds.left = -(int)viewMiddle.x;
         }
 
-        floatingItemBounds.right = floatingItemBounds.left + floatingItemStatingBounds.width();
+        floatingItemBounds.right = floatingItemBounds.left + floatingItemStartingBounds.width();
     }
 
     /**
@@ -455,10 +508,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * @return The bitmap representing the drag view
      */
     private BitmapDrawable createDragBitmap(View view) {
-        floatingItemStatingBounds = new Rect(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
-        floatingItemBounds = new Rect(floatingItemStatingBounds);
+        floatingItemStartingBounds = new Rect(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+        floatingItemBounds = new Rect(floatingItemStartingBounds);
 
-        Bitmap bitmap = Bitmap.createBitmap(floatingItemStatingBounds.width(), floatingItemStatingBounds.height(), Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(floatingItemStartingBounds.width(), floatingItemStartingBounds.height(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         view.draw(canvas);
 
