@@ -23,8 +23,7 @@ import android.support.v7.widget.RecyclerView.State;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.devbrackets.android.recyclerview.R;
-
+import com.devbrackets.android.recyclerext.R;
 /**
  *
  */

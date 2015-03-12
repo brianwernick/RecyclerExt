@@ -48,6 +48,8 @@ public class ReorderListFragment extends Fragment {
 
         reorderDecoration = new ReorderDecoration(recyclerExt);
         recyclerExt.addItemDecoration(reorderDecoration);
+        recyclerExt.addOnItemTouchListener(reorderDecoration);
+        recyclerExt.setItemAnimator(null);
     }
 
 

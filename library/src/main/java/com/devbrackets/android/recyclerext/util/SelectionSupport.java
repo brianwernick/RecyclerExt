@@ -28,7 +28,7 @@ import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.Checkable;
 
-import com.devbrackets.android.recyclerview.R;
+import com.devbrackets.android.recyclerext.R;
 
 
 /**

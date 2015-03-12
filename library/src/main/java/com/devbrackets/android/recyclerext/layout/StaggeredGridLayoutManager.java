@@ -28,7 +28,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerview.R;
+import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.RecyclerExt;
 import com.devbrackets.android.recyclerext.layout.Lanes.LaneInfo;
 

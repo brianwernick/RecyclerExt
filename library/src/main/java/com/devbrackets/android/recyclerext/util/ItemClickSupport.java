@@ -22,7 +22,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.SoundEffectConstants;
 import android.view.View;
 
-import com.devbrackets.android.recyclerview.R;
+import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.listener.OnItemClickListener;
 import com.devbrackets.android.recyclerext.listener.OnItemLongClickListener;
 

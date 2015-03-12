@@ -101,11 +101,16 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         setHorizontalOffsets(view, itemPosition, middle, outRect);
     }
 
-    //TODO: optimize object creation (since this will be called quite often)
     @Override
     public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent event) {
+        return dragState == DragState.DRAGGING;
+    }
+
+    //TODO: optimize object creation (since this will be called quite often)
+    @Override
+    public void onTouchEvent(RecyclerView recyclerView, MotionEvent event) {
         if (dragState != DragState.DRAGGING) {
-            return false;
+            return;
         }
 
         PointF position =  new PointF(event.getX(), event.getY());
@@ -127,12 +132,6 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         //Perform the edge scrolling if necessary
         performVerticalEdgeScroll(position);
         performHorizontalEdgeScroll(position);
-
-        return true;
-    }
-
-    @Override
-    public void onTouchEvent(RecyclerView recyclerView, MotionEvent event) {
         //Purposefully left blank
     }
 

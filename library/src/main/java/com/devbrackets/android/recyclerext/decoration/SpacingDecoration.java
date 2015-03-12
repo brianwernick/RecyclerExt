@@ -24,8 +24,7 @@ import android.support.v7.widget.RecyclerView.ItemDecoration;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.devbrackets.android.recyclerview.R;
-
+import com.devbrackets.android.recyclerext.R;
 /**
  * An ItemDecoration that allows blank space between items
  */

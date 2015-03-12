@@ -16,7 +16,7 @@ public class MainActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
 
-        Fragment fragment = StartupFragment.newInstance();
+        Fragment fragment = ReorderListFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

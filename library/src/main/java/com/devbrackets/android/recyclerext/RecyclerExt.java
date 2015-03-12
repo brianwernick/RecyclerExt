@@ -22,9 +22,8 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
-import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
-import com.devbrackets.android.recyclerview.R;
 import com.devbrackets.android.recyclerext.layout.BaseLayoutManager;
+import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
 
 import java.lang.reflect.Constructor;
 
@@ -57,7 +56,7 @@ public class RecyclerExt extends RecyclerView {
         try {
             final int dotIndex = name.indexOf('.');
             if (dotIndex == -1) {
-                name = "com.devbrackets.android.recyclerview.layout." + name;
+                name = "com.devbrackets.android.recyclerext.layout." + name;
             } else if (dotIndex == 0) {
                 final String packageName = context.getPackageName();
                 name = packageName + "" + name;

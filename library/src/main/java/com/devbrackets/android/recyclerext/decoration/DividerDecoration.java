@@ -29,8 +29,9 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 
+import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.layout.BaseLayoutManager;
-import com.devbrackets.android.recyclerview.R;
+
 
 /**
  * An ItemDecoration where the spacing between items can be specified with drawables
