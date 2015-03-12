@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.2'
-    }
-}
-
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
