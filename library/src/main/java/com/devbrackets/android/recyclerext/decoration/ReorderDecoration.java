@@ -299,6 +299,8 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
         dragState = DragState.DRAGGING;
         dragItem = createDragBitmap(view);
+
+        selectedDragItemPosition = recyclerView.getChildPosition(view);
     }
 
     /**
