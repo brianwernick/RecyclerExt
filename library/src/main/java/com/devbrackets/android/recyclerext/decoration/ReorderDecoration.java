@@ -46,6 +46,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         ENDED
     }
 
+    public interface ReorderListener {
+        void onItemReordered(int originalPosition, int newPosition);
+    }
+
     private RecyclerView recyclerView;
     private DragState dragState = DragState.ENDED;
 
@@ -64,6 +68,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     private Rect floatingItemBounds;
 
     private int dragHandleId = INVALID_RESOURCE_ID;
+    private ReorderListener reorderListener;
 
     public ReorderDecoration(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
@@ -150,8 +155,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
                 if (selectedDragItemPosition != NO_POSITION) {
-                    int newPos = calculateNewPosition();
-                    //TODO: inform the listener that the view has a new position
+                    if (reorderListener != null) {
+                        int newPosition = calculateNewPosition();
+                        reorderListener.onItemReordered(selectedDragItemPosition, newPosition);
+                    }
                 }
                 //Purposefully fall through
 
@@ -176,6 +183,17 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         //Perform the edge scrolling if necessary
         performVerticalEdgeScroll(position);
         performHorizontalEdgeScroll(position);
+
+        recyclerView.invalidateItemDecorations();
+    }
+
+    /**
+     * Sets the listener to be informed of reorder events
+     *
+     * @param listener The ReorderListener to use
+     */
+    public void setReorderListener(ReorderListener listener) {
+        reorderListener = listener;
     }
 
     /**
@@ -390,6 +408,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     }
 
     private void setVerticalOffsets(View view, int itemPosition, PointF middle, Rect outRect) {
+        if (orientation == LayoutOrientation.HORIZONTAL) {
+            return;
+        }
+
         if (itemPosition > selectedDragItemPosition && view.getTop() < middle.y) {
             float amountUp = (middle.y - view.getTop()) / (float) view.getHeight();
             if (amountUp > 1) {
@@ -398,9 +420,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
             outRect.top = -(int) (floatingItemBounds.height() * amountUp);
             outRect.bottom = (int) (floatingItemBounds.height() * amountUp);
-        }
-
-        if ((itemPosition < selectedDragItemPosition) && (view.getBottom() > middle.y)) {
+        } else if ((itemPosition < selectedDragItemPosition) && (view.getBottom() > middle.y)) {
             float amountDown = ((float) view.getBottom() - middle.y) / (float) view.getHeight();
             if (amountDown > 1) {
                 amountDown = 1;
@@ -412,6 +432,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     }
 
     private void setHorizontalOffsets(View view, int itemPosition, PointF middle, Rect outRect) {
+        if (orientation == LayoutOrientation.VERTICAL) {
+            return;
+        }
+
         if (itemPosition > selectedDragItemPosition && view.getRight() < middle.y) {
             float amountRight = (middle.x - view.getRight()) / (float) view.getWidth();
             if (amountRight > 1) {
@@ -420,9 +444,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
             outRect.top = -(int) (floatingItemBounds.width() * amountRight);
             outRect.bottom = (int) (floatingItemBounds.width() * amountRight);
-        }
-
-        if ((itemPosition < selectedDragItemPosition) && (view.getLeft() > middle.y)) {
+        } else if ((itemPosition < selectedDragItemPosition) && (view.getLeft() > middle.y)) {
             float amountLeft = ((float) view.getLeft() - middle.x) / (float) view.getWidth();
             if (amountLeft > 1) {
                 amountLeft = 1;
@@ -448,7 +470,6 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         scrollAmount *= edgeScrollSpeed;
 
         recyclerView.scrollBy(0, (int) scrollAmount);
-        recyclerView.invalidateItemDecorations();
     }
 
     private void performHorizontalEdgeScroll(PointF fingerPosition) {
@@ -466,7 +487,6 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         scrollAmount *= edgeScrollSpeed;
 
         recyclerView.scrollBy((int) scrollAmount, 0);
-        recyclerView.invalidateItemDecorations();
     }
 
     private void updateVerticalBounds(PointF fingerPosition, PointF viewMiddle) {
