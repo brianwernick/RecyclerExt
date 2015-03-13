@@ -3,15 +3,13 @@ package com.devbrackets.android.recyclerextdemo;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.RecyclerExt;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
-import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
-import com.devbrackets.android.recyclerext.layout.ListLayoutManager;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHolder;
 
 import java.util.LinkedList;
@@ -22,7 +20,7 @@ import java.util.List;
  * A placeholder fragment containing a simple view.
  */
 public class ReorderListFragment extends Fragment {
-    private RecyclerExt recyclerExt;
+    private RecyclerView recyclerView;
 
     public static ReorderListFragment newInstance() {
         return new ReorderListFragment();
@@ -30,23 +28,23 @@ public class ReorderListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recyclerext_fragment, container, false);
+        View view = inflater.inflate(R.layout.recycler_fragment, container, false);
 
-        recyclerExt = (RecyclerExt)view.findViewById(R.id.recyclerext_fragment_recyclerext);
+        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
         setupRecyclerExt();
 
         return view;
     }
 
     private void setupRecyclerExt() {
-        recyclerExt.setLayoutManager(new ListLayoutManager(getActivity(), LayoutOrientation.VERTICAL));
-        recyclerExt.setAdapter(new ListAdapter(getActivity()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(new ListAdapter(getActivity()));
 
-        ReorderDecoration reorderDecoration = new ReorderDecoration(recyclerExt);
+        ReorderDecoration reorderDecoration = new ReorderDecoration(recyclerView);
         reorderDecoration.setDragHandleId(R.id.simple_drag_item_handle);
-        recyclerExt.addItemDecoration(reorderDecoration);
-        recyclerExt.addOnItemTouchListener(reorderDecoration);
-        recyclerExt.setItemAnimator(null);
+        recyclerView.addItemDecoration(reorderDecoration);
+        recyclerView.addOnItemTouchListener(reorderDecoration);
+        recyclerView.setItemAnimator(null);
     }
 
 

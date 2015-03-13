@@ -3,14 +3,12 @@ package com.devbrackets.android.recyclerextdemo;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.RecyclerExt;
-import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
-import com.devbrackets.android.recyclerext.layout.ListLayoutManager;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
 
 import java.util.LinkedList;
@@ -22,7 +20,7 @@ import java.util.List;
  */
 public class StartupFragment extends Fragment {
 
-    private RecyclerExt recyclerExt;
+    private RecyclerView recyclerView;
 
     public static StartupFragment newInstance() {
         return new StartupFragment();
@@ -30,17 +28,17 @@ public class StartupFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recyclerext_fragment, container, false);
+        View view = inflater.inflate(R.layout.recycler_fragment, container, false);
 
-        recyclerExt = (RecyclerExt)view.findViewById(R.id.recyclerext_fragment_recyclerext);
+        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
         setupRecyclerExt();
 
         return view;
     }
 
     private void setupRecyclerExt() {
-        recyclerExt.setLayoutManager(new ListLayoutManager(getActivity(), LayoutOrientation.VERTICAL));
-        recyclerExt.setAdapter(new ListAdapter(getActivity()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(new ListAdapter(getActivity()));
     }
 
 
@@ -70,8 +68,6 @@ public class StartupFragment extends Fragment {
 
             examples = new LinkedList<>();
             examples.add("Sortable List");
-            examples.add("Standard Grid");
-            examples.add("Staggered Grid");
             examples.add("Cursor Adapter");
         }
 

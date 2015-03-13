@@ -27,8 +27,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.devbrackets.android.recyclerext.layout.LayoutOrientation;
-
 /**
  * An ItemDecoration that performs the functionality to show the reordering of
  * list items without any space between items.
@@ -44,6 +42,11 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     private enum DragState {
         DRAGGING,
         ENDED
+    }
+
+    public enum LayoutOrientation {
+        VERTICAL,
+        HORIZONTAL
     }
 
     public interface ReorderListener {
