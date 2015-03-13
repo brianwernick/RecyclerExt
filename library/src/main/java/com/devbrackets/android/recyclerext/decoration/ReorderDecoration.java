@@ -368,7 +368,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
             //Performs the Vertical position calculations
             if (orientation == LayoutOrientation.VERTICAL) {
-                float viewMiddleY = (view.getTop() + view.getHeight()) / 2;
+                float viewMiddleY = view.getTop() + (view.getHeight() / 2);
                 if (middle.y > viewMiddleY && itemPos > before) {
                     before = itemPos;
                 } else if (middle.y <= viewMiddleY && itemPos < after) {
@@ -378,7 +378,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
             //Performs the Horizontal position calculations
             if (orientation == LayoutOrientation.HORIZONTAL) {
-                float viewMiddleX = (view.getLeft() + view.getWidth()) / 2;
+                float viewMiddleX = view.getLeft() + (view.getWidth() / 2);
                 if (middle.x > viewMiddleX && itemPos > before) {
                     before = itemPos;
                 } else if (middle.x <= viewMiddleX && itemPos < after) {
