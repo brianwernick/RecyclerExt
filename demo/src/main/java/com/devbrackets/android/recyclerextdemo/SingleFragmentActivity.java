@@ -11,6 +11,7 @@ public class SingleFragmentActivity extends FragmentActivity {
     public static final String EXTRA_FRAGMENT_TYPE = "EXTRA_FRAGMENT_TYPE";
 
     public static final int FRAGMENT_TYPE_REORDER = 1;
+    public static final int FRAGMENT_TYPE_CURSOR = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +30,19 @@ public class SingleFragmentActivity extends FragmentActivity {
             case FRAGMENT_TYPE_REORDER:
                 pushReorderListFragment();
                 break;
+
+            case FRAGMENT_TYPE_CURSOR:
+                pushCursorFragment();
         }
     }
 
     private void pushReorderListFragment() {
         Fragment fragment = ReorderListFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    private void pushCursorFragment() {
+        Fragment fragment = CursorFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

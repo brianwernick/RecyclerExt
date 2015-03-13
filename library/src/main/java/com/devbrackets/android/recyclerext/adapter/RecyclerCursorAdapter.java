@@ -50,14 +50,13 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
     protected DataSetObserver internalDataSetObserver;
     protected FilterQueryProvider filterQueryProvider;
 
-    @Nullable
-    private String idColumnName;
+    private String idColumnName = DEFAULT_ID_COLUMN_NAME;
 
     /**
      * @param cursor The cursor from which to get the data.
      */
     public RecyclerCursorAdapter(Cursor cursor) {
-        setupCursor(cursor, null);
+        this(cursor, null);
     }
 
     /**
@@ -66,7 +65,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      */
     public RecyclerCursorAdapter(Cursor cursor, String idColumnName) {
         this.idColumnName = idColumnName != null ? idColumnName : DEFAULT_ID_COLUMN_NAME;
-        setupCursor(cursor, idColumnName);
+        setupCursor(cursor, this.idColumnName);
     }
 
     @Override

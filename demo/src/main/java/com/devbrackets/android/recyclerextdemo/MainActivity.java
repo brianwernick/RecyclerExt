@@ -46,7 +46,9 @@ public class MainActivity extends Activity {
     }
 
     private void startCursorActivity() {
-
+        Intent intent = new Intent(this, SingleFragmentActivity.class);
+        intent.putExtra(SingleFragmentActivity.EXTRA_FRAGMENT_TYPE, SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
+        startActivity(intent);
     }
 
 
