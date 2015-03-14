@@ -35,9 +35,9 @@ public class ItemDAO {
     public ItemDAO() {
     }
 
-    public ItemDAO(Cursor c) {
-        setId(Integer.getInteger(c.getString(0)));
-        setText(c.getString(1));
+    public ItemDAO(Cursor cursor) {
+        setId(cursor.getLong(cursor.getColumnIndexOrThrow(C_ID)));
+        setText(cursor.getString(cursor.getColumnIndexOrThrow(C_TEXT)));
     }
 
     public ItemDAO(String text) {
@@ -88,8 +88,8 @@ public class ItemDAO {
         cursor.moveToFirst();
 
         ItemDAO item = new ItemDAO();
-        item.setId(Integer.getInteger(cursor.getString(0)));
-        item.setText(cursor.getString(1));
+        item.setId(cursor.getLong(cursor.getColumnIndexOrThrow(C_ID)));
+        item.setText(cursor.getString(cursor.getColumnIndexOrThrow(C_TEXT)));
 
         cursor.close();
 
@@ -108,11 +108,12 @@ public class ItemDAO {
         }
 
         List<ItemDAO> items = new LinkedList<>();
-        if (cursor.getCount() > 0 && cursor.moveToFirst()) {
+        if (cursor.moveToFirst()) {
             do {
                 ItemDAO item = new ItemDAO();
-                item.setId(Integer.getInteger(cursor.getString(0)));
-                item.setText(cursor.getString(1));
+                item.setId(cursor.getLong(cursor.getColumnIndexOrThrow(C_ID)));
+                item.setText(cursor.getString(cursor.getColumnIndexOrThrow(C_TEXT)));
+                items.add(item);
             } while(cursor.moveToNext());
         }
 
@@ -132,7 +133,6 @@ public class ItemDAO {
 
     private void create(@NonNull SQLiteDatabase database) {
         ContentValues values = new ContentValues();
-        values.put(C_ID, id);
         values.put(C_TEXT, text);
 
         //NOTE: in a real instance you would get the generated C_ID and store it in the id field

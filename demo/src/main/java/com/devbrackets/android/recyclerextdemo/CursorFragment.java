@@ -16,6 +16,8 @@ import com.devbrackets.android.recyclerextdemo.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
 
+import java.util.List;
+
 
 /**
  * An example of the RecyclerView Cursor Adapter
@@ -48,6 +50,11 @@ public class CursorFragment extends Fragment {
     private void setupDB() {
         dbHelper = new DBHelper(getActivity());
         SQLiteDatabase database = dbHelper.getWritableDatabase();
+
+        List<ItemDAO> items = ItemDAO.findAll(database);
+        if (items != null && items.size() > 0) {
+            return;
+        }
 
         //create and save some dummy items...
         for (int i = 1; i < 20; i++) {
@@ -92,19 +99,16 @@ public class CursorFragment extends Fragment {
 
         @Override
         public SimpleTextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_drag_item, null);
+            View view = inflater.inflate(R.layout.simple_text_item, null);
 
             return new SimpleTextViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(SimpleTextViewHolder holder, int position) {
-            Cursor c = getCursor(position);
-            if (c != null) {
-                ItemDAO item = new ItemDAO(c);
-                holder.setText(item.getText() != null ? item.getText() : "");
-                holder.setPosition(position);
-            }
+        public void onBindViewHolder(SimpleTextViewHolder holder, Cursor cursor, int position) {
+            ItemDAO item = new ItemDAO(cursor);
+            holder.setText(item.getText() != null ? item.getText() : "");
+            holder.setPosition(position);
         }
 
         @Override

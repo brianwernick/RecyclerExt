@@ -72,7 +72,12 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
     public abstract VH onCreateViewHolder(ViewGroup parent, int viewType);
 
     @Override
-    public abstract void onBindViewHolder(VH holder, int position);
+    public void onBindViewHolder(VH holder, int position) {
+        Cursor c = getCursor(position);
+        onBindViewHolder(holder, c, position);
+    }
+
+    public abstract void onBindViewHolder(VH holder, Cursor cursor, int position);
 
     /**
      * Called when the {@link ContentObserver} on the cursor receives a change notification
@@ -114,8 +119,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      */
     @Nullable
     public Cursor getCursor(int position) {
-        if (isValidData && cursor != null) {
-            cursor.moveToPosition(position);
+        if (isValidData && cursor != null && cursor.moveToPosition(position)) {
             return cursor;
         }
 
