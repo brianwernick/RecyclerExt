@@ -43,16 +43,19 @@ public class CursorFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setupDB();
+        dbHelper = new DBHelper(getActivity());
+
+        populateDatabase();
         setupRecyclerExt();
     }
 
-    private void setupDB() {
-        dbHelper = new DBHelper(getActivity());
+    private void populateDatabase() {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
 
+        //Only add items if we haven't already
         List<ItemDAO> items = ItemDAO.findAll(database);
         if (items != null && items.size() > 0) {
+            database.close();
             return;
         }
 
