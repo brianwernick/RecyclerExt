@@ -171,9 +171,9 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
      * database update and the cursor retrieval.
      */
     public static class ReorderItem {
-        private long id;
-        private int originalPosition;
-        private int newPosition;
+        private final long id;
+        private final int originalPosition;
+        private final int newPosition;
 
         public ReorderItem(long id, int originalPosition, int newPosition) {
             this.id = id;
@@ -189,16 +189,8 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
             return originalPosition;
         }
 
-        public void setOriginalPosition(int originalPosition) {
-            this.originalPosition = originalPosition;
-        }
-
         public int getNewPosition() {
             return newPosition;
-        }
-
-        public void setNewPosition(int newPosition) {
-            this.newPosition = newPosition;
         }
     }
 }
