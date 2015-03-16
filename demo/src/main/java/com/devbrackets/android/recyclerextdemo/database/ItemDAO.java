@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -20,12 +21,19 @@ public class ItemDAO {
     public static final String C_ID = "_id";
     public static final String C_TEXT = "text";
     public static final String C_ORDER = "item_order";
+
+    public static final String UPDATE_ORDER_LESS = "UPDATE " + TABLE_NAME +
+            " SET " + C_ORDER + " = " + C_ORDER + " - 1 " +
+            "WHERE " + C_ORDER + " BETWEEN ? AND ?";
+    public static final String UPDATE_ORDER_MORE = "UPDATE " + TABLE_NAME +
+            " SET " + C_ORDER + " = " + C_ORDER + " + 1 " +
+            "WHERE " + C_ORDER + " BETWEEN ? AND ?";
+
     public static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     public static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
             C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             C_TEXT + " TEXT, " +
-            C_ORDER + " INTEGER, " +
-            "unique(" + C_ORDER + ")" +
+            C_ORDER + " INTEGER UNIQUE " +
             ");";
 
     public static final String[] COLUMNS = new String[] {
@@ -113,6 +121,29 @@ public class ItemDAO {
     }
 
     @Nullable
+    public static ItemDAO getItemByOrder(SQLiteDatabase database, long order) {
+        if (database == null) {
+            return null;
+        }
+
+        Cursor cursor = database.query(TABLE_NAME, COLUMNS, C_ORDER + "=?", new String[] { String.valueOf(order) }, null, null, null, null);
+        if (cursor == null) {
+            return null;
+        }
+
+        cursor.moveToFirst();
+
+        ItemDAO item = new ItemDAO();
+        item.setId(cursor.getLong(cursor.getColumnIndexOrThrow(C_ID)));
+        item.setText(cursor.getString(cursor.getColumnIndexOrThrow(C_TEXT)));
+        item.setOrder(cursor.getLong(cursor.getColumnIndexOrThrow(C_ORDER)));
+
+        cursor.close();
+
+        return item;
+    }
+
+    @Nullable
     public static List<ItemDAO> findAll(SQLiteDatabase database) {
         if (database == null) {
             return null;
@@ -148,6 +179,21 @@ public class ItemDAO {
         return database.query(TABLE_NAME, COLUMNS, null, null, null, null, C_ORDER + " ASC", null);
     }
 
+    /**
+     * Updates the orderings between the original and new positions
+     */
+    public static void updateOrdering(SQLiteDatabase database, long originalPosition, long newPosition) {
+        //NOTE since the "BETWEEN" statement is used we need to increase the bounds by 1
+
+        Log.d("ItemDAO", "original: " + originalPosition + ", newPosition:" + newPosition);
+
+        if (originalPosition > newPosition) {
+            database.execSQL(UPDATE_ORDER_MORE, new String[]{String.valueOf(newPosition), String.valueOf(originalPosition -1)});
+        } else { //newPosition > originalPosition
+            database.execSQL(UPDATE_ORDER_LESS, new String[]{String.valueOf(originalPosition), String.valueOf(newPosition)});
+        }
+    }
+
     private void create(@NonNull SQLiteDatabase database) {
         String orderQuery = "SELECT COUNT(" + C_ID + ") AS count FROM " + TABLE_NAME;
         Cursor c = database.rawQuery(orderQuery, null);
@@ -163,7 +209,7 @@ public class ItemDAO {
 
         ContentValues values = new ContentValues();
         values.put(C_TEXT, text);
-        values.put(C_ORDER, currentItemCount +1);
+        values.put(C_ORDER, currentItemCount);
 
         //NOTE: in a real instance you would get the generated C_ID and store it in the id field
         database.insert(TABLE_NAME, null, values);

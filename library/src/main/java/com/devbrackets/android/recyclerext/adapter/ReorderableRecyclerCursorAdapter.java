@@ -135,6 +135,23 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
     }
 
     /**
+     * Retrieves the ReorderItem that is associated with the passed id.
+     *
+     * @param id The ReorderItems id
+     * @return The ReorderItem
+     */
+    @Nullable
+    public ReorderItem getReorderItem(long id) {
+        for (ReorderItem item : reorderedItems) {
+            if (item.getId() == id) {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Using the {@link #reorderedItems} the modified cursor position is retrieved
      * so that the RecyclerView items can still be used and modified while the order
      * changes are being persisted to the database.

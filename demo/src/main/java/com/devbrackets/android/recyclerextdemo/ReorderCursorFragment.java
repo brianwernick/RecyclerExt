@@ -14,16 +14,19 @@ import com.devbrackets.android.recyclerext.adapter.ReorderableRecyclerCursorAdap
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerextdemo.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.task.OrderUpdateTask;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHolder;
 
 
 /**
- * A placeholder fragment containing a simple view.
+ * An example for using the ReorderRecyclerCursorAdapter
  */
-public class ReorderCursorFragment extends Fragment implements ReorderDecoration.ReorderListener {
+public class ReorderCursorFragment extends Fragment implements ReorderDecoration.ReorderListener, OrderUpdateTask.DBUpdateListener {
     private DBHelper dbHelper;
     private RRCursorAdapter cursorAdapter;
     private RecyclerView recyclerView;
+
+    private boolean isUpdateRunning = false; //A simple way to enforce only 1 DB update is running at a time
 
     public static ReorderCursorFragment newInstance() {
         return new ReorderCursorFragment();
@@ -44,6 +47,7 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         setupRecyclerExt();
     }
 
+    //Called from the ReorderListener
     @Override
     public void onItemReordered(int originalPosition, int newPosition) {
         //This is called when the item has been dropped at the new location.  Since the ReorderDecoration only takes care
@@ -55,8 +59,23 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         }
 
         //Inform the adapter that the data changed
-        //TODO: save the new order to the database (so add a new column for order)
         long reorderId = cursorAdapter.reorderItem(originalPosition, newPosition);
+
+        //Saves the new order to the database (so add a new column for order)
+        if (!isUpdateRunning && reorderId != ReorderableRecyclerCursorAdapter.INVALID_REORDER_ITEM_ID) {
+            isUpdateRunning = true;
+            new OrderUpdateTask(dbHelper.getWritableDatabase(), cursorAdapter.getReorderItem(reorderId), this).execute();
+        }
+    }
+
+    //Called from the DBUpdateListener
+    @Override
+    public void onDBUpdated(Cursor cursor, long reorderId) {
+        isUpdateRunning = false;
+        cursorAdapter.changeCursor(cursor);
+        cursorAdapter.removeReorderItem(reorderId);
+
+        //NOTE: you should check to make sure there aren't any other ReorderItems awaiting database persistence.
     }
 
     private void setupRecyclerExt() {
