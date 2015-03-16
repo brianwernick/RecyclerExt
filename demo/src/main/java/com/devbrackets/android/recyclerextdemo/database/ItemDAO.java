@@ -12,6 +12,11 @@ import java.util.List;
 
 /**
  * A simple database object
+ *
+ * NOTE:
+ * Ideally the {@link #C_ORDER} column would have a UNIQUE constraint however since sql updates columns in
+ * arbitrary order the shuffling on a reorder would hit constraint issues.  Additionally, since SQLite doesn't
+ * support dropping constraints we cannot temporarily remove it.
  */
 public class ItemDAO {
     private static final int NEW_ITEM_ID = -1;
@@ -24,16 +29,16 @@ public class ItemDAO {
 
     public static final String UPDATE_ORDER_LESS = "UPDATE " + TABLE_NAME +
             " SET " + C_ORDER + " = " + C_ORDER + " - 1 " +
-            "WHERE " + C_ORDER + " BETWEEN ? AND ?";
+            "WHERE " + C_ORDER + ">= ? AND " + C_ORDER + " <= ?";
     public static final String UPDATE_ORDER_MORE = "UPDATE " + TABLE_NAME +
             " SET " + C_ORDER + " = " + C_ORDER + " + 1 " +
-            "WHERE " + C_ORDER + " BETWEEN ? AND ?";
+            "WHERE " + C_ORDER + ">= ? AND " + C_ORDER + " <= ?";
 
     public static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     public static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
             C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             C_TEXT + " TEXT, " +
-            C_ORDER + " INTEGER UNIQUE " +
+            C_ORDER + " INTEGER " +
             ");";
 
     public static final String[] COLUMNS = new String[] {
@@ -183,12 +188,10 @@ public class ItemDAO {
      * Updates the orderings between the original and new positions
      */
     public static void updateOrdering(SQLiteDatabase database, long originalPosition, long newPosition) {
-        //NOTE since the "BETWEEN" statement is used we need to increase the bounds by 1
-
         Log.d("ItemDAO", "original: " + originalPosition + ", newPosition:" + newPosition);
 
         if (originalPosition > newPosition) {
-            database.execSQL(UPDATE_ORDER_MORE, new String[]{String.valueOf(newPosition), String.valueOf(originalPosition -1)});
+            database.execSQL(UPDATE_ORDER_MORE, new String[]{String.valueOf(newPosition), String.valueOf(originalPosition)});
         } else { //newPosition > originalPosition
             database.execSQL(UPDATE_ORDER_LESS, new String[]{String.valueOf(originalPosition), String.valueOf(newPosition)});
         }
