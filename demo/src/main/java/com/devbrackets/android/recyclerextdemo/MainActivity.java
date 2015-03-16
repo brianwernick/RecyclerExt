@@ -39,15 +39,9 @@ public class MainActivity extends Activity {
         recyclerView.setItemAnimator(null);
     }
 
-    private void startReorderActivity() {
+    private void startFragmentActivity(int fragmentType) {
         Intent intent = new Intent(this, SingleFragmentActivity.class);
-        intent.putExtra(SingleFragmentActivity.EXTRA_FRAGMENT_TYPE, SingleFragmentActivity.FRAGMENT_TYPE_REORDER);
-        startActivity(intent);
-    }
-
-    private void startCursorActivity() {
-        Intent intent = new Intent(this, SingleFragmentActivity.class);
-        intent.putExtra(SingleFragmentActivity.EXTRA_FRAGMENT_TYPE, SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
+        intent.putExtra(SingleFragmentActivity.EXTRA_FRAGMENT_TYPE, fragmentType);
         startActivity(intent);
     }
 
@@ -74,8 +68,9 @@ public class MainActivity extends Activity {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             examples = new LinkedList<>();
-            examples.add("Sortable List");
+            examples.add("Reorderable List Adapter");
             examples.add("Cursor Adapter");
+            examples.add("Reorderable Cursor Adapter");
         }
 
         @Override
@@ -101,11 +96,13 @@ public class MainActivity extends Activity {
         public void onClick(View v) {
             switch ((Integer)v.getTag()) {
                 case 0:
-                    startReorderActivity();
+                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER);
                     break;
 
-                case 1:
-                    startCursorActivity();
+                case 1:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
+                    break;
+
+                case 2:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_CURSOR);
                     break;
             }
         }

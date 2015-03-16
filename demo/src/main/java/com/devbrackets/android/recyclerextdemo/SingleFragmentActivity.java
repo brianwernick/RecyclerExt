@@ -10,8 +10,9 @@ import android.support.v4.app.FragmentActivity;
 public class SingleFragmentActivity extends FragmentActivity {
     public static final String EXTRA_FRAGMENT_TYPE = "EXTRA_FRAGMENT_TYPE";
 
-    public static final int FRAGMENT_TYPE_REORDER = 1;
-    public static final int FRAGMENT_TYPE_CURSOR = 2;
+    public static final int FRAGMENT_TYPE_REORDER           = 1;
+    public static final int FRAGMENT_TYPE_CURSOR            = 2;
+    public static final int FRAGMENT_TYPE_REORDER_CURSOR    = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,11 @@ public class SingleFragmentActivity extends FragmentActivity {
 
             case FRAGMENT_TYPE_CURSOR:
                 pushCursorFragment();
+                break;
+
+            case FRAGMENT_TYPE_REORDER_CURSOR:
+                pushReorderCursorFragment();
+                break;
         }
     }
 
@@ -43,6 +49,11 @@ public class SingleFragmentActivity extends FragmentActivity {
 
     private void pushCursorFragment() {
         Fragment fragment = CursorFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    private void pushReorderCursorFragment() {
+        Fragment fragment = ReorderCursorFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

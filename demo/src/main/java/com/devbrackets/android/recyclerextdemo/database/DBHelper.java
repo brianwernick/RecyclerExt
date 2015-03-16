@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.List;
+
 /**
  *
  */
@@ -18,11 +20,28 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(ItemDAO.CREATE_TABLE);
+        populateItemDAOTable(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(ItemDAO.DROP_TABLE);
         this.onCreate(db);
+    }
+
+    private void populateItemDAOTable(SQLiteDatabase database) {
+        //Only add items if we haven't already
+        List<ItemDAO> items = ItemDAO.findAll(database);
+        if (items != null && items.size() > 0) {
+            database.close();
+            return;
+        }
+
+        //create and save some dummy items...
+        for (int i = 1; i <= 200; i++) {
+            ItemDAO item = new ItemDAO("RecyclerExt Demo Item " + i);
+            item.save(database);
+        }
+
     }
 }

@@ -24,9 +24,7 @@ import java.util.List;
  */
 public class CursorFragment extends Fragment {
     private DBHelper dbHelper;
-
     private RecyclerView recyclerView;
-    private CursorAdapter cursorAdapter;
 
     public static CursorFragment newInstance() {
         return new CursorFragment();
@@ -44,32 +42,11 @@ public class CursorFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         dbHelper = new DBHelper(getActivity());
-
-        populateDatabase();
         setupRecyclerExt();
     }
 
-    private void populateDatabase() {
-        SQLiteDatabase database = dbHelper.getWritableDatabase();
-
-        //Only add items if we haven't already
-        List<ItemDAO> items = ItemDAO.findAll(database);
-        if (items != null && items.size() > 0) {
-            database.close();
-            return;
-        }
-
-        //create and save some dummy items...
-        for (int i = 1; i < 20; i++) {
-            ItemDAO item = new ItemDAO("Cursor Item " + i);
-            item.save(database);
-        }
-
-        database.close();
-    }
-
     private void setupRecyclerExt() {
-        cursorAdapter = new CursorAdapter(getActivity(), ItemDAO.findCursorAll(dbHelper.getWritableDatabase()));
+        CursorAdapter cursorAdapter = new CursorAdapter(getActivity(), ItemDAO.findCursorAll(dbHelper.getWritableDatabase()));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(cursorAdapter);
