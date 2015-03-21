@@ -59,23 +59,17 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         }
 
         //Inform the adapter that the data changed
-        long reorderId = cursorAdapter.reorderItem(originalPosition, newPosition);
-
-        //Saves the new order to the database (so add a new column for order)
-        if (!isUpdateRunning && reorderId != ReorderableRecyclerCursorAdapter.INVALID_REORDER_ITEM_ID) {
-            isUpdateRunning = true;
-            new OrderUpdateTask(dbHelper.getWritableDatabase(), cursorAdapter.getReorderItem(reorderId), this).execute();
-        }
+        cursorAdapter.reorderItem(originalPosition, newPosition);
+        //performDatabaseOrderUpdate();
     }
 
     //Called from the DBUpdateListener
     @Override
-    public void onDBUpdated(Cursor cursor, long reorderId) {
+    public void onDBUpdated(Cursor cursor) {
         isUpdateRunning = false;
         cursorAdapter.changeCursor(cursor);
-        cursorAdapter.removeReorderItem(reorderId);
-
-        //NOTE: you should check to make sure there aren't any other ReorderItems awaiting database persistence.
+        cursorAdapter.removeOldestReorderItem();
+        performDatabaseOrderUpdate();
     }
 
     private void setupRecyclerExt() {
@@ -95,6 +89,15 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         recyclerView.addOnItemTouchListener(reorderDecoration);
     }
 
+    private void performDatabaseOrderUpdate() {
+        //Saves the new order to the database (so add a new column for order)
+        ReorderableRecyclerCursorAdapter.ReorderItem item = cursorAdapter.getOldestReorderItem();
+
+        if (!isUpdateRunning && item != null) {
+            isUpdateRunning = true;
+            new OrderUpdateTask(dbHelper.getWritableDatabase(), item, this).execute();
+        }
+    }
 
 
 

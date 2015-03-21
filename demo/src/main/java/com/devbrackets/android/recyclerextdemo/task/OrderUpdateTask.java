@@ -49,11 +49,11 @@ public class OrderUpdateTask extends AsyncTask<Void, Void, Cursor> {
     @Override
     protected void onPostExecute(Cursor cursor) {
         if (listener != null) {
-            listener.onDBUpdated(cursor, reorderItem.getId());
+            listener.onDBUpdated(cursor);
         }
     }
 
     public interface DBUpdateListener {
-        void onDBUpdated(Cursor cursor, long reorderId);
+        void onDBUpdated(Cursor cursor);
     }
 }

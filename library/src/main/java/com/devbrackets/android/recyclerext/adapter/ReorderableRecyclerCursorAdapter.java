@@ -17,22 +17,18 @@
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Queue;
 
 /**
  * A Cursor adapter for the RecyclerView that correctly keeps track of reorder changes made by the
  * {@link com.devbrackets.android.recyclerext.decoration.ReorderDecoration}
  */
 public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerCursorAdapter<VH> {
-    public static final long INVALID_REORDER_ITEM_ID = -1;
-    private long currentReorderItemId = 1;
-    private List<ReorderItem> reorderedItems = new LinkedList<>();
+    private Queue<ReorderItem> reorderQueue = new LinkedList<>();
 
     public ReorderableRecyclerCursorAdapter(Cursor cursor) {
         super(cursor);
@@ -57,102 +53,52 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
      * Informs the adapter that an item was reordered.  This will add a ReorderItem to
      * the cache used to calculate the modified positions in the cursor.  If either of
      * the positions are outside the cursor bounds, or they are the same then
-     * {@link #INVALID_REORDER_ITEM_ID} will be returned instead of the cached id.
+     * no ReorderItem will be added to the cache
      *
      * @param originalPosition The original position of the item
      * @param newPosition The new position for the item
-     * @return The ReorderItems id to use when notifying the Adapter that the change has been persisted to the database or {@link #INVALID_REORDER_ITEM_ID}
      */
-    public long reorderItem(int originalPosition, int newPosition) {
+    public void reorderItem(int originalPosition, int newPosition) {
         //Make sure the positions aren't the same
         if (originalPosition == newPosition) {
-            return INVALID_REORDER_ITEM_ID;
+            return;
         }
 
         //Make sure the positions aren't out of bounds
         if (originalPosition < 0 || newPosition < 0 || originalPosition >= getItemCount() || newPosition >= getItemCount()) {
-            return INVALID_REORDER_ITEM_ID;
+            return;
         }
 
-        ReorderItem item = new ReorderItem(currentReorderItemId, originalPosition, newPosition);
-        reorderedItems.add(item);
+        ReorderItem item = new ReorderItem(originalPosition, newPosition);
+        reorderQueue.add(item);
 
-        currentReorderItemId++;
         notifyDataSetChanged();
-
-        return item.getId();
     }
 
     /**
-     * Removes the ReorderItem with the specified id from the cache so that
+     * Removes the oldest ReorderItem from the cache so that
      * the index change is no longer accounted for when calculating the
      * modified indices for the cursor.
-     *
-     * @param id The ReorderItem id to remove from the cache
      */
-    public void removeReorderItem(long id) {
-        ReorderItem item;
-        Iterator<ReorderItem> iterator = reorderedItems.iterator();
-        while (iterator.hasNext()) {
-            item = iterator.next();
-            if (item.getId() == id) {
-                iterator.remove();
-                return;
-            }
+    public void removeOldestReorderItem() {
+        if (reorderQueue.size() > 0) {
+            reorderQueue.remove();
         }
     }
 
     /**
-     * Removes the ReorderItems with the specified ids from the cache so that
-     * the index changes are no longer accounted for when calculating the
-     * modified indices for the cursor.
-     *
-     * @param ids The ReorderItem ids to remove from the cache
-     */
-    public void removeReorderItems(@NonNull List<Long> ids) {
-        ReorderItem item;
-        Iterator<ReorderItem> iterator = reorderedItems.iterator();
-        while (iterator.hasNext()) {
-            item = iterator.next();
-            for (long id : ids) {
-                if (item.getId() == id) {
-                    iterator.remove();
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Retrieves the ReorderItems that are currently cached in order to determine
+     * Retrieves the oldest ReorderItem from the cache in order to determine
      * what changes need to be persisted in the database.
      *
-     * @return A List of ReorderItems
-     */
-    @NonNull
-    public List<ReorderItem> getReorderItems() {
-        return reorderedItems;
-    }
-
-    /**
-     * Retrieves the ReorderItem that is associated with the passed id.
-     *
-     * @param id The ReorderItems id
-     * @return The ReorderItem
+     * @return The oldest ReorderItem or null
      */
     @Nullable
-    public ReorderItem getReorderItem(long id) {
-        for (ReorderItem item : reorderedItems) {
-            if (item.getId() == id) {
-                return item;
-            }
-        }
-
-        return null;
+    public ReorderItem getOldestReorderItem() {
+        return reorderQueue.peek();
     }
 
     /**
-     * Using the {@link #reorderedItems} the modified cursor position is retrieved
+     * Using the {@link #reorderQueue} the modified cursor position is retrieved
      * so that the RecyclerView items can still be used and modified while the order
      * changes are being persisted to the database.
      *
@@ -162,16 +108,16 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
      * @return The modified cursor position for the actual item to retrieve
      */
     private int calculateCursorPosition(int viewPosition) {
-        if (reorderedItems.size() == 0) {
+        if (reorderQueue.size() == 0) {
             return viewPosition;
         }
 
         int cursorPositionDelta = 0;
-        for (ReorderItem item: reorderedItems) {
+        for (ReorderItem item: reorderQueue) {
 
             //If the reordered item is this item, then make sure to move the cursor the appropriate amount
             if (item.getNewPosition() == viewPosition) {
-                cursorPositionDelta += (item.getOriginalPosition() - viewPosition);
+                cursorPositionDelta = item.getOriginalPosition() - viewPosition;
             } else if (item.getOriginalPosition() < item.getNewPosition() && viewPosition >= item.getOriginalPosition() && viewPosition < item.getNewPosition()) {
                 cursorPositionDelta++;
             } else if (item.getOriginalPosition() > item.getNewPosition() && viewPosition <= item.getOriginalPosition() && viewPosition > item.getNewPosition()) {
@@ -188,18 +134,12 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
      * database update and the cursor retrieval.
      */
     public static class ReorderItem {
-        private final long id;
         private final int originalPosition;
         private final int newPosition;
 
-        public ReorderItem(long id, int originalPosition, int newPosition) {
-            this.id = id;
+        public ReorderItem(int originalPosition, int newPosition) {
             this.originalPosition = originalPosition;
             this.newPosition = newPosition;
-        }
-
-        public long getId() {
-            return id;
         }
 
         public int getOriginalPosition() {
