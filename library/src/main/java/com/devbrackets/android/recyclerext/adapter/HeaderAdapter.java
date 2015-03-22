@@ -34,14 +34,14 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
         if (viewType == VIEW_TYPE_CHILD) {
             onBindChildViewHolder((C)holder, determineChildPosition(position));
         } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H)holder, determineHeaderPosition(position));
+            onBindHeaderViewHolder((H)holder, determineChildPosition(position));
         }
     }
 
     @Override
     public int getItemViewType(int position) {
         //TODO: figure out how to switch between the header and child views.
-        return super.getItemViewType(position);
+        return VIEW_TYPE_CHILD;
     }
 
     /**
@@ -67,19 +67,18 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
         return RecyclerView.NO_ID;
     }
 
+    public abstract H onCreateHeaderViewHolder(ViewGroup parent);
+    public abstract C onCreateChildViewHolder(ViewGroup parent);
+
+    public abstract void onBindHeaderViewHolder(H holder, int childPosition);
+    public abstract void onBindChildViewHolder(C holder, int childPosition);
+
     /**
      * Returns the total number of children in the data set held by the adapter.
      *
      * @return The total number of children in this adapter.
      */
     public abstract int getChildCount();
-
-    public abstract H onCreateHeaderViewHolder(ViewGroup parent);
-    public abstract C onCreateChildViewHolder(ViewGroup parent);
-
-    public abstract void onBindHeaderViewHolder(H holder, int position);
-    public abstract void onBindChildViewHolder(C holder, int position);
-
 
 
 
@@ -88,13 +87,6 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
     private int determineChildPosition(int position) {
         //TODO: Determine the position for the child, based on the raw recyclerView position that
         // includes the headers.
-
-        return position;
-    }
-
-    private int determineHeaderPosition(int position) {
-        //TODO: Determine the position for the header, based on the raw recyclerView position that
-        // includes the children.
 
         return position;
     }

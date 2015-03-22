@@ -13,6 +13,7 @@ public class SingleFragmentActivity extends FragmentActivity {
     public static final int FRAGMENT_TYPE_REORDER           = 1;
     public static final int FRAGMENT_TYPE_CURSOR            = 2;
     public static final int FRAGMENT_TYPE_REORDER_CURSOR    = 3;
+    public static final int FRAGMENT_TYPE_HEADER_LIST       = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +40,10 @@ public class SingleFragmentActivity extends FragmentActivity {
             case FRAGMENT_TYPE_REORDER_CURSOR:
                 pushReorderCursorFragment();
                 break;
+
+            case FRAGMENT_TYPE_HEADER_LIST:
+                pushHeaderListFragment();
+                break;
         }
     }
 
@@ -54,6 +59,11 @@ public class SingleFragmentActivity extends FragmentActivity {
 
     private void pushReorderCursorFragment() {
         Fragment fragment = ReorderCursorFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    private void pushHeaderListFragment() {
+        Fragment fragment = HeaderListFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

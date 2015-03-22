@@ -71,6 +71,7 @@ public class MainActivity extends Activity {
             examples.add("Reorderable List Adapter");
             examples.add("Cursor Adapter");
             examples.add("Reorderable Cursor Adapter");
+            examples.add("Header List Adapter");
         }
 
         @Override
@@ -99,10 +100,16 @@ public class MainActivity extends Activity {
                     startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER);
                     break;
 
-                case 1:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
+                case 1:
+                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
                     break;
 
-                case 2:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_CURSOR);
+                case 2:
+                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_CURSOR);
+                    break;
+
+                case 3:
+                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_HEADER_LIST);
                     break;
             }
         }
