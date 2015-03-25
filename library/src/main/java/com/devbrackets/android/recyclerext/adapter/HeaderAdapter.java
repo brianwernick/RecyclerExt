@@ -3,6 +3,9 @@ package com.devbrackets.android.recyclerext.adapter;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static android.support.v7.widget.RecyclerView.ViewHolder;
 
 /**
@@ -14,6 +17,9 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
 public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> {
     public static final int VIEW_TYPE_CHILD = 1;
     public static final int VIEW_TYPE_HEADER = 10;
+
+    private Observer observer = new Observer();
+    private List<HeaderItem> headerItems = new ArrayList<>();
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -40,8 +46,27 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
 
     @Override
     public int getItemViewType(int position) {
-        //TODO: figure out how to switch between the header and child views.
+        for (HeaderItem item: headerItems) {
+            if (item.getViewPosition() == position) {
+                return VIEW_TYPE_HEADER;
+            } else if (item.getViewPosition() > position) {
+                break;
+            }
+        }
+
         return VIEW_TYPE_CHILD;
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        registerAdapterDataObserver(observer);
+        observer.onChanged();
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        unregisterAdapterDataObserver(observer);
+        headerItems.clear();
     }
 
     /**
@@ -53,7 +78,7 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
      */
     @Override
     public int getItemCount() {
-        return getChildCount() + determineHeaderCount();
+        return getChildCount() + headerItems.size();
     }
 
     /**
@@ -67,10 +92,38 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
         return RecyclerView.NO_ID;
     }
 
+    /**
+     * Called when the RecyclerView needs a new {@link H} ViewHolder
+     *
+     * @param parent The ViewGroup into which the new View will be added
+     * @return The view type of the new View
+     */
     public abstract H onCreateHeaderViewHolder(ViewGroup parent);
+
+    /**
+     * Called when the RecyclerView needs a new {@link C} ViewHolder
+     *
+     * @param parent The ViewGroup into which the new View will be added
+     * @return The view type of the new View
+     */
     public abstract C onCreateChildViewHolder(ViewGroup parent);
 
-    public abstract void onBindHeaderViewHolder(H holder, int childPosition);
+    /**
+     * Called to display the header information with the <code>firstChildPosition</code> being the
+     * position of the first child after this header.
+     *
+     * @param holder The ViewHolder which should be updated
+     * @param firstChildPosition The position of the child immediately after this header
+     */
+    public abstract void onBindHeaderViewHolder(H holder, int firstChildPosition);
+
+    /**
+     * Called to display the child information with the <code>childPosition</code> being the
+     * position of the child, excluding headers.
+     *
+     * @param holder The ViewHolder which should be updated
+     * @param childPosition The position of the child
+     */
     public abstract void onBindChildViewHolder(C holder, int childPosition);
 
     /**
@@ -80,19 +133,90 @@ public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> 
      */
     public abstract int getChildCount();
 
+    /**
+     * Determines the child position given the position in the RecyclerView
+     *
+     * @param viewPosition The position in the RecyclerView (includes Headers and Children)
+     * @return The child index
+     */
+    private int determineChildPosition(int viewPosition) {
+        int headerCount = 0;
+        for (HeaderItem item: headerItems) {
+            if (item.getViewPosition() < viewPosition) {
+                headerCount++;
+            } else {
+                break;
+            }
+        }
 
-
-
-
-    private int determineChildPosition(int position) {
-        //TODO: Determine the position for the child, based on the raw recyclerView position that
-        // includes the headers.
-
-        return position;
+        return viewPosition - headerCount;
     }
 
-    private int determineHeaderCount() {
-        //TODO:
-        return 0;
+    /**
+     * Used to monitor data set changes to update the {@link #headerItems} so that we can correctly
+     * calculate the list item count and header indexes.
+     */
+    private class Observer extends RecyclerView.AdapterDataObserver {
+        @Override
+        public void onChanged() {
+            calculateHeaderIndices();
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            calculateHeaderIndices();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            calculateHeaderIndices();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            calculateHeaderIndices();
+        }
+
+        @Override
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+            calculateHeaderIndices();
+        }
+
+        /**
+         * Performs a full calculation for the header indices
+         */
+        private void calculateHeaderIndices() {
+            headerItems.clear();
+            HeaderItem currentItem = null;
+
+            for (int i = 0; i < getChildCount(); i++) {
+                long id = getHeaderId(i);
+                if (currentItem == null || currentItem.getHeaderId() != id) {
+                    currentItem = new HeaderItem(id, i + headerItems.size());
+                    headerItems.add(currentItem);
+                }
+            }
+        }
+    }
+
+    /**
+     * An object to keep track of the locations and id's for header items
+     */
+    private static class HeaderItem {
+        private long headerId;
+        private int viewPosition;
+
+        public HeaderItem(long headerId, int viewPosition) {
+            this.headerId = headerId;
+            this.viewPosition = viewPosition;
+        }
+
+        public long getHeaderId() {
+            return headerId;
+        }
+
+        public int getViewPosition() {
+            return viewPosition;
+        }
     }
 }
