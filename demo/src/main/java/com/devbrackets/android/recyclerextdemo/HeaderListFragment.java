@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
+import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerextdemo.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
@@ -44,7 +44,7 @@ public class HeaderListFragment extends Fragment {
     }
 
     private void setupRecyclerExt() {
-        HeadAdapter cursorAdapter = new HeadAdapter(getActivity(), ItemDAO.findAll(dbHelper.getWritableDatabase()));
+        HeaderAdapter cursorAdapter = new HeaderAdapter(getActivity(), ItemDAO.findAll(dbHelper.getWritableDatabase()));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(cursorAdapter);
@@ -67,11 +67,11 @@ public class HeaderListFragment extends Fragment {
 
 
 
-    private class HeadAdapter extends HeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> {
+    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> {
         private LayoutInflater inflater;
         private List<ItemDAO> items;
 
-        public HeadAdapter(Context context, List<ItemDAO> items) {
+        public HeaderAdapter(Context context, List<ItemDAO> items) {
             this.items = items;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }

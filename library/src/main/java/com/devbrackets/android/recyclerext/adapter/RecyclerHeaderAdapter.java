@@ -14,7 +14,7 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <H> The Header {@link RecyclerView.ViewHolder}
  * @param <C> The Child or content {@link RecyclerView.ViewHolder}
  */
-public abstract class HeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> {
+public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> {
     public static final int VIEW_TYPE_CHILD = 1;
     public static final int VIEW_TYPE_HEADER = 10;
 
