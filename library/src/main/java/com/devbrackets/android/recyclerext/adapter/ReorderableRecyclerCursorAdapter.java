@@ -19,16 +19,18 @@ package com.devbrackets.android.recyclerext.adapter;
 import android.database.Cursor;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseIntArray;
 
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.List;
 
 /**
  * A Cursor adapter for the RecyclerView that correctly keeps track of reorder changes made by the
  * {@link com.devbrackets.android.recyclerext.decoration.ReorderDecoration}
  */
 public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerCursorAdapter<VH> {
-    private Queue<ReorderItem> reorderQueue = new LinkedList<>();
+    private boolean resetOnCursorChange = true;
+    private SparseIntArray cursorPositionMap = new SparseIntArray();
 
     public ReorderableRecyclerCursorAdapter(Cursor cursor) {
         super(cursor);
@@ -41,12 +43,21 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
     @Nullable
     @Override
     public Cursor getCursor(int position) {
-        return super.getCursor(calculateCursorPosition(position));
+        return super.getCursor(cursorPositionMap.get(position, position));
     }
 
     @Override
     public long getItemId(int position) {
-        return super.getItemId(calculateCursorPosition(position));
+        return super.getItemId(cursorPositionMap.get(position, position));
+    }
+
+    @Override
+    public void changeCursor(Cursor newCursor) {
+        super.changeCursor(newCursor);
+
+        if (resetOnCursorChange) {
+            resetMap();
+        }
     }
 
     /**
@@ -69,85 +80,82 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
             return;
         }
 
-        ReorderItem item = new ReorderItem(originalPosition, newPosition);
-        reorderQueue.add(item);
+        int curFrom = cursorPositionMap.get(originalPosition, originalPosition);
 
+        //Iterates through the items that will be effected and changes their positions
+        if (originalPosition > newPosition) {
+            for (int i = originalPosition; i > newPosition; i--) {
+                cursorPositionMap.put(i, cursorPositionMap.get(i -1, i -1));
+            }
+        } else {
+            for (int i = originalPosition; i < newPosition; i++) {
+                cursorPositionMap.put(i, cursorPositionMap.get(i +1, i +1));
+            }
+        }
+
+        //Makes sure the actual change is in place
+        cursorPositionMap.put(newPosition, curFrom);
+
+        cleanMap();
         notifyDataSetChanged();
     }
 
     /**
-     * Removes the oldest ReorderItem from the cache so that
-     * the index change is no longer accounted for when calculating the
-     * modified indices for the cursor.
+     * Determines if the position map for the cursor will be reset
+     * when the cursor is changed
+     *
+     * @return True if the map will be reset on cursor changes [default: true]
      */
-    public void removeOldestReorderItem() {
-        if (reorderQueue.size() > 0) {
-            reorderQueue.remove();
-        }
+    public boolean getResetMapOnCursorChange() {
+        return resetOnCursorChange;
     }
 
     /**
-     * Retrieves the oldest ReorderItem from the cache in order to determine
-     * what changes need to be persisted in the database.
+     * Sets if the position map for the cursor will be reset when the cursor
+     * is changed
      *
-     * @return The oldest ReorderItem or null
+     * @param resetOnSwap True if the map should be reset on cursor changes
      */
-    @Nullable
-    public ReorderItem getOldestReorderItem() {
-        return reorderQueue.peek();
+    public void setResetMapOnCursorChange(boolean resetOnSwap) {
+        this.resetOnCursorChange = resetOnSwap;
     }
 
     /**
-     * Using the {@link #reorderQueue} the modified cursor position is retrieved
-     * so that the RecyclerView items can still be used and modified while the order
-     * changes are being persisted to the database.
-     *
-     * TODO: make sure to correctly handle chained moves (e.g. [0 -> 1] then [1 -> 2])
-     *
-     * @param viewPosition The position in the visual list to retrieve
-     * @return The modified cursor position for the actual item to retrieve
+     * Resets the position map for the cursor.  By default this will be
+     * called when a cursor is changed (see {@link #getResetMapOnCursorChange()})
      */
-    private int calculateCursorPosition(int viewPosition) {
-        if (reorderQueue.size() == 0) {
-            return viewPosition;
-        }
+    public void resetMap() {
+        cursorPositionMap.clear();
+    }
 
-        int cursorPositionDelta = 0;
-        for (ReorderItem item: reorderQueue) {
+    /**
+     * Retrieves the position map for the cursor.  This is organized by the
+     * index being the list (visual) position and the values representing the corresponding
+     * cursor positions.
+     *
+     * @return A SparseIntArray representing a map of list positions to cursor positions
+     */
+    public SparseIntArray getPositionMap() {
+        return cursorPositionMap.clone();
+    }
 
-            //If the reordered item is this item, then make sure to move the cursor the appropriate amount
-            if (item.getNewPosition() == viewPosition) {
-                cursorPositionDelta = item.getOriginalPosition() - viewPosition;
-            } else if (item.getOriginalPosition() < item.getNewPosition() && viewPosition >= item.getOriginalPosition() && viewPosition < item.getNewPosition()) {
-                cursorPositionDelta++;
-            } else if (item.getOriginalPosition() > item.getNewPosition() && viewPosition <= item.getOriginalPosition() && viewPosition > item.getNewPosition()) {
-                cursorPositionDelta--;
+    /**
+     * Goes through the {@link #cursorPositionMap} removing any mappings that
+     * are unnecessary.  This will help keep the map as small as possible
+     */
+    private void cleanMap() {
+        List<Integer> removeList = new LinkedList<>();
+
+        //Finds all the mappings that point to themselves
+        for (int i = 0; i < cursorPositionMap.size(); i++) {
+            if (cursorPositionMap.keyAt(i) == cursorPositionMap.valueAt(i)) {
+                removeList.add(cursorPositionMap.keyAt(i));
             }
         }
 
-        return viewPosition + cursorPositionDelta;
-    }
-
-    /**
-     * An object to represent an index change with an id so that the cursor can be updated
-     * for single items without forgetting reorders that occurred between the start of the
-     * database update and the cursor retrieval.
-     */
-    public static class ReorderItem {
-        private final int originalPosition;
-        private final int newPosition;
-
-        public ReorderItem(int originalPosition, int newPosition) {
-            this.originalPosition = originalPosition;
-            this.newPosition = newPosition;
-        }
-
-        public int getOriginalPosition() {
-            return originalPosition;
-        }
-
-        public int getNewPosition() {
-            return newPosition;
+        //Actually removes the items
+        for (int i: removeList) {
+            cursorPositionMap.delete(i);
         }
     }
 }

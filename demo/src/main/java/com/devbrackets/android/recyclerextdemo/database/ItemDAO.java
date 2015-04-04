@@ -148,15 +148,14 @@ public class ItemDAO {
         return item;
     }
 
-    @Nullable
     public static List<ItemDAO> findAll(SQLiteDatabase database) {
         if (database == null) {
-            return null;
+            return new LinkedList<>();
         }
 
         Cursor cursor = database.query(TABLE_NAME, COLUMNS, null, null, null, null, C_ORDER + " ASC", null);
         if (cursor == null) {
-            return null;
+            return new LinkedList<>();
         }
 
         List<ItemDAO> items = new LinkedList<>();
