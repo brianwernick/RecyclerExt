@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,20 +48,19 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         setupRecyclerExt();
     }
 
-    //Called from the ReorderListener
-    @Override
+    @Override //Called from the ReorderListener
     public void onItemReordered(int originalPosition, int newPosition) {
         //This is called when the item has been dropped at the new location.  Since the ReorderDecoration only takes care
         // of the visual aspect and calculating the new position, we will need to inform the adapter ourselves.
 
-        //onItemReordered can still be called if the user drops the item in the same position (It won't be called if the reorder was canceled)
+        //onItemReordered will still be called if the user drops the item in the same position (It won't be called if the reorder was canceled)
         if (originalPosition == newPosition) {
             return;
         }
 
         //Inform the adapter that the data changed
         cursorAdapter.reorderItem(originalPosition, newPosition);
-        //performDatabaseOrderUpdate();
+        performDatabaseOrderUpdate();
     }
 
     //Called from the DBUpdateListener
@@ -68,7 +68,6 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
     public void onDBUpdated(Cursor cursor) {
         isUpdateRunning = false;
         cursorAdapter.changeCursor(cursor);
-        cursorAdapter.removeOldestReorderItem();
         performDatabaseOrderUpdate();
     }
 
@@ -90,12 +89,12 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
     }
 
     private void performDatabaseOrderUpdate() {
-        //Saves the new order to the database (so add a new column for order)
-        ReorderableRecyclerCursorAdapter.ReorderItem item = cursorAdapter.getOldestReorderItem();
+        SparseIntArray map = cursorAdapter.getPositionMap();
 
-        if (!isUpdateRunning && item != null) {
+        //Saves the new order to the database
+        if (!isUpdateRunning && map.size() > 0) {
             isUpdateRunning = true;
-            new OrderUpdateTask(dbHelper.getWritableDatabase(), item, this).execute();
+            new OrderUpdateTask(dbHelper.getWritableDatabase(), map, this).execute();
         }
     }
 

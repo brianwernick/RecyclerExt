@@ -32,7 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private void populateItemDAOTable(SQLiteDatabase database) {
         //Only add items if we haven't already
         List<ItemDAO> items = ItemDAO.findAll(database);
-        if (items != null && items.size() > 0) {
+        if (items.size() > 0) {
             database.close();
             return;
         }
