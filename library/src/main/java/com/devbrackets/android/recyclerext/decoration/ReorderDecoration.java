@@ -96,7 +96,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
             return;
         }
 
-        int itemPosition = recyclerView.getChildPosition(view);
+        int itemPosition = recyclerView.getChildAdapterPosition(view);
         if (itemPosition == selectedDragItemPosition) {
             view.setVisibility(View.INVISIBLE);
             return;
@@ -324,7 +324,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         dragState = DragState.DRAGGING;
         dragItem = createDragBitmap(view);
 
-        selectedDragItemPosition = recyclerView.getChildPosition(view);
+        selectedDragItemPosition = recyclerView.getChildAdapterPosition(view);
     }
 
     /**
@@ -364,7 +364,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
             }
 
             //Makes sure we don't compare to itself
-            int itemPos = recyclerView.getChildPosition(view);
+            int itemPos = recyclerView.getChildAdapterPosition(view);
             if (itemPos == selectedDragItemPosition) {
                 continue;
             }
