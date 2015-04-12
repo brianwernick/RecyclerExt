@@ -1,14 +1,15 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
+apply plugin: 'bintray-release'
 
 def versionMajor = 0
-def versionMinor = 1
+def versionMinor = 7
 def versionPatch = 0
 
 // Maven GAV
-def groupId = 'com.devbrackets.android'
-archivesBaseName = 'recyclerext'
-version = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
+def libraryGroupId = 'com.devbrackets.android'
+def libraryBaseName = 'recyclerext'
+def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
 
 repositories {
     mavenLocal()
@@ -51,11 +52,20 @@ uploadArchives {
         // deploy to local
         mavenDeployer {
             repository (url: "file://${System.env.HOME}/.m2/repository/")
-            pom.groupId = groupId
-            pom.artifactId = archivesBaseName
-            pom.version = version + "-SNAPSHOT"
+            pom.groupId = libraryGroupId
+            pom.artifactId = libraryBaseName
+            pom.version = libraryVersion + "-SNAPSHOT"
             pom.packaging = 'aar'
             uniqueVersion = false
         }
     }
+}
+
+publish {
+    groupId = libraryGroupId
+    artifactId = libraryBaseName
+    uploadName = 'RecyclerExt'
+    version = libraryVersion
+    autoPublish = false
+    dryRun = false
 }
