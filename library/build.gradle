@@ -1,14 +1,15 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
+apply plugin: 'bintray-release'
 
 def versionMajor = 0
-def versionMinor = 1
+def versionMinor = 7
 def versionPatch = 0
 
 // Maven GAV
-def groupId = 'com.devbrackets.android'
-archivesBaseName = 'recyclerext'
-version = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
+def libraryGroupId = 'com.devbrackets.android'
+def libraryBaseName = 'recyclerext'
+def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
 
 repositories {
     mavenLocal()
@@ -16,17 +17,17 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.android.support:recyclerview-v7:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:recyclerview-v7:22.1.1'
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         minSdkVersion 7
-        targetSdkVersion 21
+        targetSdkVersion 22
 
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -51,11 +52,20 @@ uploadArchives {
         // deploy to local
         mavenDeployer {
             repository (url: "file://${System.env.HOME}/.m2/repository/")
-            pom.groupId = groupId
-            pom.artifactId = archivesBaseName
-            pom.version = version + "-SNAPSHOT"
+            pom.groupId = libraryGroupId
+            pom.artifactId = libraryBaseName
+            pom.version = libraryVersion + "-SNAPSHOT"
             pom.packaging = 'aar'
             uniqueVersion = false
         }
     }
+}
+
+publish {
+    groupId = libraryGroupId
+    artifactId = libraryBaseName
+    uploadName = 'RecyclerExt'
+    version = libraryVersion
+    autoPublish = false
+    dryRun = false
 }

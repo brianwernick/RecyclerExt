@@ -1,10 +1,29 @@
 Recycler Extensions
 ============
 
-A library to enhance the functionality of the Android RecyclerView to
-make quick implementations possible for both lists of objects and
-database cursors.
+An Android RecyclerView enhancement library focused on simplifying
+common use cases including:
 
+ * Database Cursor Adapters
+ * Item Reordering
+
+
+Website And Documentation
+-------
+The RecyclerExt website can be found [here][2]
+
+The RecyclerExt documentation website can be found on the website linked above or [here][3]
+
+
+Use
+-------
+The latest AAR (Android Archive) files can be downloaded from JCenter [RecyclerExt][1]
+
+Or included in your gradle dependencies
+
+```groovy
+compile 'com.devbrackets.android:recyclerext:0.7.0'
+```
 
 
 License
@@ -23,3 +42,9 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
+
+ [1]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
+ [2]: http://devbrackets.com/dev/libs/recyclerext.html
+ [3]: http://devbrackets.com/dev/libs/docs/recyclerext/1.0.0/index.html
