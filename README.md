@@ -47,4 +47,4 @@ License
 
  [1]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
  [2]: http://devbrackets.com/dev/libs/recyclerext.html
- [3]: http://devbrackets.com/dev/libs/docs/recyclerext/1.0.0/index.html
+ [3]: http://devbrackets.com/dev/libs/docs/recyclerext/0.7.0/index.html
