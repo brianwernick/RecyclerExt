@@ -55,7 +55,10 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
         //Setup the standard Layout and Adapter
         listAdapter = new ListAdapter(getActivity());
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(listAdapter);
 
 
@@ -95,7 +98,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             examples = new LinkedList<>();
 
-            for (int i = 1; i < 20; i++) {
+            for (int i = 1; i < 5; i++) {
                 examples.add("Reorderable Item " + i);
             }
         }
