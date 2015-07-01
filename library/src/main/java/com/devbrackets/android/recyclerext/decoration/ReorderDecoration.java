@@ -206,6 +206,11 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         recyclerView.invalidateItemDecorations();
     }
 
+    @Override
+    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        // nothing
+    }
+
     /**
      * Sets the listener to be informed of reorder events
      *
