@@ -17,6 +17,7 @@
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.database.Cursor;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseIntArray;
@@ -136,7 +137,17 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
      * @return A SparseIntArray representing a map of list positions to cursor positions
      */
     public SparseIntArray getPositionMap() {
-        return cursorPositionMap.clone();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            return cursorPositionMap.clone();
+        }
+
+        int key;
+        final SparseIntArray clone = new SparseIntArray();
+        for (int index = 0; index < cursorPositionMap.size(); index++) {
+            key = cursorPositionMap.keyAt(index);
+            clone.put(key, cursorPositionMap.get(key));
+        }
+        return clone;
     }
 
     /**

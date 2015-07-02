@@ -60,6 +60,10 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
 
         //Inform the adapter that the data changed
         cursorAdapter.reorderItem(originalPosition, newPosition);
+    }
+
+    @Override
+    public void onItemPostReordered(int originalPosition, int newPosition) {
         performDatabaseOrderUpdate();
     }
 
@@ -124,7 +128,7 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
 
         @Override
         public SimpleDragItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_drag_item, null);
+            View view = inflater.inflate(R.layout.simple_drag_item, parent, false);
             return new SimpleDragItemViewHolder(view);
         }
 

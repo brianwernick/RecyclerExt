@@ -51,6 +51,11 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
         listAdapter.reorderItem(originalPosition, newPosition);
     }
 
+    @Override
+    public void onItemPostReordered(int originalPosition, int newPosition) {
+        // nothing
+    }
+
     private void setupRecyclerExt() {
         //Setup the standard Layout and Adapter
         listAdapter = new ListAdapter(getActivity());
@@ -105,7 +110,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
 
         @Override
         public SimpleDragItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_drag_item, null);
+            View view = inflater.inflate(R.layout.simple_drag_item, parent, false);
 
             return new SimpleDragItemViewHolder(view);
         }
