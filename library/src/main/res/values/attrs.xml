@@ -19,10 +19,6 @@
         <attr name="android:orientation" tools:ignore="ResourceName"/>
     </declare-styleable>
 
-    <declare-styleable name="recyclerExt">
-        <attr name="layoutManager" format="string"/>
-    </declare-styleable>
-
     <declare-styleable name="recyclerExt_GridLayoutManager">
         <attr name="numColumns" format="integer"/>
         <attr name="numRows" format="integer"/>

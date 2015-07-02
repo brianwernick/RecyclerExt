@@ -1,6 +1,7 @@
 /build
 library/build
 demo/build
+.gradle
 
 # Android generated
 bin

@@ -16,11 +16,14 @@
 
 package com.devbrackets.android.recyclerext.decoration;
 
+import android.animation.Animator;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -51,6 +54,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
     public interface ReorderListener {
         void onItemReordered(int originalPosition, int newPosition);
+
+        // Called after ending animation.
+        // Animation only runs on devices api 14 and above.
+        void onItemPostReordered(int originalPosition, int newPosition);
     }
 
     private RecyclerView recyclerView;
@@ -67,14 +74,18 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     private BitmapDrawable dragItem;
 
     private int selectedDragItemPosition = NO_POSITION;
+    private int selectedDragItemNewPosition = NO_POSITION;
     private Rect floatingItemStartingBounds;
     private Rect floatingItemBounds;
+
+    private int newViewTop;
 
     private PointF eventPosition = new PointF(0, 0);
     private PointF floatingItemCenter = new PointF(0, 0);
 
     private int dragHandleId = INVALID_RESOURCE_ID;
     private ReorderListener reorderListener;
+    private ReorderAnimateListener animateListener;
 
     public ReorderDecoration(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
@@ -91,8 +102,8 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         super.getItemOffsets(outRect, view, parent, state);
 
-        if (selectedDragItemPosition == NO_POSITION) {
-            view.setVisibility(View.VISIBLE);
+        if (dragState == DragState.ENDED) {
+            finishReorder(view);
             return;
         }
 
@@ -161,8 +172,8 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
             case MotionEvent.ACTION_UP:
                 if (selectedDragItemPosition != NO_POSITION) {
                     if (reorderListener != null) {
-                        int newPosition = calculateNewPosition();
-                        reorderListener.onItemReordered(selectedDragItemPosition, newPosition);
+                        selectedDragItemNewPosition = calculateNewPosition();
+                        reorderListener.onItemReordered(selectedDragItemPosition, selectedDragItemNewPosition);
                     }
                 }
                 //Purposefully fall through
@@ -193,6 +204,11 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         recyclerView.invalidateItemDecorations();
     }
 
+    @Override
+    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        // nothing
+    }
+
     /**
      * Sets the listener to be informed of reorder events
      *
@@ -200,6 +216,9 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      */
     public void setReorderListener(ReorderListener listener) {
         reorderListener = listener;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            animateListener = new ReorderAnimateListener(reorderListener);
+        }
     }
 
     /**
@@ -354,6 +373,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         updateFloatingItemCenter();
 
         int before = 0;
+        int pos = 0;
         int after = Integer.MAX_VALUE;
         for (int n = 0; n < itemsOnScreen; n++) {
 
@@ -374,8 +394,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
                 float viewMiddleY = view.getTop() + (view.getHeight() / 2);
                 if (floatingItemCenter.y > viewMiddleY && itemPos > before) {
                     before = itemPos;
+                    pos = n;
                 } else if (floatingItemCenter.y <= viewMiddleY && itemPos < after) {
                     after = itemPos;
+                    pos = n;
                 }
             }
 
@@ -384,24 +406,39 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
                 float viewMiddleX = view.getLeft() + (view.getWidth() / 2);
                 if (floatingItemCenter.x > viewMiddleX && itemPos > before) {
                     before = itemPos;
+                    pos = n;
                 } else if (floatingItemCenter.x <= viewMiddleX && itemPos < after) {
                     after = itemPos;
+                    pos = n;
                 }
             }
         }
 
+        int newPosition;
         if (after != Integer.MAX_VALUE) {
             if (after < selectedDragItemPosition) {
-                after++;
+                newPosition = after;
+                updateNewViewTop(pos, true);
+            } else {
+                newPosition = after - 1;
+                updateNewViewTop(pos - 1, false);
             }
 
-            return after - 1;
         } else {
             if (before < selectedDragItemPosition) {
                 before++;
+                pos++;
             }
+            newPosition = before;
+            updateNewViewTop(pos, false);
+        }
+        return newPosition;
+    }
 
-            return before;
+    private void updateNewViewTop(int childPosition, boolean draggedUp) {
+        View view = recyclerView.getLayoutManager().getChildAt(childPosition);
+        if (view != null) {
+            newViewTop = (view.getTop() + ((view.getVisibility() == View.VISIBLE) ? (draggedUp ? -view.getHeight() : view.getHeight()) : 0));
         }
     }
 
@@ -544,5 +581,58 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         retDrawable.setBounds(floatingItemBounds);
 
         return retDrawable;
+    }
+
+    private void finishReorder(View view) {
+        if (animateListener != null) {
+            animateListener.setPositions(selectedDragItemPosition, selectedDragItemNewPosition);
+        } else if (reorderListener != null){
+            reorderListener.onItemPostReordered(selectedDragItemPosition, selectedDragItemNewPosition);
+            selectedDragItemNewPosition = NO_POSITION;
+        }
+        selectedDragItemPosition = NO_POSITION;
+        view.setVisibility(View.VISIBLE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH &&
+                recyclerView.getChildAdapterPosition(view) == selectedDragItemNewPosition) {
+            selectedDragItemNewPosition = NO_POSITION;
+            view.setTranslationY(floatingItemBounds.top - newViewTop);
+            view.animate().translationY(0f).setDuration(100).setListener(animateListener).start();
+        }
+    }
+
+    @TargetApi(14)
+    private static class ReorderAnimateListener implements Animator.AnimatorListener {
+        private int start;
+        private int end;
+        private ReorderListener listener;
+
+        public ReorderAnimateListener(ReorderListener listener) {
+            this.listener = listener;
+        }
+
+        public void setPositions(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            listener.onItemPostReordered(start, end);
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            listener.onItemPostReordered(start, end);
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+
+        }
     }
 }
