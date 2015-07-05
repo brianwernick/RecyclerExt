@@ -34,6 +34,7 @@ import android.view.animation.TranslateAnimation;
  * An ItemDecoration that performs the functionality to show the reordering of
  * list items without any space between items.
  */
+@SuppressWarnings("unused")
 public class ReorderDecoration extends RecyclerView.ItemDecoration implements RecyclerView.OnItemTouchListener {
     public static final int NO_POSITION = -1;
     public static final int INVALID_RESOURCE_ID = 0;
@@ -89,7 +90,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     private Rect floatingItemStartingBounds;
     private Rect floatingItemBounds;
 
-    private int newViewTop;
+    private int newViewStart;
 
     private PointF eventPosition = new PointF(0, 0);
     private PointF floatingItemCenter = new PointF(0, 0);
@@ -429,35 +430,62 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         if (after != Integer.MAX_VALUE) {
             if (after < selectedDragItemPosition) {
                 newPosition = after;
-                updateNewViewTop(pos, true);
+                updateNewViewStart(pos, true);
             } else {
                 newPosition = after - 1;
-                updateNewViewTop(pos - 1, false);
+                updateNewViewStart(pos - 1, false);
             }
-
         } else {
             if (before < selectedDragItemPosition) {
                 before++;
                 pos++;
             }
+
             newPosition = before;
-            updateNewViewTop(pos, false);
+            updateNewViewStart(pos, false);
         }
+
         return newPosition;
     }
 
-    private void updateNewViewTop(int childPosition, boolean draggedUp) {
+    /**
+     * Updates the stored position for the start of the view.  This will be the
+     * top when Vertical and left when Horizontal.
+     *
+     * @param childPosition The position of the view in the RecyclerView
+     * @param draggedUp True if the view has been moved up or to the left
+     */
+    private void updateNewViewStart(int childPosition, boolean draggedUp) {
         View view = recyclerView.getLayoutManager().getChildAt(childPosition);
-        if (view != null) {
-            newViewTop = (view.getTop() + ((view.getVisibility() == View.VISIBLE) ? (draggedUp ? -view.getHeight() : view.getHeight()) : 0));
+        if (view == null) {
+            return;
         }
+
+        int start = orientation == LayoutOrientation.VERTICAL ? view.getTop() : view.getLeft();
+        int viewDimen = orientation == LayoutOrientation.VERTICAL ? view.getHeight() : view.getWidth();
+        viewDimen *= draggedUp ? -1 : 1;
+
+        newViewStart = start + (view.getVisibility() == View.VISIBLE ? viewDimen : 0);
     }
 
+    /**
+     * Retrieves the new center for the bitmap representing the item being dragged
+     */
     private void updateFloatingItemCenter() {
         floatingItemCenter.x = floatingItemBounds.left + (floatingItemStartingBounds.width() / 2);
         floatingItemCenter.y = floatingItemBounds.top + (floatingItemStartingBounds.height() / 2);
     }
 
+    /**
+     * Updates the vertical view offsets if the dragging view has been moved around the <code>view</code>.
+     * This happens when the dragging view starts above the <code>view</code> and has been dragged
+     * below it, or vice versa.
+     *
+     * @param view The view to compare with the dragging items current and original positions
+     * @param itemPosition The position for the <code>view</code>
+     * @param middle The center of the floating item
+     * @param outRect The {@link Rect} to update the position in
+     */
     private void setVerticalOffsets(View view, int itemPosition, PointF middle, Rect outRect) {
         if (orientation == LayoutOrientation.HORIZONTAL) {
             return;
@@ -482,30 +510,47 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         }
     }
 
+    /**
+     * Updates the horizontal view offsets if the dragging view has been moved around the <code>view</code>.
+     * This happens when the dragging view starts before the <code>view</code> and has been dragged
+     * after it, or vice versa.
+     *
+     * @param view The view to compare with the dragging items current and original positions
+     * @param itemPosition The position for the <code>view</code>
+     * @param middle The center of the floating item
+     * @param outRect The {@link Rect} to update the position in
+     */
     private void setHorizontalOffsets(View view, int itemPosition, PointF middle, Rect outRect) {
         if (orientation == LayoutOrientation.VERTICAL) {
             return;
         }
 
-        if (itemPosition > selectedDragItemPosition && view.getRight() < middle.y) {
-            float amountRight = (middle.x - view.getRight()) / (float) view.getWidth();
+        if (itemPosition > selectedDragItemPosition && view.getLeft() < middle.x) {
+            float amountRight = (middle.x - view.getLeft()) / (float) view.getWidth();
             if (amountRight > 1) {
                 amountRight = 1;
             }
 
-            outRect.top = -(int) (floatingItemBounds.width() * amountRight);
-            outRect.bottom = (int) (floatingItemBounds.width() * amountRight);
-        } else if ((itemPosition < selectedDragItemPosition) && (view.getLeft() > middle.y)) {
-            float amountLeft = ((float) view.getLeft() - middle.x) / (float) view.getWidth();
+            outRect.left = -(int) (floatingItemBounds.width() * amountRight);
+            outRect.right = (int) (floatingItemBounds.width() * amountRight);
+        } else if ((itemPosition < selectedDragItemPosition) && (view.getRight() > middle.x)) {
+            float amountLeft = ((float) view.getRight() - middle.x) / (float) view.getWidth();
             if (amountLeft > 1) {
                 amountLeft = 1;
             }
 
-            outRect.right = (int) (floatingItemBounds.width() * amountLeft);
-            outRect.left = -(int) (floatingItemBounds.width() * amountLeft);
+            outRect.left = (int) (floatingItemBounds.width() * amountLeft);
+            outRect.right = -(int) (floatingItemBounds.width() * amountLeft);
         }
     }
 
+    /**
+     * Performs the functionality to detect and initiate the scrolling of vertical
+     * lists when the view being dragged has reached an end of the containing
+     * {@link RecyclerView}
+     *
+     * @param fingerPosition The current position for the dragging finger
+     */
     private void performVerticalEdgeScroll(PointF fingerPosition) {
         if (!edgeScrollingEnabled || orientation == LayoutOrientation.HORIZONTAL) {
             return;
@@ -523,6 +568,13 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         recyclerView.scrollBy(0, (int) scrollAmount);
     }
 
+    /**
+     * Performs the functionality to detect and initiate the scrolling of horizontal
+     * lists when the view being dragged has reached an end of the containing
+     * {@link RecyclerView}
+     *
+     * @param fingerPosition The current position for the dragging finger
+     */
     private void performHorizontalEdgeScroll(PointF fingerPosition) {
         if (!edgeScrollingEnabled || orientation == LayoutOrientation.VERTICAL) {
             return;
@@ -540,6 +592,13 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         recyclerView.scrollBy((int) scrollAmount, 0);
     }
 
+    /**
+     * Updates the vertical position for the floating bitmap that represents the
+     * view being dragged.
+     *
+     * @param fingerPosition The current position of the dragging finger
+     * @param viewMiddle The center of the view being dragged
+     */
     private void updateVerticalBounds(PointF fingerPosition, PointF viewMiddle) {
         if (orientation == LayoutOrientation.HORIZONTAL) {
             return;
@@ -557,6 +616,13 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         floatingItemBounds.bottom = floatingItemBounds.top + floatingItemStartingBounds.height();
     }
 
+    /**
+     * Updates the horizontal position for the floating bitmap that represents the
+     * view being dragged.
+     *
+     * @param fingerPosition The current position of the dragging finger
+     * @param viewMiddle The center of the view being dragged
+     */
     private void updateHorizontalBounds(PointF fingerPosition, PointF viewMiddle) {
         if (orientation == LayoutOrientation.VERTICAL) {
             return;
@@ -594,6 +660,11 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         return retDrawable;
     }
 
+    /**
+     * Animates the dragged views position to the final resting position
+     *
+     * @param view The view to animate
+     */
     private void finishReorder(View view) {
         if (smoothFinishAnimationListener != null) {
             smoothFinishAnimationListener.setPositions(selectedDragItemPosition, selectedDragItemNewPosition);
@@ -605,8 +676,8 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         //Performs the ending animation
         if (recyclerView.getChildAdapterPosition(view) == selectedDragItemNewPosition) {
             selectedDragItemNewPosition = NO_POSITION;
-            int startYDelta = floatingItemBounds.top - newViewTop;
-            int startXDelta = 0;
+            int startYDelta = orientation == LayoutOrientation.VERTICAL ? floatingItemBounds.top - newViewStart : 0;
+            int startXDelta = orientation == LayoutOrientation.HORIZONTAL ? floatingItemBounds.left - newViewStart : 0;
 
             SmoothFinishAnimation anim = new SmoothFinishAnimation(startYDelta, startXDelta, smoothFinishAnimationListener);
             view.startAnimation(anim);

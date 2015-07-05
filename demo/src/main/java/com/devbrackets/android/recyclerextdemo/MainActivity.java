@@ -68,7 +68,8 @@ public class MainActivity extends Activity {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             examples = new LinkedList<>();
-            examples.add("Reorderable List Adapter");
+            examples.add("Horizontal Reorderable List Adapter");
+            examples.add("Vertical Reorderable List Adapter");
             examples.add("Cursor Adapter");
             examples.add("Reorderable Cursor Adapter");
         }
@@ -96,13 +97,17 @@ public class MainActivity extends Activity {
         public void onClick(View v) {
             switch ((Integer)v.getTag()) {
                 case 0:
+                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_HORIZONTAL);
+                    break;
+
+                case 1:
                     startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER);
                     break;
 
-                case 1:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
+                case 2:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
                     break;
 
-                case 2:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_CURSOR);
+                case 3:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_CURSOR);
                     break;
             }
         }
