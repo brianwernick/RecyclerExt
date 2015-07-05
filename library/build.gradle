@@ -3,7 +3,7 @@ apply plugin: 'maven'
 apply plugin: 'bintray-release'
 
 def versionMajor = 0
-def versionMinor = 7
+def versionMinor = 8
 def versionPatch = 0
 
 // Maven GAV
@@ -17,13 +17,17 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.1.1'
-    compile 'com.android.support:recyclerview-v7:22.1.1'
+    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:recyclerview-v7:22.2.0'
 }
 
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
+
+    lintOptions {
+        abortOnError false
+    }
 
     defaultConfig {
         minSdkVersion 7
@@ -61,6 +65,7 @@ uploadArchives {
     }
 }
 
+// ======= BINTRAY DEPLOY (command: $ ./gradlew clean build bintrayUpload -PbintrayUser=BINTRAY_USERNAME -PbintrayKey=BINTRAY_KEY -PdryRun=false) ====
 publish {
     groupId = libraryGroupId
     artifactId = libraryBaseName
