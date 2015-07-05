@@ -16,19 +16,19 @@
 
 package com.devbrackets.android.recyclerext.decoration;
 
-import android.animation.Animator;
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 
 /**
  * An ItemDecoration that performs the functionality to show the reordering of
@@ -53,10 +53,21 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     }
 
     public interface ReorderListener {
+        /**
+         * Called when the user drag event ends, informing the listener of the changed position
+         *
+         * @param originalPosition The position the dragged view started at
+         * @param newPosition The position the dragged view should be saved as
+         */
         void onItemReordered(int originalPosition, int newPosition);
 
-        // Called after ending animation.
-        // Animation only runs on devices api 14 and above.
+        /**
+         * Called when the animation for the view position has finished.  This should be used for
+         * actually updating the backing data structure (e.g. calling swap on a {@link com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter})
+         *
+         * @param originalPosition The position the dragged view started at
+         * @param newPosition The position the dragged view should be saved as
+         */
         void onItemPostReordered(int originalPosition, int newPosition);
     }
 
@@ -85,7 +96,9 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
     private int dragHandleId = INVALID_RESOURCE_ID;
     private ReorderListener reorderListener;
-    private ReorderAnimateListener animateListener;
+
+    @Nullable
+    private SmoothFinishAnimationListener smoothFinishAnimationListener;
 
     public ReorderDecoration(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
@@ -206,7 +219,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
     @Override
     public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-        // nothing
+        // Purposefully left blank
     }
 
     /**
@@ -216,9 +229,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      */
     public void setReorderListener(ReorderListener listener) {
         reorderListener = listener;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            animateListener = new ReorderAnimateListener(reorderListener);
-        }
+        smoothFinishAnimationListener = new SmoothFinishAnimationListener(reorderListener);
     }
 
     /**
@@ -375,10 +386,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
         int before = 0;
         int pos = 0;
         int after = Integer.MAX_VALUE;
-        for (int n = 0; n < itemsOnScreen; n++) {
+        for (int screenPosition = 0; screenPosition < itemsOnScreen; screenPosition++) {
 
-            //Grabs the view at n
-            View view = recyclerView.getLayoutManager().getChildAt(n);
+            //Grabs the view at screenPosition
+            View view = recyclerView.getLayoutManager().getChildAt(screenPosition);
             if (view.getVisibility() != View.VISIBLE) {
                 continue;
             }
@@ -394,10 +405,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
                 float viewMiddleY = view.getTop() + (view.getHeight() / 2);
                 if (floatingItemCenter.y > viewMiddleY && itemPos > before) {
                     before = itemPos;
-                    pos = n;
+                    pos = screenPosition;
                 } else if (floatingItemCenter.y <= viewMiddleY && itemPos < after) {
                     after = itemPos;
-                    pos = n;
+                    pos = screenPosition;
                 }
             }
 
@@ -406,10 +417,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
                 float viewMiddleX = view.getLeft() + (view.getWidth() / 2);
                 if (floatingItemCenter.x > viewMiddleX && itemPos > before) {
                     before = itemPos;
-                    pos = n;
+                    pos = screenPosition;
                 } else if (floatingItemCenter.x <= viewMiddleX && itemPos < after) {
                     after = itemPos;
-                    pos = n;
+                    pos = screenPosition;
                 }
             }
         }
@@ -584,55 +595,78 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
     }
 
     private void finishReorder(View view) {
-        if (animateListener != null) {
-            animateListener.setPositions(selectedDragItemPosition, selectedDragItemNewPosition);
-        } else if (reorderListener != null){
-            reorderListener.onItemPostReordered(selectedDragItemPosition, selectedDragItemNewPosition);
-            selectedDragItemNewPosition = NO_POSITION;
+        if (smoothFinishAnimationListener != null) {
+            smoothFinishAnimationListener.setPositions(selectedDragItemPosition, selectedDragItemNewPosition);
         }
+
         selectedDragItemPosition = NO_POSITION;
         view.setVisibility(View.VISIBLE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH &&
-                recyclerView.getChildAdapterPosition(view) == selectedDragItemNewPosition) {
+
+        //Performs the ending animation
+        if (recyclerView.getChildAdapterPosition(view) == selectedDragItemNewPosition) {
             selectedDragItemNewPosition = NO_POSITION;
-            view.setTranslationY(floatingItemBounds.top - newViewTop);
-            view.animate().translationY(0f).setDuration(100).setListener(animateListener).start();
+            int startYDelta = floatingItemBounds.top - newViewTop;
+            int startXDelta = 0;
+
+            SmoothFinishAnimation anim = new SmoothFinishAnimation(startYDelta, startXDelta, smoothFinishAnimationListener);
+            view.startAnimation(anim);
         }
     }
 
-    @TargetApi(14)
-    private static class ReorderAnimateListener implements Animator.AnimatorListener {
-        private int start;
-        private int end;
+    /**
+     * Used to animate the final position for the dragged view so that it doesn't pop when
+     * dragged to the bottom of the list.
+     */
+    private static class SmoothFinishAnimation extends TranslateAnimation {
+        private static final int DURATION = 100; //milliseconds
+
+        public SmoothFinishAnimation(int startYDelta, int startXDelta, AnimationListener listener) {
+            super(startXDelta, 0, startYDelta, 0);
+            setAnimationListener(listener);
+            setup();
+        }
+
+        private void setup() {
+            setDuration(DURATION);
+            setInterpolator(new FastOutSlowInInterpolator());
+        }
+    }
+
+    /**
+     * Listens to the {@link com.devbrackets.android.recyclerext.decoration.ReorderDecoration.SmoothFinishAnimation}
+     * and properly informs the {@link #reorderListener} when the animation is complete
+     */
+    private static class SmoothFinishAnimationListener implements Animation.AnimationListener {
+        private int startPosition;
+        private int endPosition;
+
+        @Nullable
         private ReorderListener listener;
 
-        public ReorderAnimateListener(ReorderListener listener) {
+        public SmoothFinishAnimationListener(@Nullable ReorderListener listener) {
             this.listener = listener;
         }
 
-        public void setPositions(int start, int end) {
-            this.start = start;
-            this.end = end;
+        public void setPositions(int startPosition, int endPosition) {
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
         }
 
         @Override
-        public void onAnimationStart(Animator animation) {
-
+        public void onAnimationStart(Animation animation) {
+            //Purposefully left blank
         }
 
         @Override
-        public void onAnimationEnd(Animator animation) {
-            listener.onItemPostReordered(start, end);
+        public void onAnimationEnd(Animation animation) {
+            if (listener != null) {
+                listener.onItemPostReordered(startPosition, endPosition);
+            }
         }
 
         @Override
-        public void onAnimationCancel(Animator animation) {
-            listener.onItemPostReordered(start, end);
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
-
+        public void onAnimationRepeat(Animation animation) {
+            //Purposefully left blank
         }
     }
 }
