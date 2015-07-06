@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'bintray-release'
 
-def versionMajor = 0
-def versionMinor = 8
+def versionMajor = 1
+def versionMinor = 0
 def versionPatch = 0
 
 // Maven GAV
