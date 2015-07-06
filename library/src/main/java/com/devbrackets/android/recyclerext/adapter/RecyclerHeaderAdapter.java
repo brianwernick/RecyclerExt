@@ -3,6 +3,8 @@ package com.devbrackets.android.recyclerext.adapter;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,12 +38,16 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     @SuppressWarnings("unchecked")
     public void onBindViewHolder(ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
+        int childPosition = determineChildPosition(position);
 
         if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C)holder, determineChildPosition(position));
+            onBindChildViewHolder((C)holder, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H)holder, determineChildPosition(position));
+            onBindHeaderViewHolder((H)holder, childPosition);
+            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
         }
+
+        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
     }
 
     @Override

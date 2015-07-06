@@ -4,6 +4,8 @@ import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,12 +55,16 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     @SuppressWarnings("unchecked")
     public void onBindViewHolder(ViewHolder holder, Cursor cursor, int position) {
         int viewType = getItemViewType(position);
+        int childPosition = determineChildPosition(position);
 
         if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C)holder, cursor, determineChildPosition(position));
+            onBindChildViewHolder((C)holder, cursor, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H)holder, cursor, determineChildPosition(position));
+            onBindHeaderViewHolder((H) holder, cursor, childPosition);
+            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
         }
+
+        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
     }
 
     @Override

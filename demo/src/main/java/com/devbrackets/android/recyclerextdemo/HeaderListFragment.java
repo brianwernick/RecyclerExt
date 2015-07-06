@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
+import com.devbrackets.android.recyclerext.decoration.StickyViewDecoration;
 import com.devbrackets.android.recyclerextdemo.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
@@ -48,6 +49,7 @@ public class HeaderListFragment extends Fragment {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(cursorAdapter);
+        recyclerView.addItemDecoration(new StickyViewDecoration(recyclerView));
     }
 
 
