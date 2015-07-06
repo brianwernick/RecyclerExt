@@ -1,5 +1,6 @@
 package com.devbrackets.android.recyclerextdemo.viewholder;
 
+import android.support.annotation.ColorInt;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
@@ -20,6 +21,10 @@ public class SimpleTextViewHolder extends RecyclerView.ViewHolder {
 
     public void setText(String text) {
         textView.setText(text);
+    }
+
+    public void setBackgroundColor(@ColorInt int color) {
+        textView.setBackgroundColor(color);
     }
 
     public void setPosition(int position) {
