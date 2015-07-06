@@ -6,7 +6,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
@@ -75,8 +74,6 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
             if (type == null || type != RecyclerHeaderAdapter.VIEW_TYPE_HEADER) {
                 return;
             }
-
-            Log.d("HeaderListFragment", "firstVisible = " + firstVisible.getTag());
 
             //TODO: we need to animate/scroll with the view
             Long headerId = (Long)firstVisible.getTag(R.id.sticky_view_header_id);
