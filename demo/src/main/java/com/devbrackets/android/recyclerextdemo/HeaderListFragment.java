@@ -19,7 +19,8 @@ import java.util.List;
 
 
 /**
- * An example of the HeaderAdapter
+ * An example of the {@link com.devbrackets.android.recyclerextdemo.HeaderListFragment.HeaderAdapter}
+ * and using the {@link StickyViewDecoration} to keep the header at the top of the screen when reached.
  */
 public class HeaderListFragment extends Fragment {
     private DBHelper dbHelper;
@@ -45,10 +46,10 @@ public class HeaderListFragment extends Fragment {
     }
 
     private void setupRecyclerExt() {
-        HeaderAdapter cursorAdapter = new HeaderAdapter(getActivity(), ItemDAO.findAll(dbHelper.getWritableDatabase()));
+        HeaderAdapter adapter = new HeaderAdapter(getActivity(), ItemDAO.findAll(dbHelper.getWritableDatabase()));
 
+        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(cursorAdapter);
         recyclerView.addItemDecoration(new StickyViewDecoration(recyclerView));
     }
 

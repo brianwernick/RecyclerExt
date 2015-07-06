@@ -34,8 +34,15 @@ import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
  * RecyclerView's frame.
  */
 public class StickyViewDecoration extends RecyclerView.ItemDecoration {
+
+    public enum LayoutOrientation {
+        VERTICAL,
+        HORIZONTAL
+    }
+
     @Nullable
     private BitmapDrawable stickyItem;
+    private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
     public StickyViewDecoration(RecyclerView parent) {
         parent.addOnScrollListener(new StickyViewScrollListener());
@@ -52,6 +59,26 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         super.getItemOffsets(outRect, view, parent, state);
     }
+
+
+    /**
+     * Sets the orientation of the current layout
+     *
+     * @param orientation The layouts orientation
+     */
+    public void setOrientation(LayoutOrientation orientation) {
+        this.orientation = orientation;
+    }
+
+    /**
+     * Retrieves the current orientation to use for edgeScrolling and position calculations.
+     *
+     * @return The current orientation [default: {@link LayoutOrientation#VERTICAL}]
+     */
+    public LayoutOrientation getOrientation() {
+        return orientation;
+    }
+
 
     /**
      * Generates the Bitmap that will be used to represent the view stuck at the top of the
@@ -116,8 +143,7 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
                 View view = recyclerView.getLayoutManager().getChildAt(viewIndex);
                 view.getLocationInWindow(windowLocation);
 
-                //TODO: currently only vertical
-                int startLoc = windowLocation[1];
+                int startLoc = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
 
                 //Performs the comparison to determine if the current view is before all others
                 if (view.getVisibility() == View.VISIBLE && startLoc < currentMinPosition) {
