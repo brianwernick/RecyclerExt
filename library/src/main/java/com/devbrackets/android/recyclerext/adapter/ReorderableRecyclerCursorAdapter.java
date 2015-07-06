@@ -141,13 +141,7 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
             return cursorPositionMap.clone();
         }
 
-        int key;
-        final SparseIntArray clone = new SparseIntArray();
-        for (int index = 0; index < cursorPositionMap.size(); index++) {
-            key = cursorPositionMap.keyAt(index);
-            clone.put(key, cursorPositionMap.get(key));
-        }
-        return clone;
+        return clone(cursorPositionMap);
     }
 
     /**
@@ -168,5 +162,23 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
         for (int i: removeList) {
             cursorPositionMap.delete(i);
         }
+    }
+
+    /**
+     * Clones the specified {@link SparseIntArray} using an iterator
+     *
+     * @param sparseIntArray The {@link SparseIntArray} to clone
+     * @return A clone of the specified <code>sparseIntArray</code>
+     */
+    private SparseIntArray clone(SparseIntArray sparseIntArray) {
+        SparseIntArray clone = new SparseIntArray();
+
+        //Iterates through the keys, adding the value to the clone
+        for (int index = 0; index < sparseIntArray.size(); index++) {
+            int key = sparseIntArray.keyAt(index);
+            clone.put(key, sparseIntArray.get(key));
+        }
+
+        return clone;
     }
 }
