@@ -104,7 +104,7 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
 
 
     private class StickyViewScrollListener extends RecyclerView.OnScrollListener {
-        private long currentStickyId = 0;
+        private long currentStickyId = Long.MIN_VALUE;
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
