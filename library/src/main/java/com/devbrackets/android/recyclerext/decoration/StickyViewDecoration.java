@@ -42,9 +42,11 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
 
     @Nullable
     private BitmapDrawable stickyItem;
+    private RecyclerView parent;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
     public StickyViewDecoration(RecyclerView parent) {
+        this.parent = parent;
         parent.addOnScrollListener(new StickyViewScrollListener());
     }
 
@@ -105,6 +107,8 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
 
     private class StickyViewScrollListener extends RecyclerView.OnScrollListener {
         private long currentStickyId = Long.MIN_VALUE;
+        private int[] windowLocation = new int[2];
+        private int parentStart = Integer.MIN_VALUE;
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -135,7 +139,6 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
             }
 
             View firstView = null;
-            int[] windowLocation = new int[2];
             int currentMinPosition = Integer.MAX_VALUE;
 
             //Iterates through all the visible views, finding the first (topmost or leftmost) one
@@ -151,8 +154,14 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
                     firstView = view;
                 }
 
+                //Make sure we have a start point for the parent so that we can break early
+                if (parentStart == Integer.MIN_VALUE) {
+                    parent.getLocationInWindow(windowLocation);
+                    parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
+                }
+
                 //We can exit early when the view has to be the first one
-                if (currentMinPosition <= 0) {
+                if (currentMinPosition <= parentStart) {
                     break;
                 }
             }
