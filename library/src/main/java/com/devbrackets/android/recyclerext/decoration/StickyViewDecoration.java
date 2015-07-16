@@ -90,7 +90,7 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
      * @return The bitmap representing the drag view
      */
     private BitmapDrawable createStickyViewBitmap(View view) {
-        Rect stickyViewBounds = new Rect(0, 0, view.getRight(), view.getBottom());
+        Rect stickyViewBounds = new Rect(0, 0, view.getWidth(), view.getHeight());
 
         Bitmap bitmap = Bitmap.createBitmap(stickyViewBounds.width(), stickyViewBounds.height(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
