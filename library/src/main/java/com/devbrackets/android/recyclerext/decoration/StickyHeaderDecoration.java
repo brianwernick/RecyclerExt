@@ -20,9 +20,9 @@ package com.devbrackets.android.recyclerext.decoration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
@@ -41,7 +41,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Nullable
-    private BitmapDrawable stickyHeader;
+    private Bitmap stickyHeader;
+    private int stickyStart = 0;
     private RecyclerView parent;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
@@ -53,7 +54,9 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
         if (stickyHeader != null) {
-            stickyHeader.draw(c);
+            int x = orientation == LayoutOrientation.HORIZONTAL ? stickyStart : 0;
+            int y = orientation == LayoutOrientation.HORIZONTAL ? 0 : stickyStart;
+            c.drawBitmap(stickyHeader, x,y, null);
         }
     }
 
@@ -87,22 +90,20 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * @param view The view to create the drag bitmap from
      * @return The bitmap representing the drag view
      */
-    private BitmapDrawable createStickyViewBitmap(View view) {
+    private Bitmap createStickyViewBitmap(View view) {
         Rect stickyViewBounds = new Rect(0, 0, view.getRight() - view.getLeft(), view.getBottom() - view.getTop());
 
         Bitmap bitmap = Bitmap.createBitmap(stickyViewBounds.width(), stickyViewBounds.height(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         view.draw(canvas);
 
-        BitmapDrawable retDrawable = new BitmapDrawable(view.getResources(), bitmap);
-        retDrawable.setBounds(stickyViewBounds);
-
-        return retDrawable;
+        return bitmap;
     }
 
 
 
 
+    //TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
     private class StickyViewScrollListener extends RecyclerView.OnScrollListener {
         private long currentStickyId = Long.MIN_VALUE;
         private int[] windowLocation = new int[2];
@@ -115,15 +116,27 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 return;
             }
 
-            //TODO: we need to animate/scroll with the view
+            //If the next header is different than the current one, perform the swap
             Long headerId = (Long)nextHeader.getTag(R.id.sticky_view_header_id);
             if (headerId != null && headerId != currentStickyId) {
-                stickyHeader = createStickyViewBitmap(nextHeader);
-                currentStickyId = headerId;
+                performStickyHeaderSwap(nextHeader, headerId);
             }
         }
 
-        //TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
+        private void performStickyHeaderSwap(View nextHeader, long headerId) {
+            int nextHeaderStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
+            Log.d("StickyDecoration", "nextHeaderStart: " + nextHeaderStart + ", parentStart: " + parentStart);
+
+            int trueStart = nextHeaderStart - parentStart;
+            if (stickyHeader != null && trueStart > 0) {
+                stickyStart = trueStart - (orientation == LayoutOrientation.HORIZONTAL ? stickyHeader.getWidth() : stickyHeader.getHeight());
+            } else {
+                stickyStart = 0;
+                currentStickyId = headerId;
+                stickyHeader = createStickyViewBitmap(nextHeader);
+            }
+        }
+
         @Nullable
         private View findNextHeader(RecyclerView recyclerView) {
             int attachedViewCount = recyclerView.getLayoutManager().getChildCount();
@@ -141,9 +154,9 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             int maxStartPosition = parentStart;
             if (stickyHeader != null) {
                 if (orientation == LayoutOrientation.HORIZONTAL) {
-                    maxStartPosition += stickyHeader.getBounds().left + stickyHeader.getBounds().right + 1;
+                    maxStartPosition += stickyHeader.getWidth() + 1;
                 } else {
-                    maxStartPosition += stickyHeader.getBounds().top + stickyHeader.getBounds().bottom + 1;
+                    maxStartPosition += stickyHeader.getHeight() + 1;
                 }
             }
 
