@@ -22,7 +22,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
@@ -31,7 +30,7 @@ import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 /**
  * A RecyclerView Decoration that allows for Header views from
  * the {@link RecyclerHeaderAdapter} to be persisted when they
- * reach the top of the RecyclerView's frame.
+ * reach the start of the RecyclerView's frame.
  */
 public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
@@ -58,11 +57,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             int y = orientation == LayoutOrientation.HORIZONTAL ? 0 : stickyStart;
             c.drawBitmap(stickyHeader, x,y, null);
         }
-    }
-
-    @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-        super.getItemOffsets(outRect, view, parent, state);
     }
 
     /**
@@ -103,7 +97,15 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
 
 
-    //TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
+    /**
+     * Listens to the scroll events for the RecyclerView that will have
+     * sticky headers.  When a new header reaches the start it will be
+     * transformed in to a sticky view and attached to the start of the
+     * RecyclerView.  Additionally, when a new header is reaching the
+     * start, the headers will be transitioned smoothly
+     *
+     * TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
+     */
     private class StickyViewScrollListener extends RecyclerView.OnScrollListener {
         private long currentStickyId = Long.MIN_VALUE;
         private int[] windowLocation = new int[2];
@@ -123,11 +125,19 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
         }
 
+        /**
+         * If the next header is at the start of the RecyclerView then the
+         * {@link #stickyHeader} will be updated.  Otherwise the position of the
+         * {@link #stickyHeader} will be updated so that it will smoothly move off
+         * the screen as the <code>nextHeader</code> view reaches the top.
+         *
+         * @param nextHeader The header view to replace the current one
+         * @param headerId The id for the header view
+         */
         private void performStickyHeaderSwap(View nextHeader, long headerId) {
             int nextHeaderStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
-            Log.d("StickyDecoration", "nextHeaderStart: " + nextHeaderStart + ", parentStart: " + parentStart);
-
             int trueStart = nextHeaderStart - parentStart;
+
             if (stickyHeader != null && trueStart > 0) {
                 stickyStart = trueStart - (orientation == LayoutOrientation.HORIZONTAL ? stickyHeader.getWidth() : stickyHeader.getHeight());
             } else {
@@ -137,6 +147,12 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
         }
 
+        /**
+         * Finds the next visible header view.
+         *
+         * @param recyclerView The RecyclerView to find the next header for
+         * @return The next header or null
+         */
         @Nullable
         private View findNextHeader(RecyclerView recyclerView) {
             int attachedViewCount = recyclerView.getLayoutManager().getChildCount();
@@ -178,6 +194,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 }
             }
 
+            //We shouldn't reach this under normal circumstances
             return null;
         }
     }
