@@ -29,11 +29,11 @@ import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 
 /**
- * A RecyclerView Decoration that allows specific views (e.g. headers
- * from RecyclerHeaderAdapter) to be persisted when the reach the top of the
- * RecyclerView's frame.
+ * A RecyclerView Decoration that allows for Header views from
+ * the {@link RecyclerHeaderAdapter} to be persisted when they
+ * reach the top of the RecyclerView's frame.
  */
-public class StickyViewDecoration extends RecyclerView.ItemDecoration {
+public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
     public enum LayoutOrientation {
         VERTICAL,
@@ -41,19 +41,19 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Nullable
-    private BitmapDrawable stickyItem;
+    private BitmapDrawable stickyHeader;
     private RecyclerView parent;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
-    public StickyViewDecoration(RecyclerView parent) {
+    public StickyHeaderDecoration(RecyclerView parent) {
         this.parent = parent;
         parent.addOnScrollListener(new StickyViewScrollListener());
     }
 
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        if (stickyItem != null) {
-            stickyItem.draw(c);
+        if (stickyHeader != null) {
+            stickyHeader.draw(c);
         }
     }
 
@@ -61,7 +61,6 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         super.getItemOffsets(outRect, view, parent, state);
     }
-
 
     /**
      * Sets the orientation of the current layout
@@ -81,7 +80,6 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
         return orientation;
     }
 
-
     /**
      * Generates the Bitmap that will be used to represent the view stuck at the top of the
      * parent RecyclerView.
@@ -90,7 +88,7 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
      * @return The bitmap representing the drag view
      */
     private BitmapDrawable createStickyViewBitmap(View view) {
-        Rect stickyViewBounds = new Rect(0, 0, view.getRight(), view.getBottom());
+        Rect stickyViewBounds = new Rect(0, 0, view.getRight() - view.getLeft(), view.getBottom() - view.getTop());
 
         Bitmap bitmap = Bitmap.createBitmap(stickyViewBounds.width(), stickyViewBounds.height(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
@@ -112,61 +110,62 @@ public class StickyViewDecoration extends RecyclerView.ItemDecoration {
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            View firstVisible = findFirstVisibleView(recyclerView);
-            if (firstVisible == null) {
-                return;
-            }
-
-            //Retrieves the type of view and makes sure we only use the header views
-            Integer type = (Integer)firstVisible.getTag(R.id.sticky_view_type_tag);
-            if (type == null || type != RecyclerHeaderAdapter.VIEW_TYPE_HEADER) {
+            View nextHeader = findNextHeader(recyclerView);
+            if (nextHeader == null) {
                 return;
             }
 
             //TODO: we need to animate/scroll with the view
-            Long headerId = (Long)firstVisible.getTag(R.id.sticky_view_header_id);
+            Long headerId = (Long)nextHeader.getTag(R.id.sticky_view_header_id);
             if (headerId != null && headerId != currentStickyId) {
-                stickyItem = createStickyViewBitmap(firstVisible);
+                stickyHeader = createStickyViewBitmap(nextHeader);
                 currentStickyId = headerId;
             }
         }
 
+        //TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
         @Nullable
-        private View findFirstVisibleView(RecyclerView recyclerView) {
+        private View findNextHeader(RecyclerView recyclerView) {
             int attachedViewCount = recyclerView.getLayoutManager().getChildCount();
             if (attachedViewCount <= 0) {
                 return null;
             }
 
-            View firstView = null;
-            int currentMinPosition = Integer.MAX_VALUE;
+            //Make sure we have the start of the RecyclerView stored
+            if (parentStart == Integer.MIN_VALUE) {
+                parent.getLocationInWindow(windowLocation);
+                parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
+            }
 
-            //Iterates through all the visible views, finding the first (topmost or leftmost) one
+            //Determines the max start position to look for the next sticky header
+            int maxStartPosition = parentStart;
+            if (stickyHeader != null) {
+                if (orientation == LayoutOrientation.HORIZONTAL) {
+                    maxStartPosition += stickyHeader.getBounds().left + stickyHeader.getBounds().right + 1;
+                } else {
+                    maxStartPosition += stickyHeader.getBounds().top + stickyHeader.getBounds().bottom + 1;
+                }
+            }
+
+            //Attempts to find the first header
             for (int viewIndex = 0; viewIndex < attachedViewCount; viewIndex++) {
                 View view = recyclerView.getLayoutManager().getChildAt(viewIndex);
                 view.getLocationInWindow(windowLocation);
 
+                //If the start location is greater than the max, we don't have a header to worry about
                 int startLoc = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
-
-                //Performs the comparison to determine if the current view is before all others
-                if (view.getVisibility() == View.VISIBLE && startLoc < currentMinPosition) {
-                    currentMinPosition = startLoc;
-                    firstView = view;
+                if (startLoc > maxStartPosition) {
+                    return null;
                 }
 
-                //Make sure we have a start point for the parent so that we can break early
-                if (parentStart == Integer.MIN_VALUE) {
-                    parent.getLocationInWindow(windowLocation);
-                    parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
-                }
-
-                //We can exit early when the view has to be the first one
-                if (currentMinPosition <= parentStart) {
-                    break;
+                //Determine if the view is a header to return
+                Integer type = (Integer)view.getTag(R.id.sticky_view_type_tag);
+                if (type != null && type == RecyclerHeaderAdapter.VIEW_TYPE_HEADER) {
+                    return view;
                 }
             }
 
-            return firstView;
+            return null;
         }
     }
 }
