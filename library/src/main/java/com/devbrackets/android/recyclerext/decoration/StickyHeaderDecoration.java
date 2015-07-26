@@ -41,12 +41,11 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
     @Nullable
     private Bitmap stickyHeader;
+
     private int stickyStart = 0;
-    private RecyclerView parent;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
     public StickyHeaderDecoration(RecyclerView parent) {
-        this.parent = parent;
         parent.addOnScrollListener(new StickyViewScrollListener());
     }
 
@@ -105,6 +104,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * start, the headers will be transitioned smoothly
      *
      * TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
+     * NOTE: dx and dy are + scrolling right/down, - left/up (and 0 when no change)
      */
     private class StickyViewScrollListener extends RecyclerView.OnScrollListener {
         private long currentStickyId = Long.MIN_VALUE;
@@ -162,7 +162,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
             //Make sure we have the start of the RecyclerView stored
             if (parentStart == Integer.MIN_VALUE) {
-                parent.getLocationInWindow(windowLocation);
+                recyclerView.getLocationInWindow(windowLocation);
                 parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
             }
 
