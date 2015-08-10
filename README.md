@@ -6,6 +6,7 @@ common use cases including:
 
  * Database Cursor Adapters
  * Item Reordering
+ * Sticky Headers [Work in Progress]
 
 
 Website And Documentation
@@ -22,7 +23,7 @@ The latest AAR (Android Archive) files can be downloaded from JCenter [RecyclerE
 Or included in your gradle dependencies
 
 ```groovy
-compile 'com.devbrackets.android:recyclerext:1.0.0'
+compile 'com.devbrackets.android:recyclerext:0.9.0'
 ```
 
 
@@ -47,4 +48,4 @@ License
 
  [1]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
  [2]: http://devbrackets.com/dev/libs/recyclerext.html
- [3]: http://devbrackets.com/dev/libs/docs/recyclerext/1.0.0/index.html
+ [3]: http://devbrackets.com/dev/libs/docs/recyclerext/0.9.0/index.html
