@@ -9,11 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHolder;
-
-import java.util.LinkedList;
-import java.util.List;
 
 
 /**
@@ -95,16 +93,14 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
 
 
 
-    private class ListAdapter extends RecyclerView.Adapter<SimpleDragItemViewHolder> {
-        private List<String> examples;
+    private class ListAdapter extends RecyclerListAdapter<SimpleDragItemViewHolder, String> {
         private LayoutInflater inflater;
 
         public ListAdapter(Context context) {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            examples = new LinkedList<>();
 
             for (int i = 1; i < 5; i++) {
-                examples.add("Reorderable Item " + i);
+                add("Reorderable Item " + i);
             }
         }
 
@@ -117,13 +113,8 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
 
         @Override
         public void onBindViewHolder(SimpleDragItemViewHolder holder, int position) {
-            holder.setText(examples.get(position));
+            holder.setText(getItem(position));
             holder.setPosition(position);
-        }
-
-        @Override
-        public int getItemCount() {
-            return examples.size();
         }
 
         public void reorderItem(int originalPosition, int newPosition) {
@@ -133,14 +124,14 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
             }
 
             //Make sure the positions aren't out of bounds
-            if (originalPosition < 0 || newPosition < 0 || originalPosition >= examples.size() || newPosition >= examples.size()) {
+            if (originalPosition < 0 || newPosition < 0 || originalPosition >= getItemCount() || newPosition >= getItemCount()) {
                 return;
             }
 
             //Perform the update
-            String temp = examples.get(originalPosition);
-            examples.remove(originalPosition);
-            examples.add(newPosition, temp);
+            String temp = getItem(originalPosition);
+            remove(originalPosition);
+            add(newPosition, temp);
 
             //Make sure the view reflects this change
             notifyDataSetChanged();

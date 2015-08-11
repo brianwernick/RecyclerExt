@@ -102,6 +102,26 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
     }
 
     /**
+     * Adds the specified item to the list with the specified position
+     *
+     * @param position The position to insert the item at
+     * @param item The item to add to the list
+     */
+    public void add(int position, T item) {
+        synchronized (lock) {
+            if (items == null) {
+                items = new ArrayList<>();
+            }
+
+            items.add(position, item);
+        }
+
+        if (notifyOnChange) {
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
      * Adds all the specified items to the list
      *
      * @param itemList The list of items to add
@@ -132,6 +152,25 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
             }
 
             items.remove(item);
+        }
+
+        if (notifyOnChange) {
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Removes the item with the specified position from the list
+     *
+     * @param position The position for the item to remove
+     */
+    public void remove(int position) {
+        synchronized (lock) {
+            if (items == null || position < 0 || position > getItemCount()) {
+                return;
+            }
+
+            items.remove(position);
         }
 
         if (notifyOnChange) {
