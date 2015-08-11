@@ -231,7 +231,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
 
             for (int i = 0; i < getChildCount(); i++) {
                 long id = getHeaderId(i);
-                if (currentItem == null || currentItem.getHeaderId() != id) {
+                if (id != RecyclerView.NO_ID && (currentItem == null || currentItem.getHeaderId() != id)) {
                     currentItem = new HeaderItem(id, i + headerItems.size());
                     headerItems.add(currentItem);
                 }
