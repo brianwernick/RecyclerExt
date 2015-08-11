@@ -79,7 +79,9 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      *
      * @see ContentObserver#onChange(boolean)
      */
-    public abstract void onContentChanged();
+    public void onContentChanged() {
+        //Purposefully left blank
+    }
 
     /**
      * Retrieves the amount of items in the current cursor
