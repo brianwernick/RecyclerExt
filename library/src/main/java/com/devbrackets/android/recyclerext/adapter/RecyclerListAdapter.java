@@ -4,6 +4,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
     @Nullable
     protected List<T> items;
     protected boolean notifyOnChange = true;
+    private final Object lock = new Object();
 
     public RecyclerListAdapter() {
         //Purposefully left blank
@@ -31,6 +34,13 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         return items != null ? items.size() : 0;
     }
 
+    /**
+     * Retrieves the item with the specified position in the adapter.  If the position
+     * is not in the list of items then null will be returned.
+     *
+     * @param position The items position in the list
+     * @return The item at the specified position in the list or null
+     */
     @Nullable
     public T getItem(int position) {
         if (items == null || position < 0 || position >= getItemCount()) {
@@ -40,48 +50,89 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         return items.get(position);
     }
 
+    /**
+     * Searches the items for the specified object and returns the index of the
+     * first occurrence.
+     *
+     * @param item The object to search for
+     * @return The index of the first occurrence of the object or -1 if the object was not found
+     */
+    public int getPosition(T item) {
+        if (items == null || items.isEmpty()) {
+            return -1;
+        }
+
+        return items.indexOf(item);
+    }
+
+    /**
+     * Clears all the items from the list
+     */
     public void clear() {
-        if (items == null) {
-            return;
-        }
+        synchronized (lock) {
+            if (items == null) {
+                return;
+            }
 
-        items.clear();
+            items.clear();
+        }
 
         if (notifyOnChange) {
             notifyDataSetChanged();
         }
     }
 
+    /**
+     * Adds the specified item to the end of the list
+     *
+     * @param item The item to add to the list
+     */
     public void add(T item) {
-        if (items == null) {
-            items = new ArrayList<>();
-        }
+        synchronized (lock) {
+            if (items == null) {
+                items = new ArrayList<>();
+            }
 
-        items.add(item);
+            items.add(item);
+        }
 
         if (notifyOnChange) {
             notifyDataSetChanged();
         }
     }
 
+    /**
+     * Adds all the specified items to the list
+     *
+     * @param itemList The list of items to add
+     */
     public void addAll(List<T> itemList) {
-        if (items == null) {
-            items = new ArrayList<>();
-        }
+        synchronized (lock) {
+            if (items == null) {
+                items = new ArrayList<>();
+            }
 
-        items.addAll(itemList);
+            items.addAll(itemList);
+        }
 
         if (notifyOnChange) {
             notifyDataSetChanged();
         }
     }
 
-    public void remove(T screen) {
-        if (items == null) {
-            return;
-        }
+    /**
+     * Removes the specified item from the list
+     *
+     * @param item The item to remove from the list
+     */
+    public void remove(T item) {
+        synchronized (lock) {
+            if (items == null) {
+                return;
+            }
 
-        items.remove(screen);
+            items.remove(item);
+        }
 
         if (notifyOnChange) {
             notifyDataSetChanged();
@@ -97,5 +148,17 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      */
     public void setNotifyOnChange(boolean notifyOnChange) {
         this.notifyOnChange = notifyOnChange;
+    }
+
+    public void sort(Comparator<? super T> comparator) {
+        synchronized (lock) {
+            if (items != null) {
+                Collections.sort(items, comparator);
+            }
+        }
+
+        if (notifyOnChange) {
+            notifyDataSetChanged();
+        }
     }
 }
