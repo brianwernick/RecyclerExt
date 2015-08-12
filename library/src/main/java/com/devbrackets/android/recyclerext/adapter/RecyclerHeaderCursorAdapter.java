@@ -40,7 +40,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     public static final int VIEW_TYPE_HEADER = 10;
 
     private Observer observer = new Observer();
-    private List<HeaderItem> headerItems = new ArrayList<>();
+    protected List<HeaderItem> headerItems = new ArrayList<>();
 
     /**
      * @param cursor The cursor from which to get the data.
@@ -75,7 +75,8 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
         int childPosition = determineChildPosition(position);
 
         if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C)holder, cursor, childPosition);
+            Cursor c = getCursor(childPosition);
+            onBindChildViewHolder((C)holder, c, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
             onBindHeaderViewHolder((H) holder, cursor, childPosition);
             holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
@@ -171,7 +172,13 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      *
      * @return The total number of children in this adapter.
      */
-    public abstract int getChildCount();
+    public int getChildCount() {
+        if (isValidData && cursor != null) {
+            return cursor.getCount();
+        }
+
+        return 0;
+    }
 
     /**
      * Determines the child position given the position in the RecyclerView

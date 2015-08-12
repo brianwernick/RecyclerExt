@@ -59,6 +59,16 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     }
 
     /**
+     * Clears the current sticky header from the view.
+     */
+    public void clearStickyHeader() {
+        if (stickyHeader != null) {
+            stickyHeader.recycle();
+            stickyHeader = null;
+        }
+    }
+
+    /**
      * Sets the orientation of the current layout
      *
      * @param orientation The layouts orientation
