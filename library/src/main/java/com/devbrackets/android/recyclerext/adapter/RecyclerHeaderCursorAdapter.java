@@ -74,11 +74,11 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
         int viewType = getItemViewType(position);
         int childPosition = determineChildPosition(position);
 
+        Cursor c = getCursor(childPosition);
         if (viewType == VIEW_TYPE_CHILD) {
-            Cursor c = getCursor(childPosition);
             onBindChildViewHolder((C)holder, c, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H) holder, cursor, childPosition);
+            onBindHeaderViewHolder((H) holder, c, childPosition);
             holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
         }
 
