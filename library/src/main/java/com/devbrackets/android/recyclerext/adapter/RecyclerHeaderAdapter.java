@@ -38,7 +38,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     public static final int VIEW_TYPE_HEADER = 10;
 
     private Observer observer = new Observer();
-    private List<HeaderItem> headerItems = new ArrayList<>();
+    protected List<HeaderItem> headerItems = new ArrayList<>();
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -162,7 +162,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @param viewPosition The position in the RecyclerView (includes Headers and Children)
      * @return The child index
      */
-    private int determineChildPosition(int viewPosition) {
+    public int determineChildPosition(int viewPosition) {
         int headerCount = 0;
         for (HeaderItem item: headerItems) {
             if (item.getViewPosition() < viewPosition) {

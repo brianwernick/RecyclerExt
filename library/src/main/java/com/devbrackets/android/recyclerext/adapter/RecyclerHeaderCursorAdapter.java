@@ -186,7 +186,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @param viewPosition The position in the RecyclerView (includes Headers and Children)
      * @return The child index
      */
-    private int determineChildPosition(int viewPosition) {
+    public int determineChildPosition(int viewPosition) {
         int headerCount = 0;
         for (HeaderItem item: headerItems) {
             if (item.getViewPosition() < viewPosition) {
