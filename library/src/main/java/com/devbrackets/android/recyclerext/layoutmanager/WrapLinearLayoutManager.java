@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 public class WrapLinearLayoutManager extends LinearLayoutManager {
     private int[] measuredDimen = new int[2];
 
-    public WrapLinearLayoutManager(Context context)    {
+    public WrapLinearLayoutManager(Context context) {
         super(context, VERTICAL, false);
     }
 

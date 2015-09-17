@@ -76,7 +76,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
 
         Cursor c = getCursor(childPosition);
         if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C)holder, c, childPosition);
+            onBindChildViewHolder((C) holder, c, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
             onBindHeaderViewHolder((H) holder, c, childPosition);
             holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
@@ -87,7 +87,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
 
     @Override
     public int getItemViewType(int position) {
-        for (HeaderItem item: headerItems) {
+        for (HeaderItem item : headerItems) {
             if (item.getViewPosition() == position) {
                 return VIEW_TYPE_HEADER;
             } else if (item.getViewPosition() > position) {
@@ -112,7 +112,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
 
     /**
      * Returns the total number of items in the data set hold by the adapter.
-     * <br />
+     * <p>
      * <b>NOTE:</b> {@link #getChildCount()} should be overridden instead of this method
      *
      * @return The total number of items in this adapter.
@@ -154,6 +154,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * position of the first child after this header.
      *
      * @param holder The ViewHolder which should be updated
+     * @param cursor The cursor representing the first child for the header
      * @param firstChildPosition The position of the child immediately after this header
      */
     public abstract void onBindHeaderViewHolder(H holder, Cursor cursor, int firstChildPosition);
@@ -163,6 +164,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * position of the child, excluding headers.
      *
      * @param holder The ViewHolder which should be updated
+     * @param cursor The cursor representing child to bind
      * @param childPosition The position of the child
      */
     public abstract void onBindChildViewHolder(C holder, Cursor cursor, int childPosition);
@@ -188,7 +190,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      */
     public int determineChildPosition(int viewPosition) {
         int headerCount = 0;
-        for (HeaderItem item: headerItems) {
+        for (HeaderItem item : headerItems) {
             if (item.getViewPosition() < viewPosition) {
                 headerCount++;
             } else {

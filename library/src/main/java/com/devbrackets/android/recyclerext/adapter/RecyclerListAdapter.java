@@ -12,7 +12,7 @@ import java.util.List;
  * A basic adapter with support for lists to simplify integrations.
  *
  * @param <VH> The ViewHolder to use
- * @param <T> The object type for the list
+ * @param <T>  The object type for the list
  */
 public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T> extends RecyclerView.Adapter<VH> {
 
@@ -105,7 +105,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      * Adds the specified item to the list with the specified position
      *
      * @param position The position to insert the item at
-     * @param item The item to add to the list
+     * @param item     The item to add to the list
      */
     public void add(int position, T item) {
         synchronized (lock) {

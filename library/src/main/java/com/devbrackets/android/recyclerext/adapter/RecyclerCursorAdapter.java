@@ -32,8 +32,7 @@ import com.devbrackets.android.recyclerext.filter.CursorFilter;
 /**
  * A base cursor adapter for the RecyclerView
  */
-public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable,
-        CursorFilter.CursorFilterClient {
+public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable, CursorFilter.CursorFilterClient {
     protected static final String DEFAULT_ID_COLUMN_NAME = "_id";
 
     protected Cursor cursor;
@@ -206,24 +205,22 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
     /**
      * Runs a query with the specified constraint. This query is requested
      * by the filter attached to this adapter.
-     *
+     * <p>
      * The query is provided by a
      * {@link android.widget.FilterQueryProvider}.
      * If no provider is specified, the current cursor is not filtered and returned.
-     *
+     * <p>
      * After this method returns the resulting cursor is passed to {@link #changeCursor(Cursor)}
      * and the previous cursor is closed.
-     *
+     * <p>
      * This method is always executed on a background thread, not on the
      * application's main thread (or UI thread.)
-     *
+     * <p>
      * Contract: when constraint is null or empty, the original results,
      * prior to any filtering, must be returned.
      *
      * @param constraint the constraint with which the query must be filtered
-     *
      * @return a Cursor representing the results of the new query
-     *
      * @see #getFilter()
      * @see #getFilterQueryProvider()
      * @see #setFilterQueryProvider(android.widget.FilterQueryProvider)
@@ -250,7 +247,6 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * provider is null, no filtering occurs.
      *
      * @return the current filter query provider or null if it does not exist
-     *
      * @see #setFilterQueryProvider(android.widget.FilterQueryProvider)
      * @see #runQueryOnBackgroundThread(CharSequence)
      */
@@ -267,7 +263,6 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * this adapter.
      *
      * @param provider the filter query provider or null to remove it
-     *
      * @see #getFilterQueryProvider()
      * @see #runQueryOnBackgroundThread(CharSequence)
      */

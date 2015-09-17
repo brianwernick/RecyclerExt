@@ -58,9 +58,9 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
         int childPosition = determineChildPosition(position);
 
         if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C)holder, childPosition);
+            onBindChildViewHolder((C) holder, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H)holder, childPosition);
+            onBindHeaderViewHolder((H) holder, childPosition);
             holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
         }
 
@@ -69,7 +69,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
 
     @Override
     public int getItemViewType(int position) {
-        for (HeaderItem item: headerItems) {
+        for (HeaderItem item : headerItems) {
             if (item.getViewPosition() == position) {
                 return VIEW_TYPE_HEADER;
             } else if (item.getViewPosition() > position) {
@@ -94,7 +94,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
 
     /**
      * Returns the total number of items in the data set hold by the adapter.
-     * <br />
+     * <p>
      * <b>NOTE:</b> {@link #getChildCount()} should be overridden instead of this method
      *
      * @return The total number of items in this adapter.
@@ -135,7 +135,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * Called to display the header information with the <code>firstChildPosition</code> being the
      * position of the first child after this header.
      *
-     * @param holder The ViewHolder which should be updated
+     * @param holder             The ViewHolder which should be updated
      * @param firstChildPosition The position of the child immediately after this header
      */
     public abstract void onBindHeaderViewHolder(H holder, int firstChildPosition);
@@ -144,7 +144,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * Called to display the child information with the <code>childPosition</code> being the
      * position of the child, excluding headers.
      *
-     * @param holder The ViewHolder which should be updated
+     * @param holder        The ViewHolder which should be updated
      * @param childPosition The position of the child
      */
     public abstract void onBindChildViewHolder(C holder, int childPosition);
@@ -164,7 +164,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     public int determineChildPosition(int viewPosition) {
         int headerCount = 0;
-        for (HeaderItem item: headerItems) {
+        for (HeaderItem item : headerItems) {
             if (item.getViewPosition() < viewPosition) {
                 headerCount++;
             } else {

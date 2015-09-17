@@ -54,7 +54,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         if (stickyHeader != null) {
             int x = orientation == LayoutOrientation.HORIZONTAL ? stickyStart : 0;
             int y = orientation == LayoutOrientation.HORIZONTAL ? 0 : stickyStart;
-            c.drawBitmap(stickyHeader, x,y, null);
+            c.drawBitmap(stickyHeader, x, y, null);
         }
     }
 
@@ -104,15 +104,13 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     }
 
 
-
-
     /**
      * Listens to the scroll events for the RecyclerView that will have
      * sticky headers.  When a new header reaches the start it will be
      * transformed in to a sticky view and attached to the start of the
      * RecyclerView.  Additionally, when a new header is reaching the
      * start, the headers will be transitioned smoothly
-     *
+     * <p>
      * TODO: this doesn't work correctly when scrolling towards the start of the list (header doesn't appear until hitting the view location)
      * NOTE: dx and dy are + scrolling right/down, - left/up (and 0 when no change)
      */
@@ -129,7 +127,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             //If the next header is different than the current one, perform the swap
-            Long headerId = (Long)nextHeader.getTag(R.id.sticky_view_header_id);
+            Long headerId = (Long) nextHeader.getTag(R.id.sticky_view_header_id);
             if (headerId != null && headerId != currentStickyId) {
                 performStickyHeaderSwap(nextHeader, headerId);
             }
@@ -142,7 +140,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * the screen as the <code>nextHeader</code> view reaches the top.
          *
          * @param nextHeader The header view to replace the current one
-         * @param headerId The id for the header view
+         * @param headerId   The id for the header view
          */
         private void performStickyHeaderSwap(View nextHeader, long headerId) {
             int nextHeaderStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
@@ -198,7 +196,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 }
 
                 //Determine if the view is a header to return
-                Integer type = (Integer)view.getTag(R.id.sticky_view_type_tag);
+                Integer type = (Integer) view.getTag(R.id.sticky_view_type_tag);
                 if (type != null && type == RecyclerHeaderAdapter.VIEW_TYPE_HEADER) {
                     return view;
                 }

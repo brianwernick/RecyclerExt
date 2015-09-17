@@ -68,7 +68,7 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
      * no ReorderItem will be added to the cache
      *
      * @param originalPosition The original position of the item
-     * @param newPosition The new position for the item
+     * @param newPosition      The new position for the item
      */
     public void reorderItem(int originalPosition, int newPosition) {
         //Make sure the positions aren't the same
@@ -86,11 +86,11 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
         //Iterates through the items that will be effected and changes their positions
         if (originalPosition > newPosition) {
             for (int i = originalPosition; i > newPosition; i--) {
-                cursorPositionMap.put(i, cursorPositionMap.get(i -1, i -1));
+                cursorPositionMap.put(i, cursorPositionMap.get(i - 1, i - 1));
             }
         } else {
             for (int i = originalPosition; i < newPosition; i++) {
-                cursorPositionMap.put(i, cursorPositionMap.get(i +1, i +1));
+                cursorPositionMap.put(i, cursorPositionMap.get(i + 1, i + 1));
             }
         }
 
@@ -159,7 +159,7 @@ public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.V
         }
 
         //Actually removes the items
-        for (int i: removeList) {
+        for (int i : removeList) {
             cursorPositionMap.delete(i);
         }
     }
