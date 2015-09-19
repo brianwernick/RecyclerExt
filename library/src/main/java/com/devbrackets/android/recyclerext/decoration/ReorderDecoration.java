@@ -58,7 +58,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
          * Called when the user drag event ends, informing the listener of the changed position
          *
          * @param originalPosition The position the dragged view started at
-         * @param newPosition      The position the dragged view should be saved as
+         * @param newPosition The position the dragged view should be saved as
          */
         void onItemReordered(int originalPosition, int newPosition);
 
@@ -67,7 +67,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
          * actually updating the backing data structure (e.g. calling swap on a {@link com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter})
          *
          * @param originalPosition The position the dragged view started at
-         * @param newPosition      The position the dragged view should be saved as
+         * @param newPosition The position the dragged view should be saved as
          */
         void onItemPostReordered(int originalPosition, int newPosition);
     }
@@ -335,7 +335,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * Manually starts the reorder process for the specified view.  This should not be used if the {@link #setDragHandleId(int)} is
      * set and should control the reordering.
      *
-     * @param view             The View to start reordering
+     * @param view The View to start reordering
      * @param startMotionEvent The MotionEvent that starts the reorder
      */
     public void startReorder(View view, @Nullable MotionEvent startMotionEvent) {
@@ -453,7 +453,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * top when Vertical and left when Horizontal.
      *
      * @param childPosition The position of the view in the RecyclerView
-     * @param draggedUp     True if the view has been moved up or to the left
+     * @param draggedUp True if the view has been moved up or to the left
      */
     private void updateNewViewStart(int childPosition, boolean draggedUp) {
         View view = recyclerView.getLayoutManager().getChildAt(childPosition);
@@ -481,10 +481,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * This happens when the dragging view starts above the <code>view</code> and has been dragged
      * below it, or vice versa.
      *
-     * @param view         The view to compare with the dragging items current and original positions
+     * @param view The view to compare with the dragging items current and original positions
      * @param itemPosition The position for the <code>view</code>
-     * @param middle       The center of the floating item
-     * @param outRect      The {@link Rect} to update the position in
+     * @param middle The center of the floating item
+     * @param outRect The {@link Rect} to update the position in
      */
     private void setVerticalOffsets(View view, int itemPosition, PointF middle, Rect outRect) {
         if (orientation == LayoutOrientation.HORIZONTAL) {
@@ -515,10 +515,10 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * This happens when the dragging view starts before the <code>view</code> and has been dragged
      * after it, or vice versa.
      *
-     * @param view         The view to compare with the dragging items current and original positions
+     * @param view The view to compare with the dragging items current and original positions
      * @param itemPosition The position for the <code>view</code>
-     * @param middle       The center of the floating item
-     * @param outRect      The {@link Rect} to update the position in
+     * @param middle The center of the floating item
+     * @param outRect The {@link Rect} to update the position in
      */
     private void setHorizontalOffsets(View view, int itemPosition, PointF middle, Rect outRect) {
         if (orientation == LayoutOrientation.VERTICAL) {
@@ -597,7 +597,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * view being dragged.
      *
      * @param fingerPosition The current position of the dragging finger
-     * @param viewMiddle     The center of the view being dragged
+     * @param viewMiddle The center of the view being dragged
      */
     private void updateVerticalBounds(PointF fingerPosition, PointF viewMiddle) {
         if (orientation == LayoutOrientation.HORIZONTAL) {
@@ -621,7 +621,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
      * view being dragged.
      *
      * @param fingerPosition The current position of the dragging finger
-     * @param viewMiddle     The center of the view being dragged
+     * @param viewMiddle The center of the view being dragged
      */
     private void updateHorizontalBounds(PointF fingerPosition, PointF viewMiddle) {
         if (orientation == LayoutOrientation.VERTICAL) {

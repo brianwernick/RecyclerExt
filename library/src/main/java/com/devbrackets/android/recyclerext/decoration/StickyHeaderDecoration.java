@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.devbrackets.android.recyclerext.decoration;
 
 import android.graphics.Bitmap;

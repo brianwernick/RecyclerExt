@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.database.Cursor;
@@ -41,97 +40,6 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
 
     private Observer observer = new Observer();
     protected List<HeaderItem> headerItems = new ArrayList<>();
-
-    /**
-     * @param cursor The cursor from which to get the data.
-     */
-    public RecyclerHeaderCursorAdapter(Cursor cursor) {
-        super(cursor);
-    }
-
-    /**
-     * @param cursor The cursor from which to get the data.
-     * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
-     */
-    public RecyclerHeaderCursorAdapter(Cursor cursor, String idColumnName) {
-        super(cursor, idColumnName);
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_CHILD) {
-            return onCreateChildViewHolder(parent);
-        } else if (viewType == VIEW_TYPE_HEADER) {
-            return onCreateHeaderViewHolder(parent);
-        }
-
-        return null;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onBindViewHolder(ViewHolder holder, Cursor cursor, int position) {
-        int viewType = getItemViewType(position);
-        int childPosition = determineChildPosition(position);
-
-        Cursor c = getCursor(childPosition);
-        if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C) holder, c, childPosition);
-        } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H) holder, c, childPosition);
-            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
-        }
-
-        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        for (HeaderItem item : headerItems) {
-            if (item.getViewPosition() == position) {
-                return VIEW_TYPE_HEADER;
-            } else if (item.getViewPosition() > position) {
-                break;
-            }
-        }
-
-        return VIEW_TYPE_CHILD;
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        registerAdapterDataObserver(observer);
-        observer.onChanged();
-    }
-
-    @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-        unregisterAdapterDataObserver(observer);
-        headerItems.clear();
-    }
-
-    /**
-     * Returns the total number of items in the data set hold by the adapter.
-     * <p>
-     * <b>NOTE:</b> {@link #getChildCount()} should be overridden instead of this method
-     *
-     * @return The total number of items in this adapter.
-     */
-    @Override
-    public int getItemCount() {
-        return getChildCount() + headerItems.size();
-    }
-
-    /**
-     * Return the stable ID for the header at <code>childPosition</code>. The default implementation
-     * of this method returns {@link RecyclerView#NO_ID}
-     *
-     * @param childPosition The Adapters child position
-     * @return the stable ID of the header at childPosition
-     */
-    public long getHeaderId(int childPosition) {
-        return RecyclerView.NO_ID;
-    }
 
     /**
      * Called when the RecyclerView needs a new {@link H} ViewHolder
@@ -170,7 +78,137 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     public abstract void onBindChildViewHolder(C holder, Cursor cursor, int childPosition);
 
     /**
+     * @param cursor The cursor from which to get the data.
+     */
+    public RecyclerHeaderCursorAdapter(Cursor cursor) {
+        super(cursor);
+    }
+
+    /**
+     * @param cursor The cursor from which to get the data.
+     * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
+     */
+    public RecyclerHeaderCursorAdapter(Cursor cursor, String idColumnName) {
+        super(cursor, idColumnName);
+    }
+
+    /**
+     * This method shouldn't be used directly, instead use
+     * {@link #onCreateHeaderViewHolder(ViewGroup)} and
+     * {@link #onCreateChildViewHolder(ViewGroup)}
+     *
+     * @param parent The parent ViewGroup for the ViewHolder
+     * @param viewType The type for the ViewHolder
+     * @return The correct ViewHolder for the specified viewType
+     */
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_CHILD) {
+            return onCreateChildViewHolder(parent);
+        } else if (viewType == VIEW_TYPE_HEADER) {
+            return onCreateHeaderViewHolder(parent);
+        }
+
+        return null;
+    }
+
+    /**
+     * This method shouldn't be used directly, instead use
+     * {@link #onBindHeaderViewHolder(ViewHolder, Cursor, int)} and
+     * {@link #onBindChildViewHolder(ViewHolder, Cursor, int)}
+     *
+     * @param holder The ViewHolder to update
+     * @param cursor The cursor representing the item at <code>position</code>
+     * @param position The position of the item to bind the <code>holder</code> for
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onBindViewHolder(ViewHolder holder, Cursor cursor, int position) {
+        int viewType = getItemViewType(position);
+        int childPosition = determineChildPosition(position);
+
+        Cursor c = getCursor(childPosition);
+        if (viewType == VIEW_TYPE_CHILD) {
+            onBindChildViewHolder((C) holder, c, childPosition);
+        } else if (viewType == VIEW_TYPE_HEADER) {
+            onBindHeaderViewHolder((H) holder, c, childPosition);
+            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
+        }
+
+        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
+    }
+
+    /**
+     * Retrieves the view type for the specified position.
+     *
+     * @param position The position to determine the view type for
+     * @return The type of ViewHolder for the <code>position</code>
+     */
+    @Override
+    public int getItemViewType(int position) {
+        for (HeaderItem item : headerItems) {
+            if (item.getViewPosition() == position) {
+                return VIEW_TYPE_HEADER;
+            } else if (item.getViewPosition() > position) {
+                break;
+            }
+        }
+
+        return VIEW_TYPE_CHILD;
+    }
+
+    /**
+     * When the RecyclerView is attached a data observer is registered
+     * in order to determine when to re-calculate the headers
+     *
+     * @param recyclerView The RecyclerView that was attached
+     */
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        registerAdapterDataObserver(observer);
+        observer.onChanged();
+    }
+
+    /**
+     * When the RecyclerView is detached the registered data observer
+     * will be unregistered.  See {@link #onAttachedToRecyclerView(RecyclerView)}
+     * for more information
+     *
+     * @param recyclerView The RecyclerView that has been detached
+     */
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        unregisterAdapterDataObserver(observer);
+        headerItems.clear();
+    }
+
+    /**
+     * Returns the total number of items in the data set hold by the adapter, this includes
+     * both the Headers and the Children views
+     * <p>
+     * <b>NOTE:</b> {@link #getChildCount()} should be overridden instead of this method
+     *
+     * @return The total number of items in this adapter.
+     */
+    @Override
+    public int getItemCount() {
+        return getChildCount() + headerItems.size();
+    }
+
+    /**
+     * Return the stable ID for the header at <code>childPosition</code>. The default implementation
+     * of this method returns {@link RecyclerView#NO_ID}
+     *
+     * @param childPosition The Adapters child position
+     * @return the stable ID of the header at childPosition
+     */
+    public long getHeaderId(int childPosition) {
+        return RecyclerView.NO_ID;
+    }
+
+    /**
      * Returns the total number of children in the data set held by the adapter.
+     * By default this will be the item count from the cursor
      *
      * @return The total number of children in this adapter.
      */

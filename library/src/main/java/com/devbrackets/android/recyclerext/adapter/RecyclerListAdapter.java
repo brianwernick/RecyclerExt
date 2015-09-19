@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2015 Brian Wernick
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.support.annotation.Nullable;
@@ -15,20 +31,33 @@ import java.util.List;
  * @param <T>  The object type for the list
  */
 public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T> extends RecyclerView.Adapter<VH> {
-
     @Nullable
     protected List<T> items;
     protected boolean notifyOnChange = true;
     private final Object lock = new Object();
 
+    /**
+     * Creates an adapter with no initial items
+     */
     public RecyclerListAdapter() {
         //Purposefully left blank
     }
 
+    /**
+     * Creates an adapter with the specified items
+     *
+     * @param itemList The list of initial items for the adapter
+     */
     public RecyclerListAdapter(@Nullable List<T> itemList) {
         this.items = itemList;
     }
 
+    /**
+     * Retrieves the number of items for the adapter.  By default this
+     * will use the number of items in the list.
+     *
+     * @return The number of items in the adapter
+     */
     @Override
     public int getItemCount() {
         return items != null ? items.size() : 0;
@@ -105,7 +134,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      * Adds the specified item to the list with the specified position
      *
      * @param position The position to insert the item at
-     * @param item     The item to add to the list
+     * @param item The item to add to the list
      */
     public void add(int position, T item) {
         synchronized (lock) {
@@ -189,6 +218,11 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         this.notifyOnChange = notifyOnChange;
     }
 
+    /**
+     * Sorts the items in the adapter using the specified comparator
+     *
+     * @param comparator The comparator to sort the list with
+     */
     public void sort(Comparator<? super T> comparator) {
         synchronized (lock) {
             if (items != null) {

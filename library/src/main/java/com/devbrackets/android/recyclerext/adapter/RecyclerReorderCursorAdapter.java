@@ -29,29 +29,56 @@ import java.util.List;
  * A Cursor adapter for the RecyclerView that correctly keeps track of reorder changes made by the
  * {@link com.devbrackets.android.recyclerext.decoration.ReorderDecoration}
  */
-public abstract class ReorderableRecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerCursorAdapter<VH> {
+public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerCursorAdapter<VH> {
     private boolean resetOnCursorChange = true;
     private SparseIntArray cursorPositionMap = new SparseIntArray();
 
-    public ReorderableRecyclerCursorAdapter(Cursor cursor) {
+    /**
+     * @param cursor The cursor from which to get the data.
+     */
+    public RecyclerReorderCursorAdapter(Cursor cursor) {
         super(cursor);
     }
 
-    public ReorderableRecyclerCursorAdapter(Cursor cursor, String idColumnName) {
+    /**
+     * @param cursor The cursor from which to get the data.
+     * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
+     */
+    public RecyclerReorderCursorAdapter(Cursor cursor, String idColumnName) {
         super(cursor, idColumnName);
     }
 
+    /**
+     * Get the cursor associated with the specified position in the data set.  This will be
+     * the correctly mapped cursor even when items have been moved
+     *
+     * @param position The position of the item whose data we want within the adapter's data set.
+     * @return The cursor representing the data at the specified position.
+     */
     @Nullable
     @Override
     public Cursor getCursor(int position) {
         return super.getCursor(cursorPositionMap.get(position, position));
     }
 
+    /**
+     * Get the row id associated with the specified position in the list.
+     *
+     * @param position The position of the item within the adapter's data set whose row id we want.
+     * @return The id of the item at the specified position.
+     */
     @Override
     public long getItemId(int position) {
         return super.getItemId(cursorPositionMap.get(position, position));
     }
 
+    /**
+     * Change the underlying cursor to a new cursor. If there is an existing cursor it will be
+     * closed.  Additionally, if {@link #getResetMapOnCursorChange()} return true, then the
+     * mapping of moved items will be cleared.
+     *
+     * @param newCursor The new cursor to be used
+     */
     @Override
     public void changeCursor(Cursor newCursor) {
         super.changeCursor(newCursor);

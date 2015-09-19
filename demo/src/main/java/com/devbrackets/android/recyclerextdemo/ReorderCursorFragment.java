@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.ReorderableRecyclerCursorAdapter;
+import com.devbrackets.android.recyclerext.adapter.RecyclerReorderCursorAdapter;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerextdemo.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
@@ -20,11 +20,11 @@ import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHold
 
 
 /**
- * An example for using the ReorderRecyclerCursorAdapter
+ * An example for using the RecyclerReorderCursorAdapter
  */
 public class ReorderCursorFragment extends Fragment implements ReorderDecoration.ReorderListener, OrderUpdateTask.DBUpdateListener {
     private DBHelper dbHelper;
-    private RRCursorAdapter cursorAdapter;
+    private RRReorderCursorAdapter cursorAdapter;
     private RecyclerView recyclerView;
 
     private boolean isUpdateRunning = false; //A simple way to enforce only 1 DB update is running at a time
@@ -76,7 +76,7 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
     }
 
     private void setupRecyclerExt() {
-        cursorAdapter = new RRCursorAdapter(getActivity(), ItemDAO.findCursorAll(dbHelper.getWritableDatabase()));
+        cursorAdapter = new RRReorderCursorAdapter(getActivity(), ItemDAO.findCursorAll(dbHelper.getWritableDatabase()));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(cursorAdapter);
@@ -118,10 +118,10 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
 
 
 
-    private class RRCursorAdapter extends ReorderableRecyclerCursorAdapter<SimpleDragItemViewHolder> {
+    private class RRReorderCursorAdapter extends RecyclerReorderCursorAdapter<SimpleDragItemViewHolder> {
         private LayoutInflater inflater;
 
-        public RRCursorAdapter(Context context, Cursor cursor) {
+        public RRReorderCursorAdapter(Context context, Cursor cursor) {
             super(cursor);
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }

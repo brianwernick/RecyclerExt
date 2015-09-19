@@ -2,7 +2,6 @@ package com.devbrackets.android.recyclerextdemo;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,8 +14,6 @@ import com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter;
 import com.devbrackets.android.recyclerextdemo.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
-
-import java.util.List;
 
 
 /**

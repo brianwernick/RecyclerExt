@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.support.v7.widget.RecyclerView;
@@ -40,81 +39,6 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     private Observer observer = new Observer();
     protected List<HeaderItem> headerItems = new ArrayList<>();
 
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_CHILD) {
-            return onCreateChildViewHolder(parent);
-        } else if (viewType == VIEW_TYPE_HEADER) {
-            return onCreateHeaderViewHolder(parent);
-        }
-
-        return null;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        int viewType = getItemViewType(position);
-        int childPosition = determineChildPosition(position);
-
-        if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C) holder, childPosition);
-        } else if (viewType == VIEW_TYPE_HEADER) {
-            onBindHeaderViewHolder((H) holder, childPosition);
-            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
-        }
-
-        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        for (HeaderItem item : headerItems) {
-            if (item.getViewPosition() == position) {
-                return VIEW_TYPE_HEADER;
-            } else if (item.getViewPosition() > position) {
-                break;
-            }
-        }
-
-        return VIEW_TYPE_CHILD;
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        registerAdapterDataObserver(observer);
-        observer.onChanged();
-    }
-
-    @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-        unregisterAdapterDataObserver(observer);
-        headerItems.clear();
-    }
-
-    /**
-     * Returns the total number of items in the data set hold by the adapter.
-     * <p>
-     * <b>NOTE:</b> {@link #getChildCount()} should be overridden instead of this method
-     *
-     * @return The total number of items in this adapter.
-     */
-    @Override
-    public int getItemCount() {
-        return getChildCount() + headerItems.size();
-    }
-
-    /**
-     * Return the stable ID for the header at <code>childPosition</code>. The default implementation
-     * of this method returns {@link RecyclerView#NO_ID}
-     *
-     * @param childPosition The Adapters child position
-     * @return the stable ID of the header at childPosition
-     */
-    public long getHeaderId(int childPosition) {
-        return RecyclerView.NO_ID;
-    }
-
     /**
      * Called when the RecyclerView needs a new {@link H} ViewHolder
      *
@@ -135,7 +59,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * Called to display the header information with the <code>firstChildPosition</code> being the
      * position of the first child after this header.
      *
-     * @param holder             The ViewHolder which should be updated
+     * @param holder The ViewHolder which should be updated
      * @param firstChildPosition The position of the child immediately after this header
      */
     public abstract void onBindHeaderViewHolder(H holder, int firstChildPosition);
@@ -144,7 +68,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * Called to display the child information with the <code>childPosition</code> being the
      * position of the child, excluding headers.
      *
-     * @param holder        The ViewHolder which should be updated
+     * @param holder The ViewHolder which should be updated
      * @param childPosition The position of the child
      */
     public abstract void onBindChildViewHolder(C holder, int childPosition);
@@ -155,6 +79,118 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @return The total number of children in this adapter.
      */
     public abstract int getChildCount();
+
+    /**
+     * This method shouldn't be used directly, instead use
+     * {@link #onCreateHeaderViewHolder(ViewGroup)} and
+     * {@link #onCreateChildViewHolder(ViewGroup)}
+     *
+     * @param parent The parent ViewGroup for the ViewHolder
+     * @param viewType The type for the ViewHolder
+     * @return The correct ViewHolder for the specified viewType
+     */
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_CHILD) {
+            return onCreateChildViewHolder(parent);
+        } else if (viewType == VIEW_TYPE_HEADER) {
+            return onCreateHeaderViewHolder(parent);
+        }
+
+        return null;
+    }
+
+    /**
+     * This method shouldn't be used directly, instead use
+     * {@link #onBindHeaderViewHolder(ViewHolder, int)} and
+     * {@link #onBindChildViewHolder(ViewHolder, int)}
+     *
+     * @param holder The ViewHolder to update
+     * @param position The position to update the <code>holder</code> with
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        int viewType = getItemViewType(position);
+        int childPosition = determineChildPosition(position);
+
+        if (viewType == VIEW_TYPE_CHILD) {
+            onBindChildViewHolder((C) holder, childPosition);
+        } else if (viewType == VIEW_TYPE_HEADER) {
+            onBindHeaderViewHolder((H) holder, childPosition);
+            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
+        }
+
+        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
+    }
+
+    /**
+     * Retrieves the view type for the specified position.
+     *
+     * @param position The position to determine the view type for
+     * @return The type of ViewHolder for the <code>position</code>
+     */
+    @Override
+    public int getItemViewType(int position) {
+        for (HeaderItem item : headerItems) {
+            if (item.getViewPosition() == position) {
+                return VIEW_TYPE_HEADER;
+            } else if (item.getViewPosition() > position) {
+                break;
+            }
+        }
+
+        return VIEW_TYPE_CHILD;
+    }
+
+    /**
+     * When the RecyclerView is attached a data observer is registered
+     * in order to determine when to re-calculate the headers
+     *
+     * @param recyclerView The RecyclerView that was attached
+     */
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        registerAdapterDataObserver(observer);
+        observer.onChanged();
+    }
+
+    /**
+     * When the RecyclerView is detached the registered data observer
+     * will be unregistered.  See {@link #onAttachedToRecyclerView(RecyclerView)}
+     * for more information
+     *
+     * @param recyclerView The RecyclerView that has been detached
+     */
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        unregisterAdapterDataObserver(observer);
+        headerItems.clear();
+    }
+
+    /**
+     * Returns the total number of items in the data set hold by the adapter, this includes
+     * both the Headers and the Children views
+     * <p>
+     * <b>NOTE:</b> {@link #getChildCount()} should be overridden instead of this method
+     *
+     * @return The total number of items in this adapter.
+     */
+    @Override
+    public int getItemCount() {
+        return getChildCount() + headerItems.size();
+    }
+
+    /**
+     * Return the stable ID for the header at <code>childPosition</code>. The default implementation
+     * of this method returns {@link RecyclerView#NO_ID}
+     *
+     * @param childPosition The Adapters child position
+     * @return the stable ID of the header at childPosition
+     */
+    public long getHeaderId(int childPosition) {
+        return RecyclerView.NO_ID;
+    }
 
     /**
      * Determines the child position given the position in the RecyclerView

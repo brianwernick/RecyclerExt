@@ -47,6 +47,16 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
     private String idColumnName = DEFAULT_ID_COLUMN_NAME;
 
     /**
+     * Called when a new item will become visible on the screen.  This will use the
+     * ViewHolder specified in {@link #onCreateViewHolder(ViewGroup, int)}
+     *
+     * @param holder The ViewHolder to update
+     * @param cursor The cursor representing the item at <code>position</code>
+     * @param position The position of the item to bind the <code>holder</code> for
+     */
+    public abstract void onBindViewHolder(VH holder, Cursor cursor, int position);
+
+    /**
      * @param cursor The cursor from which to get the data.
      */
     public RecyclerCursorAdapter(Cursor cursor) {
@@ -62,16 +72,18 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
         setupCursor(cursor, this.idColumnName);
     }
 
-    @Override
-    public abstract VH onCreateViewHolder(ViewGroup parent, int viewType);
-
+    /**
+     * This method shouldn't be used directly, instead use
+     * {@link #onBindViewHolder(RecyclerView.ViewHolder, Cursor, int)}
+     *
+     * @param holder The ViewHolder to update
+     * @param position The position to update the <code>holder</code> with
+     */
     @Override
     public void onBindViewHolder(VH holder, int position) {
         Cursor c = getCursor(position);
         onBindViewHolder(holder, c, position);
     }
-
-    public abstract void onBindViewHolder(VH holder, Cursor cursor, int position);
 
     /**
      * Called when the {@link ContentObserver} on the cursor receives a change notification
@@ -170,6 +182,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
             return null;
         }
 
+        //Unregisters the observers from the previous cursor
         Cursor oldCursor = cursor;
         if (oldCursor != null) {
             if (internalChangeObserver != null) {
@@ -181,6 +194,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
             }
         }
 
+        //Performs the actual cursor swap
         setupCursor(newCursor, idColumnName);
         if (newCursor != null) {
             notifyDataSetChanged();
@@ -234,6 +248,12 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
         return cursor;
     }
 
+    /**
+     * Retrieves the filter that can be used to filter
+     * the current cursor items displayed.
+     *
+     * @return A filter for the items
+     */
     public Filter getFilter() {
         if (cursorFilter == null) {
             cursorFilter = new CursorFilter(this);
@@ -297,6 +317,11 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
         }
     }
 
+    /**
+     * An Observer that will listen to any change notifications and perform
+     * the correct functionality to inform the RecyclerView and update the
+     * displayed information.
+     */
     private class ChangeObserver extends ContentObserver {
         public ChangeObserver() {
             super(new Handler());
@@ -313,6 +338,10 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
         }
     }
 
+    /**
+     * A data observer that will listen to changes in the data set, updating the
+     * {@link #isValidData} flag to match the state.
+     */
     private class MyDataSetObserver extends DataSetObserver {
         @Override
         public void onChanged() {
