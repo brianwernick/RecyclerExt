@@ -42,6 +42,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private Bitmap stickyHeader;
 
     private int stickyStart = 0;
+    private AdapterDataObserver dataObserver = new AdapterDataObserver();
+
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
     public StickyHeaderDecoration(RecyclerView parent) {
@@ -65,6 +67,28 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             stickyHeader.recycle();
             stickyHeader = null;
         }
+    }
+
+    /**
+     * Attaches this decoration to listen for data changes in the specified
+     * adapter.  When a change is detected the decoration will verify the
+     * current sticky header is valid, if not it will either update the header
+     * or clear it.
+     *
+     * @param adapter The adapter to receive change notifications from
+     */
+    public void registerAdapterChanges(RecyclerView.Adapter adapter) {
+        adapter.registerAdapterDataObserver(dataObserver);
+    }
+
+    /**
+     * Removes the data change listener from the specified adapter.  This
+     * should only be called after {@link #registerAdapterChanges(RecyclerView.Adapter)}
+     *
+     * @param adapter The adapter to unregister change notifications from
+     */
+    public void unRegisterAdapterChanges(RecyclerView.Adapter adapter) {
+        adapter.unregisterAdapterDataObserver(dataObserver);
     }
 
     /**
@@ -102,7 +126,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         return bitmap;
     }
 
-
     /**
      * Listens to the scroll events for the RecyclerView that will have
      * sticky headers.  When a new header reaches the start it will be
@@ -139,7 +162,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * the screen as the <code>nextHeader</code> view reaches the top.
          *
          * @param nextHeader The header view to replace the current one
-         * @param headerId   The id for the header view
+         * @param headerId The id for the header view
          */
         private void performStickyHeaderSwap(View nextHeader, long headerId) {
             int nextHeaderStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
@@ -203,6 +226,20 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
             //We shouldn't reach this under normal circumstances
             return null;
+        }
+    }
+
+    /**
+     * An observer to watch the adapter for changes so that we can update the
+     * current sticky header
+     */
+    private class AdapterDataObserver extends RecyclerView.AdapterDataObserver {
+        @Override
+        public void onChanged() {
+            //TODO: make sure the current StickyHeader is valid, if not replace it
+
+            //For now we just clear the stick header
+            clearStickyHeader();
         }
     }
 }
