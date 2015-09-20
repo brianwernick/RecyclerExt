@@ -132,10 +132,10 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
             onBindChildViewHolder((C) holder, c, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
             onBindHeaderViewHolder((H) holder, c, childPosition);
-            holder.itemView.setTag(R.id.sticky_view_header_id, getHeaderId(childPosition));
+            holder.itemView.setTag(R.id.recyclerext_sticky_view_header_id, getHeaderId(childPosition));
         }
 
-        holder.itemView.setTag(R.id.sticky_view_type_tag, viewType);
+        holder.itemView.setTag(R.id.recyclerext_sticky_view_type_tag, viewType);
     }
 
     /**

@@ -5,10 +5,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.SparseIntArray;
 
-import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
 
 import java.util.List;
 
+/**
+ * An example task for updating the ordering in the database
+ */
 public class OrderUpdateTask extends AsyncTask<Void, Void, Cursor> {
     private SQLiteDatabase database;
     private DBUpdateListener listener;
@@ -40,6 +43,10 @@ public class OrderUpdateTask extends AsyncTask<Void, Void, Cursor> {
         }
     }
 
+    /**
+     * Iterate through all the items, updating the order column to the new
+     * position.
+     */
     private void saveUpdates() {
         List<ItemDAO> items = ItemDAO.findAll(database);
 

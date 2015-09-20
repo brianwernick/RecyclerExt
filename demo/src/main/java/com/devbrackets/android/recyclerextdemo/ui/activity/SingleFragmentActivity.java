@@ -1,20 +1,22 @@
-package com.devbrackets.android.recyclerextdemo;
+package com.devbrackets.android.recyclerextdemo.ui.activity;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+
+import com.devbrackets.android.recyclerextdemo.R;
+import com.devbrackets.android.recyclerextdemo.data.Example;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.CursorFragment;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderListFragment;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderCursorFragment;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListFragment;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListHorizontalFragment;
 
 /**
  *
  */
 public class SingleFragmentActivity extends FragmentActivity {
     public static final String EXTRA_FRAGMENT_TYPE = "EXTRA_FRAGMENT_TYPE";
-
-    public static final int FRAGMENT_TYPE_REORDER_HORIZONTAL    = 1;
-    public static final int FRAGMENT_TYPE_REORDER               = 2;
-    public static final int FRAGMENT_TYPE_CURSOR                = 3;
-    public static final int FRAGMENT_TYPE_REORDER_CURSOR        = 4;
-    public static final int FRAGMENT_TYPE_HEADER_LIST           = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,34 +28,39 @@ public class SingleFragmentActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
 
+        //Retrieves the type of example to display
         Bundle extras = getIntent().getExtras();
-        int fragmentType = extras.getInt(EXTRA_FRAGMENT_TYPE, -1);
+        Example example = (Example)extras.getSerializable(EXTRA_FRAGMENT_TYPE);
+        if (example == null) {
+            return;
+        }
 
-        switch (fragmentType) {
-            case FRAGMENT_TYPE_REORDER_HORIZONTAL:
+        //Displays the example requested
+        switch (example) {
+            case REORDER_LIST_HORIZONTAL:
                 pushHorizontalReorderListFragment();
                 break;
 
-            case FRAGMENT_TYPE_REORDER:
+            case REORDER_LIST_VERTICAL:
                 pushReorderListFragment();
                 break;
 
-            case FRAGMENT_TYPE_CURSOR:
+            case CURSOR:
                 pushCursorFragment();
                 break;
 
-            case FRAGMENT_TYPE_REORDER_CURSOR:
+            case REORDER_CURSOR_VERTICAL:
                 pushReorderCursorFragment();
                 break;
 
-            case FRAGMENT_TYPE_HEADER_LIST:
+            case HEADER_LIST:
                 pushHeaderListFragment();
                 break;
         }
     }
 
     private void pushHorizontalReorderListFragment() {
-        Fragment fragment = ReorderListFragmentHorizontal.newInstance();
+        Fragment fragment = ReorderListHorizontalFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 

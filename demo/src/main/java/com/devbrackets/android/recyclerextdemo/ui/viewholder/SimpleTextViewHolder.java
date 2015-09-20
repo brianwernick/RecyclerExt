@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo.viewholder;
+package com.devbrackets.android.recyclerextdemo.ui.viewholder;
 
 import android.support.annotation.ColorInt;
 import android.support.v7.widget.RecyclerView;

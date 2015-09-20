@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo;
+package com.devbrackets.android.recyclerextdemo.ui.activity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,12 +10,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
-import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
+import com.devbrackets.android.recyclerextdemo.R;
+import com.devbrackets.android.recyclerextdemo.data.Example;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder;
 
-import java.util.LinkedList;
-import java.util.List;
-
+/**
+ * An activity that lists the example items.
+ */
 public class MainActivity extends Activity {
     private RecyclerView recyclerView;
 
@@ -24,7 +27,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        recyclerView = (RecyclerView)findViewById(R.id.main_activity_recycler);
+        recyclerView = (RecyclerView) findViewById(R.id.main_activity_recycler);
         setupRecyclerExt();
     }
 
@@ -39,82 +42,45 @@ public class MainActivity extends Activity {
         recyclerView.setItemAnimator(null);
     }
 
-    private void startFragmentActivity(int fragmentType) {
+    private void startFragmentActivity(Example fragmentType) {
         Intent intent = new Intent(this, SingleFragmentActivity.class);
         intent.putExtra(SingleFragmentActivity.EXTRA_FRAGMENT_TYPE, fragmentType);
         startActivity(intent);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private class ListAdapter extends RecyclerView.Adapter<SimpleTextViewHolder> implements View.OnClickListener {
-        private List<String> examples;
+    /**
+     * A simple {@link RecyclerListAdapter} to display the options for the examples
+     */
+    private class ListAdapter extends RecyclerListAdapter<SimpleTextViewHolder, Example> implements View.OnClickListener {
         private LayoutInflater inflater;
 
         public ListAdapter(Context context) {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            examples = new LinkedList<>();
-            examples.add("Horizontal Reorderable List Adapter");
-            examples.add("Vertical Reorderable List Adapter");
-            examples.add("Cursor Adapter");
-            examples.add("Reorderable Cursor Adapter");
-            examples.add("Header List Adapter");
+            //Adds all the items from the Example enum
+            for (Example example : Example.values()) {
+                add(example);
+            }
         }
 
         @Override
         public SimpleTextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = inflater.inflate(R.layout.simple_text_item, null);
-
             return new SimpleTextViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(SimpleTextViewHolder holder, int position) {
-            holder.setText(examples.get(position));
+            //noinspection ConstantConditions - getItem won't be null when called from the onBindViewHolder when using 'position'
+            holder.setText(getItem(position).getTitle());
             holder.setPosition(position);
             holder.setOnClickListener(this);
         }
 
         @Override
-        public int getItemCount() {
-            return examples.size();
-        }
-
-        @Override
-        public void onClick(View v) {
-            switch ((Integer)v.getTag()) {
-                case 0:
-                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_HORIZONTAL);
-                    break;
-
-                case 1:
-                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER);
-                    break;
-
-                case 2:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_CURSOR);
-                    break;
-
-                case 3:startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_REORDER_CURSOR);
-                    break;
-
-                case 4:
-                    startFragmentActivity(SingleFragmentActivity.FRAGMENT_TYPE_HEADER_LIST);
-                    break;
-            }
+        public void onClick(View view) {
+            int position = (Integer)view.getTag();
+            startFragmentActivity(getItem(position));
         }
     }
 }

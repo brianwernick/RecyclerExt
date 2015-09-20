@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo.database;
+package com.devbrackets.android.recyclerextdemo.data.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.List;
 
 /**
- *
+ * A simple utility for interacting with the database
  */
 public class DBHelper extends SQLiteOpenHelper {
     private static final int database_VERSION = 1;
@@ -29,6 +29,12 @@ public class DBHelper extends SQLiteOpenHelper {
         this.onCreate(db);
     }
 
+    /**
+     * Populates the database with dummy items to be used for any of the
+     * cursor, and most of the list examples.
+     *
+     * @param database The database to populate
+     */
     private void populateItemDAOTable(SQLiteDatabase database) {
         //Only add items if we haven't already
         List<ItemDAO> items = ItemDAO.findAll(database);
@@ -42,6 +48,5 @@ public class DBHelper extends SQLiteOpenHelper {
             ItemDAO item = new ItemDAO("RecyclerExt Demo Item " + i);
             item.save(database);
         }
-
     }
 }

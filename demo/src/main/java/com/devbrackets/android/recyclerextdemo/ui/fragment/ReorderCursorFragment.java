@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo;
+package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -13,10 +13,11 @@ import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerReorderCursorAdapter;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
-import com.devbrackets.android.recyclerextdemo.database.DBHelper;
-import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.R;
+import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
+import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.task.OrderUpdateTask;
-import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHolder;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleDragItemViewHolder;
 
 
 /**
@@ -102,22 +103,10 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * The adapter that extends the {@link RecyclerReorderCursorAdapter} to provide the
+     * minimum number of methods to function
+     */
     private class RRReorderCursorAdapter extends RecyclerReorderCursorAdapter<SimpleDragItemViewHolder> {
         private LayoutInflater inflater;
 
@@ -137,11 +126,6 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
             ItemDAO item = new ItemDAO(cursor);
             holder.setText(item.getText() != null ? item.getText() : "");
             holder.setPosition(position);
-        }
-
-        @Override
-        public void onContentChanged() {
-            //Purposefully left blank
         }
     }
 }

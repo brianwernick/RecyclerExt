@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo;
+package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,15 +11,18 @@ import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
-import com.devbrackets.android.recyclerextdemo.viewholder.SimpleDragItemViewHolder;
+import com.devbrackets.android.recyclerextdemo.R;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleDragItemViewHolder;
 
 
 /**
- * A placeholder fragment containing a simple view.
+ * A Fragment for demonstrating a vertical reorder adapter
  */
 public class ReorderListFragment extends Fragment implements ReorderDecoration.ReorderListener {
     private RecyclerView recyclerView;
     private ListAdapter listAdapter;
+
+    protected int orientation = LinearLayoutManager.VERTICAL;
 
     public static ReorderListFragment newInstance() {
         return new ReorderListFragment();
@@ -59,7 +62,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
         listAdapter = new ListAdapter(getActivity());
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        layoutManager.setOrientation(orientation);
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(listAdapter);
@@ -68,6 +71,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
         //Create the ReorderDecoration, set the drag handle, and register for notifications of reorder events
         ReorderDecoration reorderDecoration = new ReorderDecoration(recyclerView);
         reorderDecoration.setDragHandleId(R.id.simple_drag_item_handle);
+        reorderDecoration.setOrientation(orientation == LinearLayoutManager.VERTICAL ? ReorderDecoration.LayoutOrientation.VERTICAL : ReorderDecoration.LayoutOrientation.HORIZONTAL);
         reorderDecoration.setReorderListener(this);
 
 
@@ -76,23 +80,11 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
         recyclerView.addOnItemTouchListener(reorderDecoration);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * The adapter that extends the {@link RecyclerListAdapter} to provide the
+     * minimum number of methods to function.  Any adapter could be used here, but for simplicity the
+     * List adapter was used
+     */
     private class ListAdapter extends RecyclerListAdapter<SimpleDragItemViewHolder, String> {
         private LayoutInflater inflater;
 

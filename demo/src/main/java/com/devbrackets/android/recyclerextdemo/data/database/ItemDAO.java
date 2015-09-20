@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo.database;
+package com.devbrackets.android.recyclerextdemo.data.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;

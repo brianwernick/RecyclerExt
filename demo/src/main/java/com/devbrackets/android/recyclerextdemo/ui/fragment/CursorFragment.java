@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo;
+package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -11,9 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter;
-import com.devbrackets.android.recyclerextdemo.database.DBHelper;
-import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
-import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
+import com.devbrackets.android.recyclerextdemo.R;
+import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
+import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder;
 
 
 /**
@@ -38,10 +39,15 @@ public class CursorFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //Makes sure the database is initialized and open for use
         dbHelper = new DBHelper(getActivity());
         setupRecyclerExt();
     }
 
+    /**
+     * Retrieves the cursor from the database, and sets the layout manager and adapter
+     * on the RecyclerView.
+     */
     private void setupRecyclerExt() {
         CursorAdapter cursorAdapter = new CursorAdapter(getActivity(), ItemDAO.findCursorAll(dbHelper.getWritableDatabase()));
 
@@ -49,23 +55,10 @@ public class CursorFragment extends Fragment {
         recyclerView.setAdapter(cursorAdapter);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * The adapter that extends the {@link RecyclerCursorAdapter} to provide the
+     * minimum number of methods to function
+     */
     private class CursorAdapter extends RecyclerCursorAdapter<SimpleTextViewHolder> {
         private LayoutInflater inflater;
 
@@ -77,7 +70,6 @@ public class CursorFragment extends Fragment {
         @Override
         public SimpleTextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = inflater.inflate(R.layout.simple_text_item, null);
-
             return new SimpleTextViewHolder(view);
         }
 
@@ -86,11 +78,6 @@ public class CursorFragment extends Fragment {
             ItemDAO item = new ItemDAO(cursor);
             holder.setText(item.getText() != null ? item.getText() : "");
             holder.setPosition(position);
-        }
-
-        @Override
-        public void onContentChanged() {
-            //Purposefully left blank
         }
     }
 }

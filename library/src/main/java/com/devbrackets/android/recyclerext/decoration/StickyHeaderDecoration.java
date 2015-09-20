@@ -126,7 +126,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             //If the next header is different than the current one, perform the swap
-            Long headerId = (Long) nextHeader.getTag(R.id.sticky_view_header_id);
+            Long headerId = (Long) nextHeader.getTag(R.id.recyclerext_sticky_view_header_id);
             if (headerId != null && headerId != currentStickyId) {
                 performStickyHeaderSwap(nextHeader, headerId);
             }
@@ -195,7 +195,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 }
 
                 //Determine if the view is a header to return
-                Integer type = (Integer) view.getTag(R.id.sticky_view_type_tag);
+                Integer type = (Integer) view.getTag(R.id.recyclerext_sticky_view_type_tag);
                 if (type != null && type == RecyclerHeaderAdapter.VIEW_TYPE_HEADER) {
                     return view;
                 }

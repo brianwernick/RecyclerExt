@@ -1,4 +1,4 @@
-package com.devbrackets.android.recyclerextdemo;
+package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,15 +11,16 @@ import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
-import com.devbrackets.android.recyclerextdemo.database.DBHelper;
-import com.devbrackets.android.recyclerextdemo.database.ItemDAO;
-import com.devbrackets.android.recyclerextdemo.viewholder.SimpleTextViewHolder;
+import com.devbrackets.android.recyclerextdemo.R;
+import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
+import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder;
 
 import java.util.List;
 
 
 /**
- * An example of the {@link com.devbrackets.android.recyclerextdemo.HeaderListFragment.HeaderAdapter}
+ * An example of the {@link HeaderListFragment.HeaderAdapter}
  * and using the {@link StickyHeaderDecoration} to keep the header at the top of the screen when reached.
  */
 public class HeaderListFragment extends Fragment {
@@ -41,35 +42,29 @@ public class HeaderListFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //Makes sure the database is initialized and open for use
         dbHelper = new DBHelper(getActivity());
         setupRecyclerExt();
     }
 
+    /**
+     * Retrieves the items from the database, and sets the layout manager, adapter, and sticky decoration
+     * on the RecyclerView.
+     */
     private void setupRecyclerExt() {
         HeaderAdapter adapter = new HeaderAdapter(getActivity(), ItemDAO.findAll(dbHelper.getWritableDatabase()));
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        //NOTE: The StickyHeaderDecoration is optional if you want the current Header to always be visible
         recyclerView.addItemDecoration(new StickyHeaderDecoration(recyclerView));
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
+     * minimum number of methods to function
+     */
     private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> {
         private LayoutInflater inflater;
         private List<ItemDAO> items;
@@ -107,6 +102,10 @@ public class HeaderListFragment extends Fragment {
             return items.size();
         }
 
+        /**
+         * For simplicity sake, we just return a simple mathematical id for the headers.
+         * You should provide an actual id.
+         */
         @Override
         public long getHeaderId(int childPosition) {
             return items.get(childPosition).getOrder() / 10;
