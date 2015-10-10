@@ -3,8 +3,8 @@ apply plugin: 'maven'
 apply plugin: 'bintray-release'
 
 def versionMajor = 0
-def versionMinor = 10
-def versionPatch = 4
+def versionMinor = 11
+def versionPatch = 0
 
 // Maven GAV
 def libraryGroupId = 'com.devbrackets.android'
@@ -51,6 +51,7 @@ android {
     }
 }
 
+// ======== MAVEN DEPLOY to local cache or nexus repo (to make accessible to local projects) (command: ./gradlew clean aRel uploadArchives) ========
 uploadArchives {
     repositories {
         // deploy to local
@@ -58,7 +59,7 @@ uploadArchives {
             repository (url: "file://${System.env.HOME}/.m2/repository/")
             pom.groupId = libraryGroupId
             pom.artifactId = libraryBaseName
-            pom.version = libraryVersion + "-SNAPSHOT"
+            pom.version = libraryVersion
             pom.packaging = 'aar'
             uniqueVersion = false
         }
