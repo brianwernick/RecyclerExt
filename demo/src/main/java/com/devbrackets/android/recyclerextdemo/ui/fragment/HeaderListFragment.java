@@ -57,10 +57,8 @@ public class HeaderListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        //NOTE: The StickyHeaderDecoration is optional if you want the current Header to always be visible
-        StickyHeaderDecoration stickyDecoration = new StickyHeaderDecoration(recyclerView);
-        stickyDecoration.registerAdapterChanges(adapter);
-        recyclerView.addItemDecoration(stickyDecoration);
+        //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
+        recyclerView.addItemDecoration(new StickyHeaderDecoration(recyclerView));
     }
 
     /**
