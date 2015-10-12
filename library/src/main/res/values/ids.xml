@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="recyclerext_sticky_view_type_tag" type="id"/>
-    <item name="recyclerext_sticky_view_header_id" type="id"/>
+    <item name="recyclerext_view_child_position" type="id"/>
 </resources>

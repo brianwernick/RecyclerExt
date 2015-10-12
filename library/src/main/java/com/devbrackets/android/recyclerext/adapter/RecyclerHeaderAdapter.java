@@ -116,12 +116,11 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
 
         if (viewType == VIEW_TYPE_CHILD) {
             onBindChildViewHolder((C) holder, childPosition);
+            holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
         } else if (viewType == VIEW_TYPE_HEADER) {
             onBindHeaderViewHolder((H) holder, childPosition);
-            holder.itemView.setTag(R.id.recyclerext_sticky_view_header_id, getHeaderId(childPosition));
+            holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
         }
-
-        holder.itemView.setTag(R.id.recyclerext_sticky_view_type_tag, viewType);
     }
 
     /**
@@ -209,6 +208,27 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
         }
 
         return viewPosition - headerCount;
+    }
+
+    /**
+     * Determines the position for the header associated with
+     * the <code>headerId</code>
+     *
+     * @param headerId The id to find the header for
+     * @return The associated headers position or {@link RecyclerView#NO_POSITION}
+     */
+    public int getHeaderPosition(long headerId) {
+        if (headerId == RecyclerView.NO_ID) {
+            return RecyclerView.NO_POSITION;
+        }
+
+        for (HeaderItem item : headerItems) {
+            if (item.getHeaderId() == headerId) {
+                return item.getViewPosition();
+            }
+        }
+
+        return RecyclerView.NO_POSITION;
     }
 
     /**
