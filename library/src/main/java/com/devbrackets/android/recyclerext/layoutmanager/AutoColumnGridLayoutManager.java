@@ -97,7 +97,8 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         }
 
         //If the RecyclerView has been sized then calculate the column width and attach the spacing decoration
-        int count = recyclerView.getWidth() / gridItemWidth;
+        int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
+        int count = (recyclerView.getWidth() - padding) / gridItemWidth;
 
         if (spacerDecoration != null) {
             spacerDecoration.update(recyclerView.getWidth(), gridItemWidth, count);
