@@ -19,7 +19,6 @@ package com.devbrackets.android.recyclerext.decoration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -272,18 +271,13 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             //Bind it to get the correct values and return the temporary holder
             adapter.onBindViewHolder(fallbackHolder, headerPosition);
 
-            //TODO: this sizes correctly (on API 11+) but draws a fully transparent view
             //Makes sure to measure the header view
             int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
             int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getHeight(), View.MeasureSpec.AT_MOST);
             fallbackHolder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+            fallbackHolder.itemView.layout(0, 0, fallbackHolder.itemView.getMeasuredWidth(), fallbackHolder.itemView.getMeasuredHeight());
 
-            //It we will only support reverse scrolling on Honeycomb + devices
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                fallbackHolder.itemView.setRight(fallbackHolder.itemView.getMeasuredWidth());
-                fallbackHolder.itemView.setBottom(fallbackHolder.itemView.getMeasuredHeight());
-            }
-
+            //Make sure the view has a size before we actually return it
             if (fallbackHolder.itemView.getWidth() <= 0 || fallbackHolder.itemView.getHeight() <= 0) {
                 return null;
             }
