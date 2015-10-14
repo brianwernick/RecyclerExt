@@ -126,7 +126,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyDataSetChanged();
+            notifyItemInserted(items.size());
         }
     }
 
@@ -146,7 +146,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyDataSetChanged();
+            notifyItemChanged(position);
         }
     }
 
@@ -165,7 +165,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyDataSetChanged();
+            notifyItemRangeChanged(items.size() - itemList.size(), itemList.size());
         }
     }
 
@@ -175,16 +175,21 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      * @param item The item to remove from the list
      */
     public void remove(T item) {
+        int removeIndex;
+
         synchronized (lock) {
             if (items == null) {
                 return;
             }
 
-            items.remove(item);
+            removeIndex = items.indexOf(item);
+            if (removeIndex != -1) {
+                items.remove(removeIndex);
+            }
         }
 
-        if (notifyOnChange) {
-            notifyDataSetChanged();
+        if (notifyOnChange && removeIndex != -1) {
+            notifyItemRemoved(removeIndex);
         }
     }
 
@@ -203,7 +208,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyDataSetChanged();
+            notifyItemRemoved(position);
         }
     }
 
@@ -225,13 +230,15 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      */
     public void sort(Comparator<? super T> comparator) {
         synchronized (lock) {
-            if (items != null) {
-                Collections.sort(items, comparator);
+            if (items == null) {
+                return;
             }
+
+            Collections.sort(items, comparator);
         }
 
         if (notifyOnChange) {
-            notifyDataSetChanged();
+            notifyItemRangeChanged(0, items.size());
         }
     }
 }
