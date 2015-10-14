@@ -146,7 +146,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyItemChanged(position);
+            notifyItemInserted(position);
         }
     }
 
