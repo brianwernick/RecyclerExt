@@ -22,6 +22,9 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     @Nullable
     private SpacerDecoration spacerDecoration;
 
+    private int rowSpacing = 0;
+    private boolean matchSpacing = false;
+
     private int requestedColumnWidth;
 
     /**
@@ -76,6 +79,27 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      */
     public void setColumnWidth(int gridItemWidth, RecyclerView recyclerView) {
         setSpanCount(determineColumnCount(gridItemWidth, recyclerView));
+    }
+
+    /**
+     * Sets the amount of spacing that should be between rows.  This value
+     * will be overridden when {@link #setMatchRowAndColumnSpacing(boolean)} is set to true
+     *
+     * @param rowSpacing The amount of spacing that should be between rows [default: 0]
+     */
+    public void setRowSpacing(int rowSpacing) {
+        this.rowSpacing = rowSpacing;
+    }
+
+    /**
+     * Enables or disables the ability to match the horizontal and vertical spacing
+     * between the grid items.  If set to true this will override the value set with
+     * {@link #setRowSpacing(int)}
+     *
+     * @param matchSpacing True to keep the horizontal and vertical spacing equal [default: false]
+     */
+    public void setMatchRowAndColumnSpacing(boolean matchSpacing) {
+        this.matchSpacing = matchSpacing;
     }
 
     /**
@@ -168,6 +192,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
             outRect.left = space;
             outRect.right = space;
+            outRect.bottom = matchSpacing ? (2 * space) : rowSpacing;
         }
     }
 }
