@@ -213,6 +213,67 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
     }
 
     /**
+     * Swaps the items with the specified positions in the list.  If either
+     * position is out of bounds then no action will be performed.
+     *
+     * @param positionOne The position of the first item to swap
+     * @param positionTwo The position of the second item to swap
+     */
+    public void swap(int positionOne, int positionTwo) {
+        synchronized (lock) {
+            if (items == null || positionOne == positionTwo ||
+                    positionOne < 0 || positionOne >= getItemCount() ||
+                    positionTwo < 0 || positionTwo >= getItemCount()) {
+                return;
+            }
+
+            T temp = items.get(positionOne);
+            items.set(positionOne, items.get(positionTwo));
+            items.set(positionTwo, temp);
+        }
+
+        if (notifyOnChange) {
+            int lowerPosition = positionOne < positionTwo ? positionOne : positionTwo;
+            int upperPosition = positionOne > positionTwo ? positionOne : positionTwo;
+
+            notifyItemMoved(lowerPosition, upperPosition);
+            notifyItemMoved(upperPosition -1, lowerPosition);
+        }
+    }
+
+    /**
+     * Moves the item at the <code>originalPosition</code> to the <code>endPosition</code>.
+     * If the <code>endPosition</code> is greater than the number of items, it will be added to the
+     * end of the list instead.
+     *
+     * @param originalPosition The position the object is in that needs to be moved
+     * @param endPosition The end position for the item being moved
+     */
+    public void move(int originalPosition, int endPosition) {
+        synchronized (lock) {
+            if (items == null || originalPosition < 0 || endPosition < 0 || originalPosition >= getItemCount()) {
+                return;
+            }
+
+            if (endPosition >= getItemCount()) {
+                endPosition = getItemCount();
+            }
+
+            if (originalPosition == endPosition) {
+                return;
+            }
+
+            T temp = items.get(originalPosition);
+            items.remove(originalPosition);
+            items.add(endPosition, temp);
+        }
+
+        if (notifyOnChange) {
+            notifyItemMoved(originalPosition, endPosition);
+        }
+    }
+
+    /**
      * Control whether methods that change the list automatically call notifyDataSetChanged().
      * If set to false, caller must manually call notifyDataSetChanged() to have the changes reflected
      * in the attached view. The default is true, and calling notifyDataSetChanged() resets the flag to true.
