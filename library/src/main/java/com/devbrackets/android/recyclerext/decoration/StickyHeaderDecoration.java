@@ -47,6 +47,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private AdapterDataObserver dataObserver;
     private StickyViewScrollListener scrollListener;
 
+    private int stickyHeaderStart = 0;
     private long currentStickyId = Long.MIN_VALUE;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
@@ -80,7 +81,9 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
         if (stickyHeader != null) {
-            c.drawBitmap(stickyHeader, 0, 0, null);
+            int x = orientation == LayoutOrientation.HORIZONTAL ? stickyHeaderStart : 0;
+            int y = orientation == LayoutOrientation.HORIZONTAL ? 0 : stickyHeaderStart;
+            c.drawBitmap(stickyHeader, x, y, null);
         }
     }
 
@@ -94,6 +97,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         adapter.unregisterAdapterDataObserver(dataObserver);
         parent.removeOnScrollListener(scrollListener);
 
+        stickyHeaderStart = 0;
         adapter = null;
         dataObserver = null;
         parent = null;
@@ -195,6 +199,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         /**
          * Replaces the <code>stickyHeader</code> with the header associated with
          * the <code>headerId</code>.
+         * todo: perform a smooth transition between the new and old headers.
          *
          * @param headerId The id for the header view
          */
