@@ -97,7 +97,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         adapter.unregisterAdapterDataObserver(dataObserver);
         parent.removeOnScrollListener(scrollListener);
 
-        stickyHeaderStart = 0;
         adapter = null;
         dataObserver = null;
         parent = null;
@@ -112,6 +111,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
 
         stickyHeader = null;
+        stickyHeaderStart = 0;
         currentStickyId = RecyclerView.NO_ID;
     }
 
@@ -191,7 +191,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
             //If the next header is different than the current one, perform the swap
             long headerId = getHeaderId(adapter, childPosition);
-            if (headerId != currentStickyId && headerId != RecyclerView.NO_ID) {
+            if (headerId != currentStickyId) {
                 performHeaderSwap(headerId);
             }
         }
@@ -199,23 +199,40 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         /**
          * Replaces the <code>stickyHeader</code> with the header associated with
          * the <code>headerId</code>.
-         * todo: perform a smooth transition between the new and old headers.
          *
          * @param headerId The id for the header view
          */
         private void performHeaderSwap(long headerId) {
+            //If we don't have a valid headerId then clear the current header
+            if (headerId == RecyclerView.NO_ID) {
+                clearStickyHeader();
+                return;
+            }
+
             //Get the position of the associated header
             int headerPosition = getHeaderPosition(adapter, headerId);
             if (headerPosition == RecyclerView.NO_POSITION) {
                 return;
             }
 
+            updateHeader(headerId, headerPosition);
+        }
+
+        /**
+         * Updates the current sticky header to the one with the
+         * <code>headerId</code>.
+         *
+         * @param headerId The id for the new sticky header
+         * @param headerPosition The position in the RecyclerView for the header
+         */
+        private void updateHeader(long headerId, int headerPosition) {
             //Retrieve the header ViewHolder
             RecyclerView.ViewHolder holder = getHeaderViewHolder(headerPosition);
             if (holder == null) {
                 return;
             }
 
+            stickyHeaderStart = 0;
             currentStickyId = headerId;
             stickyHeader = createStickyViewBitmap(holder.itemView);
         }
