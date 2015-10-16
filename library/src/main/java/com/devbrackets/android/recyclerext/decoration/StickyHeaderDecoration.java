@@ -47,6 +47,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private AdapterDataObserver dataObserver;
     private StickyViewScrollListener scrollListener;
 
+    private int stickyHeaderStart = 0;
     private long currentStickyId = Long.MIN_VALUE;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
@@ -80,7 +81,9 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
         if (stickyHeader != null) {
-            c.drawBitmap(stickyHeader, 0, 0, null);
+            int x = orientation == LayoutOrientation.HORIZONTAL ? stickyHeaderStart : 0;
+            int y = orientation == LayoutOrientation.HORIZONTAL ? 0 : stickyHeaderStart;
+            c.drawBitmap(stickyHeader, x, y, null);
         }
     }
 
@@ -108,6 +111,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
 
         stickyHeader = null;
+        stickyHeaderStart = 0;
         currentStickyId = RecyclerView.NO_ID;
     }
 
@@ -187,7 +191,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
             //If the next header is different than the current one, perform the swap
             long headerId = getHeaderId(adapter, childPosition);
-            if (headerId != currentStickyId && headerId != RecyclerView.NO_ID) {
+            if (headerId != currentStickyId) {
                 performHeaderSwap(headerId);
             }
         }
@@ -199,18 +203,36 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @param headerId The id for the header view
          */
         private void performHeaderSwap(long headerId) {
+            //If we don't have a valid headerId then clear the current header
+            if (headerId == RecyclerView.NO_ID) {
+                clearStickyHeader();
+                return;
+            }
+
             //Get the position of the associated header
             int headerPosition = getHeaderPosition(adapter, headerId);
             if (headerPosition == RecyclerView.NO_POSITION) {
                 return;
             }
 
+            updateHeader(headerId, headerPosition);
+        }
+
+        /**
+         * Updates the current sticky header to the one with the
+         * <code>headerId</code>.
+         *
+         * @param headerId The id for the new sticky header
+         * @param headerPosition The position in the RecyclerView for the header
+         */
+        private void updateHeader(long headerId, int headerPosition) {
             //Retrieve the header ViewHolder
             RecyclerView.ViewHolder holder = getHeaderViewHolder(headerPosition);
             if (holder == null) {
                 return;
             }
 
+            stickyHeaderStart = 0;
             currentStickyId = headerId;
             stickyHeader = createStickyViewBitmap(holder.itemView);
         }
