@@ -233,11 +233,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            int lowerPosition = positionOne < positionTwo ? positionOne : positionTwo;
-            int upperPosition = positionOne > positionTwo ? positionOne : positionTwo;
-
-            notifyItemMoved(lowerPosition, upperPosition);
-            notifyItemMoved(upperPosition -1, lowerPosition);
+            notifyItemsSwapped(positionOne, positionTwo);
         }
     }
 
@@ -271,6 +267,25 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         if (notifyOnChange) {
             notifyItemMoved(originalPosition, endPosition);
         }
+    }
+
+    /**
+     * Notify any registered observers that the item reflected at <code>positionOne</code>
+     * has been moved to <code>positionTwo</code> and vice-versa.
+     * <p>
+     * This is a structural change event. Representations of other existing items in the
+     * data set are still considered up to date and will not be rebound, though their
+     * positions may be altered.
+     *
+     * @param positionOne The position of the first item moved
+     * @param positionTwo The position of the second item moved
+     */
+    public void notifyItemsSwapped(int positionOne, int positionTwo) {
+        int lowerPosition = positionOne < positionTwo ? positionOne : positionTwo;
+        int upperPosition = positionOne > positionTwo ? positionOne : positionTwo;
+
+        notifyItemMoved(lowerPosition, upperPosition);
+        notifyItemMoved(upperPosition -1, lowerPosition);
     }
 
     /**
