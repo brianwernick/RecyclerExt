@@ -23,7 +23,9 @@ import android.view.ViewGroup;
 import com.devbrackets.android.recyclerext.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.support.v7.widget.RecyclerView.ViewHolder;
 
@@ -39,6 +41,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     public static final int VIEW_TYPE_HEADER = 10;
 
     private Observer observer = new Observer();
+    protected Map<Long, Integer> headerChildCountMap = new HashMap<>();
     protected List<HeaderItem> headerItems = new ArrayList<>();
 
     /**
@@ -195,6 +198,21 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     }
 
     /**
+     * Returns the total number of views that are associated with the specified
+     * header id.  If the headerId doesn't exist then 0 will be returned.
+     *
+     * @param headerId The headerId to find the number of children for
+     * @return The number of children views associated with the given <code>headerId</code>
+     */
+    public int getChildCount(long headerId) {
+        if (headerId == RecyclerView.NO_ID || !headerChildCountMap.containsKey(headerId)) {
+            return 0;
+        }
+
+        return headerChildCountMap.get(headerId);
+    }
+
+    /**
      * Return the stable ID for the header at <code>childPosition</code>. The default implementation
      * of this method returns {@link RecyclerView#NO_ID}
      *
@@ -294,11 +312,22 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
          */
         private void calculateHeaderIndices() {
             headerItems.clear();
+            headerChildCountMap.clear();
             HeaderItem currentItem = null;
 
             for (int i = 0; i < getChildCount(); i++) {
                 long id = getHeaderId(i);
-                if (id != RecyclerView.NO_ID && (currentItem == null || currentItem.getHeaderId() != id)) {
+                if (id == RecyclerView.NO_ID) {
+                    continue;
+                }
+
+                //Updates the child count for the headerId
+                Integer childCount = headerChildCountMap.get(id);
+                childCount = (childCount == null) ? 1 : childCount +1;
+                headerChildCountMap.put(id, childCount);
+
+                //Adds new headers to the list when detected
+                if (currentItem == null || currentItem.getHeaderId() != id) {
                     currentItem = new HeaderItem(id, i + headerItems.size());
                     headerItems.add(currentItem);
                 }
