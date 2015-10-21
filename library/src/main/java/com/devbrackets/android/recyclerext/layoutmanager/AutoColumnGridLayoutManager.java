@@ -23,6 +23,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     private SpacerDecoration spacerDecoration;
 
     private int rowSpacing = 0;
+    private int minColumnSpacing = 0;
     private boolean matchSpacing = false;
 
     private int requestedColumnWidth;
@@ -49,7 +50,6 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     @Override
     public void onAttachedToWindow(RecyclerView recyclerView) {
         super.onAttachedToWindow(recyclerView);
-
         setColumnWidth(requestedColumnWidth, recyclerView);
     }
 
@@ -78,7 +78,21 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * @param recyclerView The {@link RecyclerView} to use for determining the number of columns
      */
     public void setColumnWidth(int gridItemWidth, RecyclerView recyclerView) {
+        requestedColumnWidth = gridItemWidth;
         setSpanCount(determineColumnCount(gridItemWidth, recyclerView));
+    }
+
+    /**
+     * Sets the minimum amount of spacing there should be between columns.  This will
+     * be used when determining the number of columns possible with the gridItemWidth specified
+     * with {@link #AutoColumnGridLayoutManager(Context, int)} or {@link #setColumnWidth(int, RecyclerView)}
+     *
+     * @param minColumnSpacing The minimum amount of spacing between columns on each card (this should be half the distance between cards)
+     * @param recyclerView The {@link RecyclerView} to use for determining the number of columns
+     */
+    public void setMinColumnSpacing(int minColumnSpacing, RecyclerView recyclerView) {
+        this.minColumnSpacing = minColumnSpacing;
+        setSpanCount(determineColumnCount(requestedColumnWidth, recyclerView));
     }
 
     /**
@@ -120,18 +134,29 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             return 1;
         }
 
-        //If the RecyclerView has been sized then calculate the column width and attach the spacing decoration
+        //Calculate the number of columns possible
         int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
-        int count = (recyclerView.getWidth() - padding) / gridItemWidth;
+        int usableWidth = recyclerView.getWidth() - padding;
 
+        int columnCount = usableWidth / gridItemWidth;
+        int usedColumnWidth = columnCount * gridItemWidth;
+        int minSpacingWidth = columnCount * minColumnSpacing;
+
+        while (usableWidth - usedColumnWidth - minSpacingWidth < 0) {
+            columnCount--;
+            usedColumnWidth = columnCount * gridItemWidth;
+            minSpacingWidth = columnCount * minColumnSpacing;
+        }
+
+        //Adds or updates the spacing decoration
         if (spacerDecoration != null) {
-            spacerDecoration.update(recyclerView.getWidth(), gridItemWidth, count);
+            spacerDecoration.update(recyclerView.getWidth(), gridItemWidth, columnCount);
         } else {
-            spacerDecoration = new SpacerDecoration(recyclerView.getWidth(), gridItemWidth, count);
+            spacerDecoration = new SpacerDecoration(recyclerView.getWidth(), gridItemWidth, columnCount);
             recyclerView.addItemDecoration(spacerDecoration);
         }
 
-        return count;
+        return columnCount;
     }
 
     /**
