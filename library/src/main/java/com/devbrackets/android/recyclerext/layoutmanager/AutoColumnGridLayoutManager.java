@@ -87,7 +87,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * be used when determining the number of columns possible with the gridItemWidth specified
      * with {@link #AutoColumnGridLayoutManager(Context, int)} or {@link #setColumnWidth(int, RecyclerView)}
      *
-     * @param minColumnSpacing The minimum amount of spacing between columns on each card (this should be half the distance between cards)
+     * @param minColumnSpacing The minimum amount of spacing between columns on each card
      * @param recyclerView The {@link RecyclerView} to use for determining the number of columns
      */
     public void setMinColumnSpacing(int minColumnSpacing, RecyclerView recyclerView) {
