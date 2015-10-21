@@ -150,9 +150,9 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
 
         //Adds or updates the spacing decoration
         if (spacerDecoration != null) {
-            spacerDecoration.update(recyclerView.getWidth(), gridItemWidth, columnCount);
+            spacerDecoration.update(recyclerView, gridItemWidth, columnCount);
         } else {
-            spacerDecoration = new SpacerDecoration(recyclerView.getWidth(), gridItemWidth, columnCount);
+            spacerDecoration = new SpacerDecoration(recyclerView, gridItemWidth, columnCount);
             recyclerView.addItemDecoration(spacerDecoration);
         }
 
@@ -195,12 +195,15 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     private class SpacerDecoration extends RecyclerView.ItemDecoration {
         private int space;
 
-        public SpacerDecoration(int recyclerWidth, int gridItemWidth, int columnCount) {
-            update(recyclerWidth, gridItemWidth, columnCount);
+        public SpacerDecoration(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
+            update(recyclerView, gridItemWidth, columnCount);
         }
 
-        public void update(int recyclerWidth, int gridItemWidth, int columnCount) {
-            int extraSpace = recyclerWidth - (gridItemWidth * columnCount);
+        public void update(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
+            int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
+            int usableWidth = recyclerView.getWidth() - padding;
+
+            int extraSpace = usableWidth - (gridItemWidth * columnCount);
             int spacerCount = 2 * columnCount;
 
             //If we are going to have partial pixel spacing, then allow the grid items to grow by ~1px

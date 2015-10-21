@@ -23,7 +23,7 @@ The latest AAR (Android Archive) files can be downloaded from JCenter [RecyclerE
 Or included in your gradle dependencies
 
 ```groovy
-compile 'com.devbrackets.android:recyclerext:0.12.1'
+compile 'com.devbrackets.android:recyclerext:0.12.2'
 ```
 
 
