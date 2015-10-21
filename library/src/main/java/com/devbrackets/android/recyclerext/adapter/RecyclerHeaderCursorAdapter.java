@@ -277,6 +277,28 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
         return RecyclerView.NO_POSITION;
     }
 
+
+    /**
+     * An object to keep track of the locations and id's for header items
+     */
+    public static class HeaderItem {
+        private long headerId;
+        private int viewPosition;
+
+        public HeaderItem(long headerId, int viewPosition) {
+            this.headerId = headerId;
+            this.viewPosition = viewPosition;
+        }
+
+        public long getHeaderId() {
+            return headerId;
+        }
+
+        public int getViewPosition() {
+            return viewPosition;
+        }
+    }
+
     /**
      * Used to monitor data set changes to update the {@link #headerItems} so that we can correctly
      * calculate the list item count and header indexes.
@@ -332,27 +354,6 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
                     headerItems.add(currentItem);
                 }
             }
-        }
-    }
-
-    /**
-     * An object to keep track of the locations and id's for header items
-     */
-    private static class HeaderItem {
-        private long headerId;
-        private int viewPosition;
-
-        public HeaderItem(long headerId, int viewPosition) {
-            this.headerId = headerId;
-            this.viewPosition = viewPosition;
-        }
-
-        public long getHeaderId() {
-            return headerId;
-        }
-
-        public int getViewPosition() {
-            return viewPosition;
         }
     }
 }
