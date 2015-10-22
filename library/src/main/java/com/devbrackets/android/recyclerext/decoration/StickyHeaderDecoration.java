@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
@@ -33,6 +34,7 @@ import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderCursorAdapter;
  * reach the start of the RecyclerView's frame.
  */
 public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
+    private static final String TAG = "StickyHeaderDecoration";
 
     public enum LayoutOrientation {
         VERTICAL,
@@ -66,7 +68,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         boolean headerAdapter = parent.getAdapter() instanceof RecyclerHeaderAdapter || parent.getAdapter() instanceof RecyclerHeaderCursorAdapter;
 
         if (parent.getAdapter() == null || !headerAdapter) {
-            throw new ExceptionInInitializerError("The Adapter cannot be null and must extend RecyclerHeaderAdapter or RecyclerHeaderCursorAdapter");
+            throw new ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter or RecyclerHeaderCursorAdapter");
         }
 
         this.parent = parent;
@@ -269,45 +271,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
 
         /**
-         * Retrieves the ViewHolder associated with the header at <code>headerPosition</code>.
-         * If the ViewHolder returned from <code>parent</code> is null then a temporary ViewHolder
-         * will be generated to represent the header.
-         *
-         * @param headerPosition The position to find the ViewHolder for
-         * @return The ViewHolder representing the header at <code>headerPosition</code>
-         */
-        @Nullable
-        @SuppressWarnings("unchecked")
-        private RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
-            //If we can get the actual viewHolder for the header then return that
-            RecyclerView.ViewHolder holder = parent.findViewHolderForAdapterPosition(headerPosition);
-            if (holder != null) {
-                return holder;
-            }
-
-            //Otherwise try to create a temporary one
-            if (fallbackHolder == null) {
-                fallbackHolder = adapter.onCreateViewHolder(parent, RecyclerHeaderAdapter.VIEW_TYPE_HEADER);
-            }
-
-            //Bind it to get the correct values and return the temporary holder
-            adapter.onBindViewHolder(fallbackHolder, headerPosition);
-
-            //Makes sure to measure the header view
-            int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
-            int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getHeight(), View.MeasureSpec.AT_MOST);
-            fallbackHolder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
-            fallbackHolder.itemView.layout(0, 0, fallbackHolder.itemView.getMeasuredWidth(), fallbackHolder.itemView.getMeasuredHeight());
-
-            //Make sure the view has a size before we actually return it
-            if (fallbackHolder.itemView.getWidth() <= 0 || fallbackHolder.itemView.getHeight() <= 0) {
-                return null;
-            }
-
-            return fallbackHolder;
-        }
-
-        /**
          * Retrieves the id for the header associated with the <code>childPosition</code> from
          * the specified <code>headerAdapter</code>
          *
@@ -341,6 +304,67 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             return RecyclerView.NO_POSITION;
+        }
+
+        /**
+         * Retrieves the ViewHolder associated with the header at <code>headerPosition</code>.
+         * If the ViewHolder returned from <code>parent</code> is null then a temporary ViewHolder
+         * will be generated to represent the header.
+         *
+         * @param headerPosition The position to find the ViewHolder for
+         * @return The ViewHolder representing the header at <code>headerPosition</code>
+         */
+        @Nullable
+        @SuppressWarnings("unchecked")
+        private RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
+            //If we can get the actual viewHolder for the header then return that
+            RecyclerView.ViewHolder holder = parent.findViewHolderForAdapterPosition(headerPosition);
+            if (holder != null) {
+                return holder;
+            }
+
+            //Otherwise try to create a temporary one
+            if (fallbackHolder == null) {
+                fallbackHolder = adapter.onCreateViewHolder(parent, RecyclerHeaderAdapter.VIEW_TYPE_HEADER);
+            }
+
+            //Measure it
+            if (!measureViewHolder(fallbackHolder)) {
+                return null;
+            }
+
+            //Bind it to get the correct values and return the temporary holder
+            adapter.onBindViewHolder(fallbackHolder, headerPosition);
+            return fallbackHolder;
+        }
+
+        /**
+         * Measures the specified <code>holder</code>
+         *
+         * @param holder The {@link RecyclerView.ViewHolder} to measure
+         * @return True if the <code>holder</code> was correctly sized
+         */
+        private boolean measureViewHolder(RecyclerView.ViewHolder holder) {
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams)holder.itemView.getLayoutParams();
+
+
+            //If the parent ViewGroup wasn't specified when inflating the view (holder.itemView) then the LayoutParams will be null and
+            // We may not be able to size the sticky header correctly.
+            if (params != null) {
+                RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
+                int widthSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getWidth(), parent.getPaddingLeft() + parent.getPaddingRight(), params.width, layoutManager.canScrollHorizontally());
+                int heightSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getHeight(), parent.getPaddingTop() + parent.getPaddingBottom(), params.height, layoutManager.canScrollVertically());
+                holder.itemView.measure(widthSpec, heightSpec);
+            } else {
+                int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
+                int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getHeight(), View.MeasureSpec.AT_MOST);
+                holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+                Log.e(TAG, "The parent ViewGroup wasn't specified when inflating the view.  This may cause the StickyHeader to be sized incorrectly.");
+            }
+
+            //Perform a layout to update the width and height properties of the view
+            holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(), holder.itemView.getMeasuredHeight());
+            return holder.itemView.getWidth() > 0 && holder.itemView.getHeight() > 0;
         }
     }
 }

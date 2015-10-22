@@ -76,13 +76,13 @@ public class HeaderListFragment extends Fragment {
 
         @Override
         public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View view = inflater.inflate(R.layout.simple_text_item, null);
+            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
             return new SimpleTextViewHolder(view);
         }
 
         @Override
         public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent) {
-            View view = inflater.inflate(R.layout.simple_text_item, null);
+            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
             return new SimpleTextViewHolder(view);
         }
 

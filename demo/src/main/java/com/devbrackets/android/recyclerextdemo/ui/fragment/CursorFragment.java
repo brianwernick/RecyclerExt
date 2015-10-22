@@ -69,7 +69,7 @@ public class CursorFragment extends Fragment {
 
         @Override
         public SimpleTextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, null);
+            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
             return new SimpleTextViewHolder(view);
         }
 
