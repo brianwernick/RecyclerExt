@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--TODO: this needs to match the one seen in the Marshmallow launcher -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="2dp"/>
+
+            <solid android:color="?attr/colorAccent"/>
+
+            <size
+                android:height="32dp"
+                android:width="4dp"/>
+        </shape>
+    </item>
+
+    <item >
+        <shape android:shape="rectangle">
+
+            <corners android:radius="2dp"/>
+
+            <solid android:color="?attr/colorAccent"/>
+
+            <size
+                android:height="32dp"
+                android:width="4dp"/>
+        </shape>
+    </item>
+</selector>

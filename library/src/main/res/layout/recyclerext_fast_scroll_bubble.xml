@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:clipChildren="false"
+              tools:ignore="UseCompoundDrawables">
+
+    <TextView
+        android:id="@+id/recyclerext_fast_scroll_bubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|end"
+        android:background="@drawable/recyclerext_fast_scroll_bubble"
+        android:gravity="center"
+        android:textColor="#FFffffff"
+        android:textSize="48sp"
+        android:visibility="visible"
+        tools:ignore="RtlHardcoded"
+        tools:text="A"/>
+
+    <view class="com.devbrackets.android.recyclerext.FastScroll$SupportImageView"
+        android:id="@+id/recyclerext_fast_scroll_handle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingStart="8dp"
+        android:layout_gravity="right|end"
+        android:src="@drawable/recyclerext_fast_scroll_handle"
+        tools:ignore="ContentDescription,RtlHardcoded,RtlSymmetry"/>
+</LinearLayout>
