@@ -115,7 +115,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     @SuppressWarnings("unchecked")
     public void onBindViewHolder(ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
-        int childPosition = determineChildPosition(position);
+        int childPosition = getChildPosition(position);
 
         if (viewType == VIEW_TYPE_CHILD) {
             onBindChildViewHolder((C) holder, childPosition);
@@ -212,20 +212,20 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     /**
      * Determines the child position given the position in the RecyclerView
      *
-     * @param viewPosition The position in the RecyclerView (includes Headers and Children)
+     * @param adapterPosition The position in the RecyclerView (includes Headers and Children)
      * @return The child index
      */
-    public int determineChildPosition(int viewPosition) {
+    public int getChildPosition(int adapterPosition) {
         int headerCount = 0;
         for (HeaderItem item : headerItems) {
-            if (item.getViewPosition() < viewPosition) {
+            if (item.getViewPosition() < adapterPosition) {
                 headerCount++;
             } else {
                 break;
             }
         }
 
-        return viewPosition - headerCount;
+        return adapterPosition - headerCount;
     }
 
     /**

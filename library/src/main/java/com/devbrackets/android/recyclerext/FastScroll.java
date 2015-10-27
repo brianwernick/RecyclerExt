@@ -12,30 +12,32 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
  * A class that provides the functionality of a fast scroll
  * for the attached {@link android.support.v7.widget.RecyclerView}
  */
-public class FastScroll extends LinearLayout {
+public class FastScroll extends FrameLayout {
     private static final String TAG = "FastScroll";
     private static final int TRACK_SNAP_RANGE = 5;
 
-    public interface BubbleTextGetter {
-        String getTextToShowInBubble(int position);
+    public interface FastScrollPopupCallbacks {
+        String getFastScrollPopupText(int position);
     }
 
     private SupportImageView handle;
     private TextView bubble;
+
     private RecyclerView recyclerView;
+    private FastScrollPopupCallbacks popupCallbacks;
 
     private int height;
 
@@ -62,20 +64,6 @@ public class FastScroll extends LinearLayout {
     public FastScroll(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context);
-    }
-
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-
-        ViewParent parentView = getParent();
-        if (!(parentView instanceof RecyclerView)) {
-            Log.e(TAG, "The parent of FastScroll is " + parentView.getClass().getName() + " when it should be a RecyclerView");
-            return;
-        }
-
-        setupRecyclerView((RecyclerView) parentView);
     }
 
     @Override
@@ -120,18 +108,15 @@ public class FastScroll extends LinearLayout {
         return super.onTouchEvent(event);
     }
 
-    protected void init(Context context) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        inflater.inflate(R.layout.recyclerext_fast_scroll_bubble, this, true);
+    public void attach(final RecyclerView recyclerView) {
+        if (!(recyclerView.getAdapter() instanceof FastScrollPopupCallbacks)) {
+            Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + FastScrollPopupCallbacks.class.getSimpleName());
+            return;
+        }
 
-        bubble = (TextView) findViewById(R.id.recyclerext_fast_scroll_bubble);
-        handle = (SupportImageView) findViewById(R.id.recyclerext_fast_scroll_handle);
-
-        bubble.setVisibility(View.GONE);
-    }
-
-    protected void setupRecyclerView(final RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
+        popupCallbacks = (FastScrollPopupCallbacks)recyclerView.getAdapter();
+
         recyclerView.addOnScrollListener(scrollListener);
         recyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
@@ -144,11 +129,17 @@ public class FastScroll extends LinearLayout {
         });
     }
 
-    protected void setRecyclerViewPosition(float y) {
-        if (recyclerView == null) {
-            return;
-        }
+    protected void init(Context context) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        inflater.inflate(R.layout.recyclerext_fast_scroll, this, true);
 
+        bubble = (TextView) findViewById(R.id.recyclerext_fast_scroll_bubble);
+        handle = (SupportImageView) findViewById(R.id.recyclerext_fast_scroll_handle);
+
+        bubble.setVisibility(View.GONE);
+    }
+
+    protected void setRecyclerViewPosition(float y) {
         float proportion;
         int itemCount = recyclerView.getAdapter().getItemCount();
 
@@ -162,7 +153,7 @@ public class FastScroll extends LinearLayout {
 
         int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
         ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(targetPos, 0);
-        String bubbleText = ((BubbleTextGetter) recyclerView.getAdapter()).getTextToShowInBubble(targetPos);
+        String bubbleText = popupCallbacks.getFastScrollPopupText(targetPos);
 
         bubble.setText(bubbleText);
     }
@@ -173,11 +164,12 @@ public class FastScroll extends LinearLayout {
     }
 
     protected void setBubbleAndHandlePosition(float y) {
-        final int handleHeight = handle.getHeight();
+        int handleHeight = handle.getHeight();
         handle.setY(getValueInRange(0, height - handleHeight, (int) (y - handleHeight / 2)));
+
         if (bubble != null) {
             int bubbleHeight = bubble.getHeight();
-            bubble.setY(getValueInRange(0, height - bubbleHeight - handleHeight / 2, (int) (y - bubbleHeight)));
+            updateBubbleY(getValueInRange(0, height - bubbleHeight - handleHeight / 2, (int) (y - bubbleHeight)));
         }
     }
 
@@ -193,8 +185,19 @@ public class FastScroll extends LinearLayout {
             bubble.clearAnimation();
         }
 
+        Log.d(TAG, "updating bubble visibility" + toVisible);
         currentAnimation = new BubbleVisibilityAnimation(bubble, toVisible);
         bubble.startAnimation(currentAnimation);
+    }
+
+    protected void updateBubbleY(float y) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            bubble.setY(y);
+        } else {
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) bubble.getLayoutParams();
+            params.topMargin = (int)y;
+            bubble.setLayoutParams(params);
+        }
     }
 
     /**
@@ -212,6 +215,8 @@ public class FastScroll extends LinearLayout {
             int verticalScrollRange = recyclerView.computeVerticalScrollRange();
             float proportion = (float) verticalScrollOffset / ((float) verticalScrollRange - height);
             setBubbleAndHandlePosition(height * proportion);
+
+            Log.d(TAG, "proportion: " + proportion + ", verticalOffset: " + verticalScrollOffset);
         }
     }
 
@@ -296,12 +301,13 @@ public class FastScroll extends LinearLayout {
             return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ? super.getY() : getTop();
         }
 
-        //TODO: setY and setX won't work before api 11...
         public void setY(float y) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 super.setY(y);
             } else {
-                setTop((int) y);
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) getLayoutParams();
+                params.topMargin = (int)y;
+                setLayoutParams(params);
             }
         }
 
@@ -313,7 +319,9 @@ public class FastScroll extends LinearLayout {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 super.setX(x);
             } else {
-                setLeft((int) x);
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) getLayoutParams();
+                params.leftMargin = (int)x;
+                setLayoutParams(params);
             }
         }
     }

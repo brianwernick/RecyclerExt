@@ -3,8 +3,8 @@ apply plugin: 'maven'
 apply plugin: 'bintray-release'
 
 def versionMajor = 0
-def versionMinor = 12
-def versionPatch = 3
+def versionMinor = 13
+def versionPatch = 0
 
 // Maven GAV
 def libraryGroupId = 'com.devbrackets.android'

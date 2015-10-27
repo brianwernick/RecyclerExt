@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.FastScroll;
 import com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
@@ -23,6 +24,7 @@ import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolde
 public class CursorFragment extends Fragment {
     private DBHelper dbHelper;
     private RecyclerView recyclerView;
+    private FastScroll fastScroll;
 
     public static CursorFragment newInstance() {
         return new CursorFragment();
@@ -32,6 +34,8 @@ public class CursorFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recycler_fragment, container, false);
         recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
+        fastScroll = (FastScroll)view.findViewById(R.id.recyclerext_fast_scroll);
+        fastScroll.setVisibility(View.VISIBLE);
         return view;
     }
 
@@ -53,13 +57,14 @@ public class CursorFragment extends Fragment {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(cursorAdapter);
+        fastScroll.attach(recyclerView);
     }
 
     /**
      * The adapter that extends the {@link RecyclerCursorAdapter} to provide the
      * minimum number of methods to function
      */
-    private class CursorAdapter extends RecyclerCursorAdapter<SimpleTextViewHolder> {
+    private class CursorAdapter extends RecyclerCursorAdapter<SimpleTextViewHolder> implements FastScroll.FastScrollPopupCallbacks{
         private LayoutInflater inflater;
 
         public CursorAdapter(Context context, Cursor cursor) {
@@ -78,6 +83,11 @@ public class CursorFragment extends Fragment {
             ItemDAO item = new ItemDAO(cursor);
             holder.setText(item.getText() != null ? item.getText() : "");
             holder.setPosition(position);
+        }
+
+        @Override
+        public String getFastScrollPopupText(int position) {
+            return "" + (position / 100);
         }
     }
 }

@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                xmlns:tools="http://schemas.android.com/tools">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerext_fragment_recycler"
@@ -8,6 +9,15 @@
         android:layout_height="match_parent"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false" />
+
+    <com.devbrackets.android.recyclerext.FastScroll
+        android:id="@+id/recyclerext_fast_scroll"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
 </RelativeLayout>
