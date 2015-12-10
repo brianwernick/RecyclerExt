@@ -28,7 +28,7 @@ import android.view.ViewGroup;
  * More details about this can be found at https://code.google.com/p/android/issues/detail?id=74772
  */
 public class WrapLinearLayoutManager extends LinearLayoutManager {
-    private int[] measuredDimen = new int[2];
+    protected int[] measuredDimen = new int[2];
 
     public WrapLinearLayoutManager(Context context) {
         super(context, VERTICAL, false);
@@ -59,17 +59,24 @@ public class WrapLinearLayoutManager extends LinearLayoutManager {
 
             if (getOrientation() == HORIZONTAL) {
                 width = width + measuredDimen[0];
-                if (i == 0) {
-                    height = measuredDimen[1];
-                }
+
+                //Find the tallest view for the height
+                height = (measuredDimen[1] > height) ? measuredDimen[1] : height;
             } else {
                 height = height + measuredDimen[1];
-                if (i == 0) {
-                    width = measuredDimen[0];
-                }
+
+                //Find the widest view for the width
+                width = (measuredDimen[0] > width) ? measuredDimen[0] : width;
             }
         }
 
+
+        // Makes sure that the padding is counted
+        width += getPaddingLeft() + getPaddingRight();
+        height += getPaddingTop() + getPaddingBottom();
+
+
+        //If either side is exactly then make sure to abide by the correct size
         if (widthMode == View.MeasureSpec.EXACTLY) {
             width = widthSize;
         }
@@ -78,10 +85,10 @@ public class WrapLinearLayoutManager extends LinearLayoutManager {
             height = heightSize;
         }
 
-        setMeasuredDimension(View.MeasureSpec.makeMeasureSpec(widthSize, widthMode), height);
+        setMeasuredDimension(width, height);
     }
 
-    private void measureScrapChild(RecyclerView.Recycler recycler, int position, int widthSpec, int heightSpec, int[] measuredDimension) {
+    protected void measureScrapChild(RecyclerView.Recycler recycler, int position, int widthSpec, int heightSpec, int[] measuredDimension) {
         View view = recycler.getViewForPosition(position);
 
         if (view != null) {
