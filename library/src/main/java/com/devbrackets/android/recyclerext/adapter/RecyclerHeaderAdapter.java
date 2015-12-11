@@ -35,8 +35,7 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <C> The Child or content {@link RecyclerView.ViewHolder}
  */
 public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> {
-    public static final int VIEW_TYPE_CHILD = 1;
-    public static final int VIEW_TYPE_HEADER = 10;
+    public static final int HEADER_VIEW_TYPE_MASK = 0x80000000;
 
     private Observer observer = new Observer();
     protected Map<Long, Integer> headerChildCountMap = new HashMap<>();
@@ -46,17 +45,19 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * Called when the RecyclerView needs a new {@link H} ViewHolder
      *
      * @param parent The ViewGroup into which the new View will be added
+     * @param viewType The type for the header view
      * @return The view type of the new View
      */
-    public abstract H onCreateHeaderViewHolder(ViewGroup parent);
+    public abstract H onCreateHeaderViewHolder(ViewGroup parent, int viewType);
 
     /**
      * Called when the RecyclerView needs a new {@link C} ViewHolder
      *
      * @param parent The ViewGroup into which the new View will be added
+     * @param viewType The type for the child view
      * @return The view type of the new View
      */
-    public abstract C onCreateChildViewHolder(ViewGroup parent);
+    public abstract C onCreateChildViewHolder(ViewGroup parent, int viewType);
 
     /**
      * Called to display the header information with the <code>firstChildPosition</code> being the
@@ -85,8 +86,8 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
 
     /**
      * This method shouldn't be used directly, instead use
-     * {@link #onCreateHeaderViewHolder(ViewGroup)} and
-     * {@link #onCreateChildViewHolder(ViewGroup)}
+     * {@link #onCreateHeaderViewHolder(ViewGroup, int)} and
+     * {@link #onCreateChildViewHolder(ViewGroup, int)}
      *
      * @param parent The parent ViewGroup for the ViewHolder
      * @param viewType The type for the ViewHolder
@@ -94,13 +95,11 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_CHILD) {
-            return onCreateChildViewHolder(parent);
-        } else if (viewType == VIEW_TYPE_HEADER) {
-            return onCreateHeaderViewHolder(parent);
+        if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
+            return onCreateHeaderViewHolder(parent, viewType);
         }
 
-        return null;
+        return onCreateChildViewHolder(parent, viewType);
     }
 
     /**
@@ -117,13 +116,14 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
         int viewType = getItemViewType(position);
         int childPosition = determineChildPosition(position);
 
-        if (viewType == VIEW_TYPE_CHILD) {
-            onBindChildViewHolder((C) holder, childPosition);
-            holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
-        } else if (viewType == VIEW_TYPE_HEADER) {
+        if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
             onBindHeaderViewHolder((H) holder, childPosition);
             holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
+            return;
         }
+
+        onBindChildViewHolder((C) holder, childPosition);
+        holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
     }
 
     /**
@@ -134,15 +134,42 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public int getItemViewType(int position) {
+        int childPosition = determineChildPosition(position);
+
         for (HeaderItem item : headerItems) {
             if (item.getViewPosition() == position) {
-                return VIEW_TYPE_HEADER;
+                return getHeaderViewType(childPosition) | HEADER_VIEW_TYPE_MASK;
             } else if (item.getViewPosition() > position) {
                 break;
             }
         }
 
-        return VIEW_TYPE_CHILD;
+        return getChildViewType(childPosition) & ~HEADER_VIEW_TYPE_MASK;
+    }
+
+    /**
+     * Retrieves the view type for the header whos first child view
+     * has the <code>childPosition</code>.  This value will be |'d with
+     * the {@link #HEADER_VIEW_TYPE_MASK} to make sure the header and child
+     * view types don't overlap
+     *
+     * @param childPosition The position for the fist child underneath the header
+     * @return The view type for the header view
+     */
+    public int getHeaderViewType(int childPosition) {
+        return 0;
+    }
+
+    /**
+     * Retrieves the view type for the child view at the specified
+     * <code>childPosition</code>.  This value will be &'ed with the
+     * inverse of {@link #HEADER_VIEW_TYPE_MASK} to make sure the header
+     * and child view types don't overlap.
+     * @param childPosition The position of the child to get the type for
+     * @return The view type for the child view
+     */
+    public int getChildViewType(int childPosition) {
+        return 0;
     }
 
     /**

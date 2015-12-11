@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,13 +76,13 @@ public class HeaderListFragment extends Fragment {
         }
 
         @Override
-        public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+        public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
             View view = inflater.inflate(R.layout.simple_text_item, parent, false);
             return new SimpleTextViewHolder(view);
         }
 
         @Override
-        public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent) {
+        public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent, int viewType) {
             View view = inflater.inflate(R.layout.simple_text_item, parent, false);
             return new SimpleTextViewHolder(view);
         }

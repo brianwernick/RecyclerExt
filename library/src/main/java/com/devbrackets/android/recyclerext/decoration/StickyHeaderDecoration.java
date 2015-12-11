@@ -306,6 +306,14 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             return RecyclerView.NO_POSITION;
         }
 
+        private int getHeaderViewType(int headerPosition) {
+            if (adapter instanceof RecyclerHeaderAdapter) {
+                return ((RecyclerHeaderAdapter)adapter).determineChildPosition(headerPosition);
+            }
+
+            return ((RecyclerHeaderCursorAdapter)adapter).determineChildPosition(headerPosition);
+        }
+
         /**
          * Retrieves the ViewHolder associated with the header at <code>headerPosition</code>.
          * If the ViewHolder returned from <code>parent</code> is null then a temporary ViewHolder
@@ -324,9 +332,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             //Otherwise try to create a temporary one
-            if (fallbackHolder == null) {
-                fallbackHolder = adapter.onCreateViewHolder(parent, RecyclerHeaderAdapter.VIEW_TYPE_HEADER);
-            }
+            fallbackHolder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
 
             //Measure it
             if (!measureViewHolder(fallbackHolder)) {
