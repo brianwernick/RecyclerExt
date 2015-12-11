@@ -176,7 +176,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
 
     /**
      * Retrieves the view type for the child view at the specified
-     * <code>childPosition</code>.  This value will be &'ed with the
+     * <code>childPosition</code>.  This value will be &amp;'ed with the
      * inverse of {@link #HEADER_VIEW_TYPE_MASK} to make sure the header
      * and child view types don't overlap.
      * @param childPosition The position of the child to get the type for
