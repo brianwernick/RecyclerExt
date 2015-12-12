@@ -2,11 +2,12 @@ Recycler Extensions
 ============
 
 An Android RecyclerView enhancement library focused on simplifying
-common use cases including:
+common use cases and filling in gaps between the ListView and the
+RecyclerView.
 
  * Database Cursor Adapters
  * Item Reordering
- * Sticky Headers [Work in Progress]
+ * Header Adapters (Sticky and non)
 
 
 Website And Documentation

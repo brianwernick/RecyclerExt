@@ -20,11 +20,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.R;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderCore;
 
 import static android.support.v7.widget.RecyclerView.ViewHolder;
 
@@ -34,30 +31,12 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <H> The Header {@link RecyclerView.ViewHolder}
  * @param <C> The Child or content {@link RecyclerView.ViewHolder}
  */
-public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> {
-    public static final int HEADER_VIEW_TYPE_MASK = 0x80000000;
-
-    private Observer observer = new Observer();
-    protected Map<Long, Integer> headerChildCountMap = new HashMap<>();
-    protected List<HeaderItem> headerItems = new ArrayList<>();
+public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> implements HeaderApi<H, C> {
 
     /**
-     * Called when the RecyclerView needs a new {@link H} ViewHolder
-     *
-     * @param parent The ViewGroup into which the new View will be added
-     * @param viewType The type for the header view
-     * @return The view type of the new View
+     * Contains the base processing for the header adapters
      */
-    public abstract H onCreateHeaderViewHolder(ViewGroup parent, int viewType);
-
-    /**
-     * Called when the RecyclerView needs a new {@link C} ViewHolder
-     *
-     * @param parent The ViewGroup into which the new View will be added
-     * @param viewType The type for the child view
-     * @return The view type of the new View
-     */
-    public abstract C onCreateChildViewHolder(ViewGroup parent, int viewType);
+    protected HeaderCore core;
 
     /**
      * Called to display the header information with the <code>firstChildPosition</code> being the
@@ -77,12 +56,9 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     public abstract void onBindChildViewHolder(C holder, int childPosition);
 
-    /**
-     * Returns the total number of children in the data set held by the adapter.
-     *
-     * @return The total number of children in this adapter.
-     */
-    public abstract int getChildCount();
+    public RecyclerHeaderAdapter() {
+        core = new HeaderCore(this);
+    }
 
     /**
      * This method shouldn't be used directly, instead use
@@ -95,11 +71,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
-            return onCreateHeaderViewHolder(parent, viewType);
-        }
-
-        return onCreateChildViewHolder(parent, viewType);
+        return core.onCreateViewHolder(parent, viewType);
     }
 
     /**
@@ -111,7 +83,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @param position The position to update the <code>holder</code> with
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //Unchecked cast
     public void onBindViewHolder(ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
         int childPosition = determineChildPosition(position);
@@ -134,42 +106,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public int getItemViewType(int position) {
-        int childPosition = determineChildPosition(position);
-
-        for (HeaderItem item : headerItems) {
-            if (item.getViewPosition() == position) {
-                return getHeaderViewType(childPosition) | HEADER_VIEW_TYPE_MASK;
-            } else if (item.getViewPosition() > position) {
-                break;
-            }
-        }
-
-        return getChildViewType(childPosition) & ~HEADER_VIEW_TYPE_MASK;
-    }
-
-    /**
-     * Retrieves the view type for the header whos first child view
-     * has the <code>childPosition</code>.  This value will be |'d with
-     * the {@link #HEADER_VIEW_TYPE_MASK} to make sure the header and child
-     * view types don't overlap
-     *
-     * @param childPosition The position for the fist child underneath the header
-     * @return The view type for the header view
-     */
-    public int getHeaderViewType(int childPosition) {
-        return 0;
-    }
-
-    /**
-     * Retrieves the view type for the child view at the specified
-     * <code>childPosition</code>.  This value will be &amp;'ed with the
-     * inverse of {@link #HEADER_VIEW_TYPE_MASK} to make sure the header
-     * and child view types don't overlap.
-     * @param childPosition The position of the child to get the type for
-     * @return The view type for the child view
-     */
-    public int getChildViewType(int childPosition) {
-        return 0;
+        return core.getItemViewType(position);
     }
 
     /**
@@ -180,8 +117,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        registerAdapterDataObserver(observer);
-        observer.onChanged();
+        core.registerObserver(this);
     }
 
     /**
@@ -193,8 +129,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-        unregisterAdapterDataObserver(observer);
-        headerItems.clear();
+        core.unregisterObserver(this);
     }
 
     /**
@@ -207,151 +142,36 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     public int getItemCount() {
-        return getChildCount() + headerItems.size();
+        return getChildCount() + core.getHeaderCount();
     }
 
-    /**
-     * Returns the total number of views that are associated with the specified
-     * header id.  If the headerId doesn't exist then 0 will be returned.
-     *
-     * @param headerId The headerId to find the number of children for
-     * @return The number of children views associated with the given <code>headerId</code>
-     */
+    @Override
+    public int getHeaderViewType(int childPosition) {
+        return 0;
+    }
+
+    @Override
+    public int getChildViewType(int childPosition) {
+        return 0;
+    }
+
+    @Override
     public int getChildCount(long headerId) {
-        if (headerId == RecyclerView.NO_ID || !headerChildCountMap.containsKey(headerId)) {
-            return 0;
-        }
-
-        return headerChildCountMap.get(headerId);
+        return core.getChildCount(headerId);
     }
 
-    /**
-     * Return the stable ID for the header at <code>childPosition</code>. The default implementation
-     * of this method returns {@link RecyclerView#NO_ID}
-     *
-     * @param childPosition The Adapters child position
-     * @return the stable ID of the header at childPosition
-     */
+    @Override
     public long getHeaderId(int childPosition) {
         return RecyclerView.NO_ID;
     }
 
-    /**
-     * Determines the child position given the position in the RecyclerView
-     *
-     * @param viewPosition The position in the RecyclerView (includes Headers and Children)
-     * @return The child index
-     */
+    @Override
     public int determineChildPosition(int viewPosition) {
-        int headerCount = 0;
-        for (HeaderItem item : headerItems) {
-            if (item.getViewPosition() < viewPosition) {
-                headerCount++;
-            } else {
-                break;
-            }
-        }
-
-        return viewPosition - headerCount;
+        return core.determineChildPosition(viewPosition);
     }
 
-    /**
-     * Determines the position for the header associated with
-     * the <code>headerId</code>
-     *
-     * @param headerId The id to find the header for
-     * @return The associated headers position or {@link RecyclerView#NO_POSITION}
-     */
+    @Override
     public int getHeaderPosition(long headerId) {
-        if (headerId == RecyclerView.NO_ID) {
-            return RecyclerView.NO_POSITION;
-        }
-
-        for (HeaderItem item : headerItems) {
-            if (item.getHeaderId() == headerId) {
-                return item.getViewPosition();
-            }
-        }
-
-        return RecyclerView.NO_POSITION;
-    }
-
-    /**
-     * An object to keep track of the locations and id's for header items
-     */
-    public static class HeaderItem {
-        private long headerId;
-        private int viewPosition;
-
-        public HeaderItem(long headerId, int viewPosition) {
-            this.headerId = headerId;
-            this.viewPosition = viewPosition;
-        }
-
-        public long getHeaderId() {
-            return headerId;
-        }
-
-        public int getViewPosition() {
-            return viewPosition;
-        }
-    }
-
-    /**
-     * Used to monitor data set changes to update the {@link #headerItems} so that we can correctly
-     * calculate the list item count and header indexes.
-     */
-    private class Observer extends RecyclerView.AdapterDataObserver {
-        @Override
-        public void onChanged() {
-            calculateHeaderIndices();
-        }
-
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount) {
-            calculateHeaderIndices();
-        }
-
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            calculateHeaderIndices();
-        }
-
-        @Override
-        public void onItemRangeRemoved(int positionStart, int itemCount) {
-            calculateHeaderIndices();
-        }
-
-        @Override
-        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-            calculateHeaderIndices();
-        }
-
-        /**
-         * Performs a full calculation for the header indices
-         */
-        private void calculateHeaderIndices() {
-            headerItems.clear();
-            headerChildCountMap.clear();
-            HeaderItem currentItem = null;
-
-            for (int i = 0; i < getChildCount(); i++) {
-                long id = getHeaderId(i);
-                if (id == RecyclerView.NO_ID) {
-                    continue;
-                }
-
-                //Updates the child count for the headerId
-                Integer childCount = headerChildCountMap.get(id);
-                childCount = (childCount == null) ? 1 : childCount +1;
-                headerChildCountMap.put(id, childCount);
-
-                //Adds new headers to the list when detected
-                if (currentItem == null || currentItem.getHeaderId() != id) {
-                    currentItem = new HeaderItem(id, i + headerItems.size());
-                    headerItems.add(currentItem);
-                }
-            }
-        }
+        return core.getHeaderPosition(headerId);
     }
 }
