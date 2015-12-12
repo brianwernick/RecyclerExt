@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 public class HeaderCore {
-    private HeaderApi headerApi;
-    private Observer observer = new Observer();
+    protected HeaderApi headerApi;
+    protected Observer observer = new Observer();
 
     /**
      * Stores the number of child items associated with each header id.
@@ -181,7 +181,7 @@ public class HeaderCore {
      * Used to monitor data set changes to update the {@link #headerItems} so that we can correctly
      * calculate the list item count and header indexes.
      */
-    private class Observer extends RecyclerView.AdapterDataObserver {
+    protected class Observer extends RecyclerView.AdapterDataObserver {
         @Override
         public void onChanged() {
             calculateHeaderIndices();
