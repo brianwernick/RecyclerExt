@@ -57,7 +57,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     public abstract void onBindChildViewHolder(C holder, int childPosition);
 
     public RecyclerHeaderAdapter() {
-        core = new HeaderCore(this);
+        init();
     }
 
     /**
@@ -173,5 +173,12 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     @Override
     public int getHeaderPosition(long headerId) {
         return core.getHeaderPosition(headerId);
+    }
+
+    /**
+     * Initializes the non-super components for the Adapter
+     */
+    protected void init() {
+        core = new HeaderCore(this);
     }
 }
