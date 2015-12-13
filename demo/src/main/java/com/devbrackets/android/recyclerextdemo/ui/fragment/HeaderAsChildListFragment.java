@@ -119,5 +119,13 @@ public class HeaderAsChildListFragment extends Fragment {
         public long getHeaderId(int childPosition) {
             return items.get(childPosition).getOrder() / 10;
         }
+
+        /**
+         * Specifying this will make only the number field from the header be sticky
+         */
+        @Override
+        public int getCustomStickyHeaderViewId() {
+            return R.id.contacts_header_item_region_text_view;
+        }
     }
 }

@@ -34,8 +34,4 @@ public class ContactsHeaderViewHolder extends RecyclerView.ViewHolder {
     public void setRegionText(String text) {
         regionTextView.setText(text);
     }
-
-    public int getStickyViewId() {
-        return R.id.contacts_header_item_region_text_view;
-    }
 }

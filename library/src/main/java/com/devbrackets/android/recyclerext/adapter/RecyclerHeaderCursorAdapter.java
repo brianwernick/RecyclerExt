@@ -209,6 +209,11 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
         core.showHeaderAsChild(enabled);
     }
 
+    @Override
+    public int getCustomStickyHeaderViewId() {
+        return 0;
+    }
+
     /**
      * Initializes the non-super components for the Adapter
      */

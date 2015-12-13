@@ -180,6 +180,11 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
         core.showHeaderAsChild(enabled);
     }
 
+    @Override
+    public int getCustomStickyHeaderViewId() {
+        return 0;
+    }
+
     /**
      * Initializes the non-super components for the Adapter
      */

@@ -118,4 +118,19 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
      * @param enabled True if the header should be treated as a child
      */
     void showHeaderAsChild(boolean enabled);
+
+    /**
+     * Retrieves the resource id for the view in the header
+     * view holder to make sticky.  By default this returns
+     * the invalid resource id (0) and will use the entire
+     * header view.  Only use this if only a specific view
+     * should remain sticky.
+     * <p>
+     * <b>NOTE:</b> This will only be used when a
+     * {@link com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration}
+     * has been specified
+     *
+     * @return The resource id for the view that will be sticky
+     */
+    int getCustomStickyHeaderViewId();
 }
