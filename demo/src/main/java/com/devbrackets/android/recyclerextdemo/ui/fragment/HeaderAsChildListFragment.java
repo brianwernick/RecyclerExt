@@ -14,6 +14,7 @@ import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.ContactsHeaderViewHolder;
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class HeaderAsChildListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recycler_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
         return view;
     }
@@ -66,7 +67,7 @@ public class HeaderAsChildListFragment extends Fragment {
      * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> {
+    private class HeaderAdapter extends RecyclerHeaderAdapter<ContactsHeaderViewHolder, SimpleTextViewHolder> {
         private LayoutInflater inflater;
         private List<ItemDAO> items;
 
@@ -82,26 +83,27 @@ public class HeaderAsChildListFragment extends Fragment {
         }
 
         @Override
-        public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
-            return new SimpleTextViewHolder(view);
+        public ContactsHeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
+            return ContactsHeaderViewHolder.newInstance(inflater, parent);
         }
 
         @Override
         public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
-            return new SimpleTextViewHolder(view);
+            return SimpleTextViewHolder.newInstance(inflater, parent);
         }
 
         @Override
-        public void onBindHeaderViewHolder(SimpleTextViewHolder holder, int childPosition) {
-            holder.setText(items.get(childPosition).getText());
-            holder.setBackgroundColor(0xFF33FF77);
+        public void onBindHeaderViewHolder(ContactsHeaderViewHolder holder, int childPosition) {
+            ItemDAO item = items.get(childPosition);
+
+            holder.setText(item.getText());
+            holder.setRegionText(childPosition / 10 + "");
         }
 
         @Override
         public void onBindChildViewHolder(SimpleTextViewHolder holder, int childPosition) {
             holder.setText(items.get(childPosition).getText());
+            holder.setSpacingVisible(true);
         }
 
         @Override

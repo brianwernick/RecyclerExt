@@ -147,7 +147,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
 
     @Override
     public int getHeaderViewType(int childPosition) {
-        return 0;
+        return HEADER_VIEW_TYPE_MASK;
     }
 
     @Override

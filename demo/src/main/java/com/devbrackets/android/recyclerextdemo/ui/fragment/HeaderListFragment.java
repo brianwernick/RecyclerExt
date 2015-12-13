@@ -33,7 +33,7 @@ public class HeaderListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recycler_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
         return view;
     }
@@ -76,14 +76,12 @@ public class HeaderListFragment extends Fragment {
 
         @Override
         public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
-            return new SimpleTextViewHolder(view);
+            return SimpleTextViewHolder.newInstance(inflater, parent);
         }
 
         @Override
         public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, parent, false);
-            return new SimpleTextViewHolder(view);
+            return SimpleTextViewHolder.newInstance(inflater, parent);
         }
 
         @Override

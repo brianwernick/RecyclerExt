@@ -27,6 +27,7 @@ import android.view.View;
 import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderCursorAdapter;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 
 /**
  * A RecyclerView Decoration that allows for Header views from
@@ -307,11 +308,15 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
 
         private int getHeaderViewType(int headerPosition) {
+            int rawType;
             if (adapter instanceof RecyclerHeaderAdapter) {
-                return ((RecyclerHeaderAdapter)adapter).determineChildPosition(headerPosition);
+                rawType = ((RecyclerHeaderAdapter)adapter).getHeaderViewType(headerPosition);
+            } else {
+                rawType = ((RecyclerHeaderCursorAdapter) adapter).getHeaderViewType(headerPosition);
             }
 
-            return ((RecyclerHeaderCursorAdapter)adapter).determineChildPosition(headerPosition);
+            //Make sure that this is treated as a header type
+            return rawType | HeaderApi.HEADER_VIEW_TYPE_MASK;
         }
 
         /**

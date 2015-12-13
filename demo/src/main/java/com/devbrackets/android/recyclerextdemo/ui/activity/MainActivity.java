@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_activity);
+        setContentView(R.layout.activity_main);
 
         recyclerView = (RecyclerView) findViewById(R.id.main_activity_recycler);
         setupRecyclerExt();
@@ -65,8 +65,7 @@ public class MainActivity extends Activity {
 
         @Override
         public SimpleTextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_text_item, null);
-            return new SimpleTextViewHolder(view);
+            return SimpleTextViewHolder.newInstance(inflater, parent);
         }
 
         @Override
