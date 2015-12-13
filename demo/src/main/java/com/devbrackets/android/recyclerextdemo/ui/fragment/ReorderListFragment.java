@@ -30,7 +30,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recycler_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_recycler, container, false);
 
         recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
         setupRecyclerExt();
@@ -98,9 +98,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
 
         @Override
         public SimpleDragItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.simple_drag_item, parent, false);
-
-            return new SimpleDragItemViewHolder(view);
+            return SimpleDragItemViewHolder.newInstance(inflater, parent);
         }
 
         @Override

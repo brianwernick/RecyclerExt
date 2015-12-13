@@ -27,6 +27,7 @@ import java.util.Map;
 public class HeaderCore {
     protected HeaderApi headerApi;
     protected Observer observer = new Observer();
+    protected boolean showHeaderAsChild = false;
 
     /**
      * Stores the number of child items associated with each header id.
@@ -61,6 +62,20 @@ public class HeaderCore {
      */
     public int getHeaderCount() {
         return headerItems.size();
+    }
+
+    /**
+     * Returns the total number of items in the adapter including
+     * headers and children.
+     *
+     * @return The number of items to display in the adapter
+     */
+    public int getItemCount() {
+        if (showHeaderAsChild) {
+            return headerApi.getChildCount();
+        }
+
+        return headerApi.getChildCount() + getHeaderCount();
     }
 
     /**
@@ -144,6 +159,10 @@ public class HeaderCore {
      * @return The child index
      */
     public int determineChildPosition(int viewPosition) {
+        if (showHeaderAsChild) {
+            return viewPosition;
+        }
+
         int headerCount = 0;
         for (HeaderItem item : headerItems) {
             if (item.getViewPosition() < viewPosition) {
@@ -175,6 +194,11 @@ public class HeaderCore {
         }
 
         return RecyclerView.NO_POSITION;
+    }
+
+    public void showHeaderAsChild(boolean enabled) {
+        showHeaderAsChild = enabled;
+        observer.onChanged();
     }
 
     /**
@@ -228,7 +252,8 @@ public class HeaderCore {
 
                 //Adds new headers to the list when detected
                 if (currentItem == null || currentItem.getHeaderId() != id) {
-                    currentItem = new HeaderItem(id, i + headerItems.size());
+                    int position = i + (showHeaderAsChild ? 0 : headerItems.size());
+                    currentItem = new HeaderItem(id, position);
                     headerItems.add(currentItem);
                 }
             }

@@ -14,21 +14,23 @@ import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
+import com.devbrackets.android.recyclerextdemo.ui.viewholder.ContactsHeaderViewHolder;
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder;
 
 import java.util.List;
 
 
 /**
- * An example of the {@link HeaderListFragment.HeaderAdapter}
- * and using the {@link StickyHeaderDecoration} to keep the header at the top of the screen when reached.
+ * An example of the {@link HeaderAsChildListFragment.HeaderAdapter}
+ * that has the display style of the Lollipop and Marshmallow Contacts app
+ * using the {@link StickyHeaderDecoration} to keep the header at the top of the screen when reached.
  */
-public class HeaderListFragment extends Fragment {
+public class HeaderAsChildListFragment extends Fragment {
     private DBHelper dbHelper;
     private RecyclerView recyclerView;
 
-    public static HeaderListFragment newInstance() {
-        return new HeaderListFragment();
+    public static HeaderAsChildListFragment newInstance() {
+        return new HeaderAsChildListFragment();
     }
 
     @Override
@@ -65,18 +67,24 @@ public class HeaderListFragment extends Fragment {
      * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> {
+    private class HeaderAdapter extends RecyclerHeaderAdapter<ContactsHeaderViewHolder, SimpleTextViewHolder> {
         private LayoutInflater inflater;
         private List<ItemDAO> items;
 
         public HeaderAdapter(Context context, List<ItemDAO> items) {
             this.items = items;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            //This is the call that makes the adapter treat the headers position as a child
+            // e.g. CHILD(position=9, getItem(9)), HEADER(position=10, getItem(10)), CHILD(position=11, getItem(11))
+            // whereas normally the header doesn't interfere with the child items
+            // e.g. CHILD(position=9, getItem(9)), HEADER(position=10, getItem(10)), CHILD(position=11, getItem(10))
+            showHeaderAsChild(true);
         }
 
         @Override
-        public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
-            return SimpleTextViewHolder.newInstance(inflater, parent);
+        public ContactsHeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
+            return ContactsHeaderViewHolder.newInstance(inflater, parent);
         }
 
         @Override
@@ -85,14 +93,17 @@ public class HeaderListFragment extends Fragment {
         }
 
         @Override
-        public void onBindHeaderViewHolder(SimpleTextViewHolder holder, int childPosition) {
-            holder.setText(getHeaderId(childPosition) + "0s");
-            holder.setBackgroundColor(0xFFCCCCCC);
+        public void onBindHeaderViewHolder(ContactsHeaderViewHolder holder, int childPosition) {
+            ItemDAO item = items.get(childPosition);
+
+            holder.setText(item.getText());
+            holder.setRegionText(childPosition / 10 + "");
         }
 
         @Override
         public void onBindChildViewHolder(SimpleTextViewHolder holder, int childPosition) {
             holder.setText(items.get(childPosition).getText());
+            holder.setSpacingVisible(true);
         }
 
         @Override
@@ -107,6 +118,14 @@ public class HeaderListFragment extends Fragment {
         @Override
         public long getHeaderId(int childPosition) {
             return items.get(childPosition).getOrder() / 10;
+        }
+
+        /**
+         * Specifying this will make only the number field from the header be sticky
+         */
+        @Override
+        public int getCustomStickyHeaderViewId() {
+            return R.id.contacts_header_item_region_text_view;
         }
     }
 }

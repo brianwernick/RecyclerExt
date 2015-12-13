@@ -1,16 +1,23 @@
 package com.devbrackets.android.recyclerextdemo.ui.viewholder;
 
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.devbrackets.android.recyclerextdemo.R;
 
 /**
- * A ViewHolder for the simple_text_item layout
+ * A ViewHolder for the list_item_simple_text layout
  */
 public class SimpleDragItemViewHolder extends RecyclerView.ViewHolder {
     private TextView textView;
+
+    public static SimpleDragItemViewHolder newInstance(LayoutInflater inflater, ViewGroup parent) {
+        View view = inflater.inflate(R.layout.list_item_simple_drag, parent, false);
+        return new SimpleDragItemViewHolder(view);
+    }
 
     public SimpleDragItemViewHolder(View itemView) {
         super(itemView);

@@ -66,7 +66,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      */
     public RecyclerHeaderCursorAdapter(Cursor cursor) {
         super(cursor);
-        core = new HeaderCore(this);
+        init();
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      */
     public RecyclerHeaderCursorAdapter(Cursor cursor, String idColumnName) {
         super(cursor, idColumnName);
-        core = new HeaderCore(this);
+        init();
     }
 
     /**
@@ -162,12 +162,12 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      */
     @Override
     public int getItemCount() {
-        return getChildCount() + core.getHeaderCount();
+        return core.getItemCount();
     }
 
     @Override
     public int getHeaderViewType(int childPosition) {
-        return 0;
+        return HEADER_VIEW_TYPE_MASK;
     }
 
     @Override
@@ -202,5 +202,22 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     @Override
     public int getHeaderPosition(long headerId) {
         return core.getHeaderPosition(headerId);
+    }
+
+    @Override
+    public void showHeaderAsChild(boolean enabled) {
+        core.showHeaderAsChild(enabled);
+    }
+
+    @Override
+    public int getCustomStickyHeaderViewId() {
+        return 0;
+    }
+
+    /**
+     * Initializes the non-super components for the Adapter
+     */
+    protected void init() {
+        core = new HeaderCore(this);
     }
 }
