@@ -106,4 +106,16 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
      * @return The associated headers position or {@link RecyclerView#NO_POSITION}
      */
     int getHeaderPosition(long headerId);
+
+    /**
+     * When enabled the headers will not be counted separately
+     * from the children. This should be used when the headers have
+     * a slightly different display type from the other children
+     * instead of the abruptly different view.  This is useful when
+     * mimicking the sticky alphabetical headers seen in the contacts
+     * app for Lollipop and Marshmallow
+     *
+     * @param enabled True if the header should be treated as a child
+     */
+    void showHeaderAsChild(boolean enabled);
 }

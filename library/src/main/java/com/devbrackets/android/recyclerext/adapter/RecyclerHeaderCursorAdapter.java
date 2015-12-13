@@ -162,7 +162,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      */
     @Override
     public int getItemCount() {
-        return getChildCount() + core.getHeaderCount();
+        return core.getItemCount();
     }
 
     @Override
@@ -202,6 +202,11 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
     @Override
     public int getHeaderPosition(long headerId) {
         return core.getHeaderPosition(headerId);
+    }
+
+    @Override
+    public void showHeaderAsChild(boolean enabled) {
+        core.showHeaderAsChild(enabled);
     }
 
     /**
