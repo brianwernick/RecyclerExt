@@ -86,7 +86,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     @SuppressWarnings("unchecked") //Unchecked cast
     public void onBindViewHolder(ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
-        int childPosition = getChildPosition(position);
+        int childPosition = determineChildPosition(position);
 
         if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
             onBindHeaderViewHolder((H) holder, childPosition);
