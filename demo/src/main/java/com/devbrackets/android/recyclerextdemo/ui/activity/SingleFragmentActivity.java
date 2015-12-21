@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.Example;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.CursorFragment;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderAsChildListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderCursorFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListFragment;
@@ -18,7 +19,7 @@ public class SingleFragmentActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.single_fragment_activity);
+        setContentView(R.layout.activity_single_fragment);
     }
 
     @Override
@@ -53,6 +54,10 @@ public class SingleFragmentActivity extends AppCompatActivity {
             case HEADER_LIST:
                 pushHeaderListFragment();
                 break;
+
+            case HEADER_AS_CHILD_LIST:
+                pushHeaderAsChildListFragment();
+                break;
         }
     }
 
@@ -78,6 +83,11 @@ public class SingleFragmentActivity extends AppCompatActivity {
 
     private void pushHeaderListFragment() {
         Fragment fragment = HeaderListFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    private void pushHeaderAsChildListFragment() {
+        Fragment fragment = HeaderAsChildListFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

@@ -27,6 +27,7 @@ import android.view.View;
 import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderCursorAdapter;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 
 /**
  * A RecyclerView Decoration that allows for Header views from
@@ -49,7 +50,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private AdapterDataObserver dataObserver;
     private StickyViewScrollListener scrollListener;
 
-    private int stickyHeaderStart = 0;
+    private int stickyHeaderLeft, stickyHeaderTop;
     private long currentStickyId = Long.MIN_VALUE;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
@@ -83,9 +84,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
         if (stickyHeader != null) {
-            int x = orientation == LayoutOrientation.HORIZONTAL ? stickyHeaderStart : 0;
-            int y = orientation == LayoutOrientation.HORIZONTAL ? 0 : stickyHeaderStart;
-            c.drawBitmap(stickyHeader, x, y, null);
+            c.drawBitmap(stickyHeader, stickyHeaderLeft, stickyHeaderTop, null);
         }
     }
 
@@ -113,7 +112,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
 
         stickyHeader = null;
-        stickyHeaderStart = 0;
         currentStickyId = RecyclerView.NO_ID;
     }
 
@@ -143,6 +141,10 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * @return The bitmap representing the drag view
      */
     private Bitmap createStickyViewBitmap(View view) {
+        //Makes sure the location opposite the scroll orientation is persisted
+         stickyHeaderLeft = orientation == LayoutOrientation.HORIZONTAL ? 0 : view.getLeft();
+         stickyHeaderTop = orientation == LayoutOrientation.VERTICAL ? 0 : view.getTop();
+
         Rect stickyViewBounds = new Rect(0, 0, view.getRight() - view.getLeft(), view.getBottom() - view.getTop());
 
         Bitmap bitmap = Bitmap.createBitmap(stickyViewBounds.width(), stickyViewBounds.height(), Bitmap.Config.ARGB_8888);
@@ -234,8 +236,19 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 return;
             }
 
-            stickyHeaderStart = 0;
             currentStickyId = headerId;
+
+            //Creates the actual sticky header (or view)
+            int stickyViewId = getCustomStickyViewId();
+            if (stickyViewId != 0) {
+                View stickyView = holder.itemView.findViewById(stickyViewId);
+                if (stickyView != null) {
+                    stickyHeader = createStickyViewBitmap(stickyView);
+                    return;
+                }
+            }
+
+            //If the user hasn't specified a sticky view id or it was null, use the entire view holder
             stickyHeader = createStickyViewBitmap(holder.itemView);
         }
 
@@ -306,6 +319,26 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             return RecyclerView.NO_POSITION;
         }
 
+        private int getHeaderViewType(int headerPosition) {
+            int rawType;
+            if (adapter instanceof RecyclerHeaderAdapter) {
+                rawType = ((RecyclerHeaderAdapter)adapter).getHeaderViewType(headerPosition);
+            } else {
+                rawType = ((RecyclerHeaderCursorAdapter) adapter).getHeaderViewType(headerPosition);
+            }
+
+            //Make sure that this is treated as a header type
+            return rawType | HeaderApi.HEADER_VIEW_TYPE_MASK;
+        }
+
+        private int getCustomStickyViewId() {
+            if (adapter instanceof RecyclerHeaderAdapter) {
+                return ((RecyclerHeaderAdapter)adapter).getCustomStickyHeaderViewId();
+            }
+
+            return ((RecyclerHeaderCursorAdapter) adapter).getCustomStickyHeaderViewId();
+        }
+
         /**
          * Retrieves the ViewHolder associated with the header at <code>headerPosition</code>.
          * If the ViewHolder returned from <code>parent</code> is null then a temporary ViewHolder
@@ -324,9 +357,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             //Otherwise try to create a temporary one
-            if (fallbackHolder == null) {
-                fallbackHolder = adapter.onCreateViewHolder(parent, RecyclerHeaderAdapter.VIEW_TYPE_HEADER);
-            }
+            fallbackHolder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
 
             //Measure it
             if (!measureViewHolder(fallbackHolder)) {
