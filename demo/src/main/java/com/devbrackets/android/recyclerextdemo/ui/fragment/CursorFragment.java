@@ -64,7 +64,7 @@ public class CursorFragment extends Fragment {
      * The adapter that extends the {@link RecyclerCursorAdapter} to provide the
      * minimum number of methods to function
      */
-    private class CursorAdapter extends RecyclerCursorAdapter<SimpleTextViewHolder> implements FastScroll.FastScrollPopupCallbacks{
+    private class CursorAdapter extends RecyclerCursorAdapter<SimpleTextViewHolder> implements FastScroll.FastScrollPopupCallbacks {
         private LayoutInflater inflater;
 
         public CursorAdapter(Context context, Cursor cursor) {
@@ -86,7 +86,7 @@ public class CursorFragment extends Fragment {
 
         @Override
         public String getFastScrollPopupText(int position) {
-            return "" + (position / 100);
+            return "" + (position / 10);
         }
     }
 }

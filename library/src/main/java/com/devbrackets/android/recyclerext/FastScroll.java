@@ -24,6 +24,18 @@ import android.widget.TextView;
 /**
  * A class that provides the functionality of a fast scroll
  * for the attached {@link android.support.v7.widget.RecyclerView}
+ *
+ * TODO:
+ * We needs options to:
+ *  * Set the font size (bubble)
+ *  * Set the font color (bubble)
+ *  * Manually set the bubble color (not accent?)
+ *  * Specify custom handle
+ *  * Specify custom handle-bar
+ *  * padding/margin?
+ *  * rtl support?
+ *  * Horizontal support (already support vertical)
+ *  * Callbacks when hiding/showing the bubble and when we should hide/show the handle & track
  */
 public class FastScroll extends FrameLayout {
     private static final String TAG = "FastScroll";
