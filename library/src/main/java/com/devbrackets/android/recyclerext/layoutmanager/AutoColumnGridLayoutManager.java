@@ -219,6 +219,15 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         return columnCount;
     }
 
+    /**
+     * Calculates and adds the amount of spacing that needs to be between each
+     * column, row, and the edges of the RecyclerView.  This pays attention to
+     * the value from {@link #setSpacingMethod(SpacingMethod)}
+     *
+     * @param recyclerView The RecyclerView to use for determining the amount of space that needs to be added
+     * @param gridItemWidth The requested width for the items
+     * @param columnCount The number of columns to display
+     */
     protected void updateSpacing(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
         //Sets the decoration for the calculated spacing
         if (spacerDecoration == null) {
@@ -241,12 +250,9 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         int freeSpace = usableWidth - (gridItemWidth * columnCount);
         int extraSpace = freeSpace - (2 * minColumnSpacingEdge) - (separatorCount * minColumnSpacingSeparator);
 
+        //If we can add spacing, then we need to calculate how much and where to add it
         if (extraSpace >= spacerCount) {
-            if (spacingMethod == SpacingMethod.EDGES) {
-                edgeSpacing = (freeSpace - (separatorSpacing * spacerCount)) / 2;
-            } else if (spacingMethod == SpacingMethod.SEPARATOR) {
-                separatorSpacing = spacerCount == 0 ? 0 : freeSpace / spacerCount;
-            } else {
+            if (spacingMethod == SpacingMethod.ALL) {
                 int totalMinEdges = minColumnSpacingEdge * 2;
                 int totalMinSeparators = separatorCount * minColumnSpacingSeparator;
 
@@ -257,6 +263,10 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
 
                 separatorSpacing = spacerCount == 0 ? 0 : totalSeparatorSpace / spacerCount;
                 edgeSpacing = ((freeSpace - totalSeparatorSpace) / 2) + separatorSpacing;
+            } else if (spacingMethod == SpacingMethod.EDGES) {
+                edgeSpacing = (freeSpace - (separatorSpacing * spacerCount)) / 2;
+            } else { //SEPARATOR
+                separatorSpacing = spacerCount == 0 ? 0 : freeSpace / spacerCount;
             }
 
             edgeSpacing -= separatorSpacing;
@@ -274,6 +284,16 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         spacerDecoration.update(separatorSpacing, matchSpacing ? separatorSpacing : rowSpacing / 2);
     }
 
+    /**
+     * Performs the actual calculation for determining the number of possible
+     * columns by using the {@link #maxColumnCount}, {@link #minColumnSpacingEdge}, and
+     * {@link #minColumnSpacingSeparator} in conjunction with the requested width
+     * for the items
+     *
+     * @param recyclerView The RecyclerView to use when determining the possible number of columns
+     * @param gridItemWidth The requested width for items to be
+     * @return The calculated number of possible columns
+     */
     protected int getColumnCount(RecyclerView recyclerView, int gridItemWidth) {
         int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
         int usableWidth = recyclerView.getWidth() - padding;
@@ -297,6 +317,13 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         return columnCount;
     }
 
+    /**
+     * Removes the padding previously added to the <code>recyclerView</code>
+     * for the edge spacing.  If no padding was previously added, then this
+     * has no affect
+     *
+     * @param recyclerView The RecyclerView to remove the padding from
+     */
     protected void resetRecyclerPadding(RecyclerView recyclerView) {
         recyclerView.setPadding(
                 recyclerView.getPaddingLeft() - edgeSpacing,

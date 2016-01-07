@@ -60,6 +60,13 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
         this.verticalSpace = verticalSpace;
     }
 
+    /**
+     * Sets the edges that are allowed to add spacing.  Edges are
+     * the left side of the left-most items, the right side of the right-most items,
+     * the top side of the top-most items, and the bottom side of the bottom-most items.
+     *
+     * @param edgeSpacingFlags The flags for which edges to add padding to
+     */
     public void setAllowedEdgeSpacing(@EdgeSpacing int edgeSpacingFlags) {
         allowedEdgeSpacing = edgeSpacingFlags;
     }
@@ -79,6 +86,14 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
         outRect.bottom = (allowedEdgeSpacing & EDGE_SPACING_BOTTOM) == 0 && isBottomEdge(spanLookup, position, childCount) ? 0 : verticalSpace;
     }
 
+    /**
+     * Determines if the item at <code>position</code> is a top-most view
+     *
+     * @param spanLookup The SpanLookup related to the parent RecyclerView
+     * @param position The position to determine if the view is a top-most view
+     * @param childCount The number of children in the RecyclerView (adapter)
+     * @return True if the view at <code>position</code> is a top-most view
+     */
     protected boolean isTopEdge(SpanLookup spanLookup, int position, int childCount) {
         int latestCheckedPosition = 0;
         for (; latestCheckedPosition < childCount; latestCheckedPosition++) {
@@ -91,11 +106,26 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
         return position <= latestCheckedPosition;
     }
 
+    /**
+     * Determines if the item at <code>position</code> is a right-most view
+     *
+     * @param spanLookup The SpanLookup related to the parent RecyclerView
+     * @param position The position to determine if the view is a right-most view
+     * @return True if the view at <code>position</code> is a right-most view
+     */
     protected boolean isRightEdge(SpanLookup spanLookup, int position) {
         int spanIndex = spanLookup.getIndex(position);
         return (spanIndex + spanLookup.getSpanSize(position)) == spanLookup.getSpanCount();
     }
 
+    /**
+     * Determines if the item at <code>position</code> is a bottom-most view
+     *
+     * @param spanLookup The SpanLookup related to the parent RecyclerView
+     * @param position The position to determine if the view is a bottom-most view
+     * @param childCount The number of children in the RecyclerView (adapter)
+     * @return True if the view at <code>position</code> is a bottom-most view
+     */
     protected boolean isBottomEdge(SpanLookup spanLookup, int position, int childCount) {
         int latestCheckedPosition = childCount -1;
         for (; latestCheckedPosition >= 0; latestCheckedPosition--) {
@@ -108,11 +138,21 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
         return position >= latestCheckedPosition;
     }
 
+    /**
+     * Determines if the item at <code>position</code> is a left-most view
+     *
+     * @param spanLookup The SpanLookup related to the parent RecyclerView
+     * @param position The position to determine if the view is a left-most view
+     * @return True if the view at <code>position</code> is a left-most view
+     */
     protected boolean isLeftEdge(SpanLookup spanLookup, int position) {
         int spanIndex = spanLookup.getIndex(position);
         return spanIndex == 0;
     }
 
+    /**
+     * A helper class to abstract the lookup from different LayoutManagers
+     */
     protected class SpanLookup {
         public WeakReference<GridLayoutManager> gridLayoutManager = new WeakReference<>(null);
 
