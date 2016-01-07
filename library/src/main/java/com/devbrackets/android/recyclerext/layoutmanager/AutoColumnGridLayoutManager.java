@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Brian Wernick
+ * Copyright (C) 2016 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,31 +18,46 @@ package com.devbrackets.android.recyclerext.layoutmanager;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Rect;
 import android.os.Build;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
+import com.devbrackets.android.recyclerext.decoration.SpacerDecoration;
+
+import java.lang.ref.WeakReference;
+
 /**
- * A simple extension to the {@link GridLayoutManager} that provides
+ * An extension to the {@link GridLayoutManager} that provides
  * the ability to specify the width a grid item is supposed to have instead
  * of the number of columns.  It will then determine the number of columns
  * that are possible, enforcing the size specified by adding spacing
  * between the columns to make sure the grid items width isn't resized.
  */
 public class AutoColumnGridLayoutManager extends GridLayoutManager {
+    public enum SpacingMethod {
+        ALL,
+        EDGES,
+        SEPARATOR
+    }
 
     @Nullable
-    private SpacerDecoration spacerDecoration;
+    protected SpacerDecoration spacerDecoration;
 
-    private int rowSpacing = 0;
-    private int minColumnSpacing = 0;
-    private boolean matchSpacing = false;
+    protected int rowSpacing = 0;
+    protected int edgeSpacing = 0;
+    protected boolean matchSpacing = false;
+    protected int minColumnSpacingEdge = 0;
+    protected int minColumnSpacingSeparator = 0;
+    protected SpacingMethod spacingMethod = SpacingMethod.ALL;
 
-    private int requestedColumnWidth;
+    protected int requestedColumnWidth;
+    protected int maxColumnCount = Integer.MAX_VALUE;
+
+    protected WeakReference<RecyclerView> parent = new WeakReference<>(null);
 
     /**
      * Constructs the layout manager that will correctly determine the number
@@ -66,7 +81,8 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     @Override
     public void onAttachedToWindow(RecyclerView recyclerView) {
         super.onAttachedToWindow(recyclerView);
-        setColumnWidth(requestedColumnWidth, recyclerView);
+        parent = new WeakReference<>(recyclerView);
+        setColumnWidth(requestedColumnWidth);
     }
 
     /**
@@ -83,7 +99,10 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         //If we have setup the decoration then remove it
         if (spacerDecoration != null) {
             recyclerView.removeItemDecoration(spacerDecoration);
+            resetRecyclerPadding(recyclerView);
         }
+
+        parent = new WeakReference<>(null);
     }
 
     /**
@@ -91,24 +110,24 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * to determine the maximum number of columns possible.
      *
      * @param gridItemWidth The width for the items in each column
-     * @param recyclerView The {@link RecyclerView} to use for determining the number of columns
      */
-    public void setColumnWidth(int gridItemWidth, RecyclerView recyclerView) {
+    public void setColumnWidth(int gridItemWidth) {
         requestedColumnWidth = gridItemWidth;
-        setSpanCount(determineColumnCount(gridItemWidth, recyclerView));
+        setSpanCount(determineColumnCount(requestedColumnWidth));
     }
 
     /**
-     * Sets the minimum amount of spacing there should be between columns.  This will
+     * Sets the minimum amount of spacing there should be between edges and items.  This will
      * be used when determining the number of columns possible with the gridItemWidth specified
-     * with {@link #AutoColumnGridLayoutManager(Context, int)} or {@link #setColumnWidth(int, RecyclerView)}
+     * with {@link #AutoColumnGridLayoutManager(Context, int)} or {@link #setColumnWidth(int)}
      *
-     * @param minColumnSpacing The minimum amount of spacing between columns on each card
-     * @param recyclerView The {@link RecyclerView} to use for determining the number of columns
+     * @param minSpacingEdge The minimum amount of spacing between the edge of the RecyclerView and the first and last items in each row
+     * @param minSpacingSeparator The minimum amount of spacing between items in each row
      */
-    public void setMinColumnSpacing(int minColumnSpacing, RecyclerView recyclerView) {
-        this.minColumnSpacing = minColumnSpacing;
-        setSpanCount(determineColumnCount(requestedColumnWidth, recyclerView));
+    public void setMinColumnSpacing(int minSpacingEdge, int minSpacingSeparator) {
+        this.minColumnSpacingEdge = minSpacingEdge;
+        this.minColumnSpacingSeparator = minSpacingSeparator;
+        setSpanCount(determineColumnCount(requestedColumnWidth));
     }
 
     /**
@@ -133,16 +152,58 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     }
 
     /**
+     * Sets the maximum number of columns allowed when determining
+     * the count based on the width specified in the constructor or
+     * with {@link #setColumnWidth(int)}
+     *
+     * @param maxColumns The maximum amount of columns allowed [default: {@link Integer#MAX_VALUE}]
+     */
+    public void setMaxColumnCount(@IntRange(from = 1, to = Integer.MAX_VALUE) int maxColumns) {
+        maxColumnCount = maxColumns;
+        setSpanCount(determineColumnCount(requestedColumnWidth));
+    }
+
+    /**
+     * Sets the methodology to use when determining the spacing between columns.
+     * <ul>
+     *     <li>
+     *         {@link SpacingMethod#EDGES} will only increase the size of the left-most and right-most spacing,
+     *          leaving the separators with the value specified by {@link #setMinColumnSpacing(int, int)}
+     *     </li>
+     *     <li>
+     *         {@link SpacingMethod#SEPARATOR} will only increase the size of the spacing in between
+     *         columns, leaving the edges with the value specified by {@link #setMinColumnSpacing(int, int)}
+     *     </li>
+     *     <li>
+     *         {@link SpacingMethod#ALL} will increase the size of the spacing along both the edges and
+     *         the separators, adding based on the relative amounts specified by {@link #setMinColumnSpacing(int, int)}.
+     *         (e.g. <code>setMinColumnSpacing(100, 50)</code> will result in the edges growing 2px for every 1px the
+     *         separators grow)
+     *     </li>
+     * </ul>
+     *
+     * @param spacingMethod The method for displaying the spacing
+     */
+    public void setSpacingMethod(SpacingMethod spacingMethod) {
+        this.spacingMethod = spacingMethod;
+        setSpanCount(determineColumnCount(requestedColumnWidth));
+    }
+
+    /**
      * Determines the maximum number of columns based on the width of the items.
      * If the <code>recyclerView</code>'s width hasn't been determined yet, this
      * will register for the layout that will then perform the functionality to
      * set the number of columns.
      *
      * @param gridItemWidth The width for the items in each column
-     * @param recyclerView The {@link RecyclerView} to use for determining the usable width
      * @return The number of allowed columns
      */
-    private int determineColumnCount(int gridItemWidth, RecyclerView recyclerView) {
+    protected int determineColumnCount(int gridItemWidth) {
+        RecyclerView recyclerView = parent.get();
+        if (recyclerView == null) {
+            return 1;
+        }
+
         //We need to register for the layout then update the column count
         if (recyclerView.getWidth() == 0) {
             ViewTreeObserver observer = recyclerView.getViewTreeObserver();
@@ -150,36 +211,106 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             return 1;
         }
 
-        //Calculate the number of columns possible
-        int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
-        int usableWidth = recyclerView.getWidth() - padding;
+        //Updates the actual column count and spacing between items
+        int columnCount = getColumnCount(recyclerView, gridItemWidth);
+        resetRecyclerPadding(recyclerView);
+        updateSpacing(recyclerView, gridItemWidth, columnCount);
 
-        int columnCount = usableWidth / gridItemWidth;
-        int usedColumnWidth = columnCount * gridItemWidth;
-        int minSpacingWidth = columnCount * minColumnSpacing;
+        return columnCount;
+    }
 
-        while (usableWidth - usedColumnWidth - minSpacingWidth < 0) {
-            columnCount--;
-            usedColumnWidth = columnCount * gridItemWidth;
-            minSpacingWidth = columnCount * minColumnSpacing;
-        }
-
-        //Adds or updates the spacing decoration
-        if (spacerDecoration != null) {
-            spacerDecoration.update(recyclerView, gridItemWidth, columnCount);
-        } else {
-            spacerDecoration = new SpacerDecoration(recyclerView, gridItemWidth, columnCount);
+    protected void updateSpacing(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
+        //Sets the decoration for the calculated spacing
+        if (spacerDecoration == null) {
+            spacerDecoration = new SpacerDecoration();
+            spacerDecoration.setAllowedEdgeSpacing(SpacerDecoration.EDGE_SPACING_LEFT | SpacerDecoration.EDGE_SPACING_RIGHT);
             recyclerView.addItemDecoration(spacerDecoration);
         }
 
+        edgeSpacing = minColumnSpacingEdge;
+        int separatorSpacing = minColumnSpacingSeparator / 2;
+
+
+        //Calculates the edge spacing requirements
+        int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
+        int usableWidth = recyclerView.getWidth() - padding;
+
+        int separatorCount = columnCount -1;
+        int spacerCount = 2 * columnCount;
+
+        int freeSpace = usableWidth - (gridItemWidth * columnCount);
+        int extraSpace = freeSpace - (2 * minColumnSpacingEdge) - (separatorCount * minColumnSpacingSeparator);
+
+        if (extraSpace >= spacerCount) {
+            if (spacingMethod == SpacingMethod.EDGES) {
+                edgeSpacing = (freeSpace - (separatorSpacing * spacerCount)) / 2;
+            } else if (spacingMethod == SpacingMethod.SEPARATOR) {
+                separatorSpacing = spacerCount == 0 ? 0 : freeSpace / spacerCount;
+            } else {
+                int totalMinEdges = minColumnSpacingEdge * 2;
+                int totalMinSeparators = separatorCount * minColumnSpacingSeparator;
+
+                //If the totalMinSpace is 0, then the percentage is edge count / separators + edges
+                int totalMinSpace = totalMinEdges + totalMinSeparators;
+                double edgeSpacePercentage = totalMinSpace == 0 ? (2 / (2 + separatorCount)) : (double)totalMinEdges / (double)totalMinSpace;
+                int totalSeparatorSpace = (int)((1d - edgeSpacePercentage) * freeSpace);
+
+                separatorSpacing = spacerCount == 0 ? 0 : totalSeparatorSpace / spacerCount;
+                edgeSpacing = ((freeSpace - totalSeparatorSpace) / 2) + separatorSpacing;
+            }
+
+            edgeSpacing -= separatorSpacing;
+        }
+
+
+        //Updates the spacing using the decoration and padding
+        recyclerView.setPadding(
+                recyclerView.getPaddingLeft() + edgeSpacing,
+                recyclerView.getPaddingTop(),
+                recyclerView.getPaddingRight() + edgeSpacing,
+                recyclerView.getPaddingBottom()
+        );
+
+        spacerDecoration.update(separatorSpacing, matchSpacing ? separatorSpacing : rowSpacing / 2);
+    }
+
+    protected int getColumnCount(RecyclerView recyclerView, int gridItemWidth) {
+        int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
+        int usableWidth = recyclerView.getWidth() - padding;
+
+        int columnCount = Math.min(usableWidth / gridItemWidth, maxColumnCount);
+        int usedColumnWidth, minRequiredSpacing;
+
+        //Decreases the columnCount until the specified min spacing can be achieved.
+        do {
+            usedColumnWidth = columnCount * gridItemWidth;
+            minRequiredSpacing = (2 * minColumnSpacingEdge) + ((columnCount -1) * minColumnSpacingSeparator);
+
+            //If the specified min spacing is reached, return the number of columns
+            if (usableWidth - usedColumnWidth - minRequiredSpacing >= 0) {
+                return columnCount;
+            }
+
+            columnCount--;
+        } while(columnCount > 1);
+
         return columnCount;
+    }
+
+    protected void resetRecyclerPadding(RecyclerView recyclerView) {
+        recyclerView.setPadding(
+                recyclerView.getPaddingLeft() - edgeSpacing,
+                recyclerView.getPaddingTop(),
+                recyclerView.getPaddingRight() - edgeSpacing,
+                recyclerView.getPaddingBottom()
+        );
     }
 
     /**
      * A Listener for the RecyclerView so that we can correctly update the number of columns
      * once the RecyclerView has been sized
      */
-    private class LayoutListener implements ViewTreeObserver.OnGlobalLayoutListener {
+    protected class LayoutListener implements ViewTreeObserver.OnGlobalLayoutListener {
         private RecyclerView recyclerView;
 
         public LayoutListener(RecyclerView recyclerView) {
@@ -191,7 +322,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             removeOnGlobalLayoutListener(recyclerView, this);
 
             GridLayoutManager gridLayoutManager = (GridLayoutManager)recyclerView.getLayoutManager();
-            gridLayoutManager.setSpanCount(determineColumnCount(requestedColumnWidth, recyclerView));
+            gridLayoutManager.setSpanCount(determineColumnCount(requestedColumnWidth));
         }
 
         @SuppressWarnings("deprecation") //removeGlobalOnLayoutListener
@@ -202,41 +333,6 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             } else {
                 v.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
             }
-        }
-    }
-
-    /**
-     * A decoration to correctly space the items to keep the requested sizes
-     */
-    private class SpacerDecoration extends RecyclerView.ItemDecoration {
-        private int space;
-
-        public SpacerDecoration(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
-            update(recyclerView, gridItemWidth, columnCount);
-        }
-
-        public void update(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
-            int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
-            int usableWidth = recyclerView.getWidth() - padding;
-
-            int extraSpace = usableWidth - (gridItemWidth * columnCount);
-            int spacerCount = 2 * columnCount;
-
-            //If we are going to have partial pixel spacing, then allow the grid items to grow by ~1px
-            if (extraSpace < spacerCount) {
-                space = 0;
-                return;
-            }
-
-            //we want the spacing between items to be split between the left and right
-            space = extraSpace / spacerCount;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            outRect.left = space;
-            outRect.right = space;
-            outRect.bottom = matchSpacing ? (2 * space) : rowSpacing;
         }
     }
 }
