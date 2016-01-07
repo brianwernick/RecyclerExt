@@ -8,6 +8,8 @@ RecyclerView.
  * Database Cursor Adapters
  * Item Reordering
  * Header Adapters (Sticky and non)
+ * Enhanced LayoutManagers
+ * Expanded ViewHolders
 
 
 Website And Documentation
@@ -24,7 +26,7 @@ The latest AAR (Android Archive) files can be downloaded from JCenter [RecyclerE
 Or included in your gradle dependencies
 
 ```groovy
-compile 'com.devbrackets.android:recyclerext:0.14.0'
+compile 'com.devbrackets.android:recyclerext:0.15.0'
 ```
 
 
