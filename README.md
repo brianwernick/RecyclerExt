@@ -1,6 +1,5 @@
 Recycler Extensions
 ============
-
 An Android RecyclerView enhancement library focused on simplifying
 common use cases and filling in gaps between the ListView and the
 RecyclerView.
@@ -21,12 +20,19 @@ The RecyclerExt documentation website can be found on the website linked above o
 
 Use
 -------
-The latest AAR (Android Archive) files can be downloaded from JCenter [RecyclerExt][1]
+The latest AAR (Android Archive) files can be downloaded from [JCenter][1]
 
 Or included in your gradle dependencies
 
 ```groovy
-compile 'com.devbrackets.android:recyclerext:0.15.0'
+repositories {
+    jcenter();
+}
+
+dependencies {
+    //...
+    compile 'com.devbrackets.android:recyclerext:0.15.0'
+}
 ```
 
 
