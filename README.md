@@ -13,25 +13,23 @@ RecyclerView.
 
 Website And Documentation
 -------
-The RecyclerExt website can be found [here][2]
-
-The RecyclerExt documentation website can be found on the website linked above or [here][3]
+The RecyclerExt website can be found [here][Java Doc]
+The RecyclerExt documentation website can be found on the website linked above or [here][Website]
 
 
 Use
 -------
-The latest AAR (Android Archive) files can be downloaded from [JCenter][1]
-
+The latest AAR (Android Archive) files can be downloaded from [JCenter][JCenter]
 Or included in your gradle dependencies
 
-```groovy
+```gradle
 repositories {
     jcenter();
 }
 
 dependencies {
     //...
-    compile 'com.devbrackets.android:recyclerext:0.15.0'
+    compile 'com.devbrackets.android:recyclerext:0.16.0'
 }
 ```
 
@@ -55,6 +53,6 @@ License
 
 
 
- [1]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
- [2]: http://devbrackets.com/dev/libs/recyclerext.html
- [3]: http://devbrackets.com/dev/libs/docs/recyclerext/0.14.0/index.html
+ [JCenter]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
+ [Website]: http://devbrackets.com/dev/libs/recyclerext.html
+ [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/0.14.0/index.html
