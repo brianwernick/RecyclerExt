@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="recyclerext_default_fast_scroll_bubble_text_size">36sp</dimen>
+</resources>

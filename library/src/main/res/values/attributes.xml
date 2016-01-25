@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FastScroll">
+        <attr name="re_show_bubble" format="boolean" />
+
+        <attr name="re_bubble_color" format="color" />
+        <attr name="re_bubble_background" format="reference" />
+        <attr name="re_bubble_text_color" format="color" />
+        <attr name="re_bubble_text_size" format="dimension" />
+
+        <attr name="re_handle_color" format="color" />
+        <attr name="re_handle_background" format="reference" />
+    </declare-styleable>
+</resources>

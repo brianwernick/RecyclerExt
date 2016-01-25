@@ -6,7 +6,7 @@
                 android:clipChildren="false"
                 tools:ignore="UseCompoundDrawables">
 
-    <TextView
+    <com.devbrackets.android.recyclerext.widget.PositionSupportTextView
         android:id="@+id/recyclerext_fast_scroll_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -17,20 +17,19 @@
         android:background="@drawable/recyclerext_fast_scroll_bubble"
         android:gravity="center"
         android:textColor="#ffffffff"
-        android:textSize="48sp"
+        android:textSize="@dimen/recyclerext_default_fast_scroll_bubble_text_size"
         android:visibility="visible"
         tools:ignore="RtlHardcoded"
         tools:text="A"/>
 
-    <view
+    <com.devbrackets.android.recyclerext.widget.PositionSupportImageView
         android:id="@+id/recyclerext_fast_scroll_handle"
-        class="com.devbrackets.android.recyclerext.FastScroll$SupportImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:paddingLeft="8dp"
         android:paddingStart="8dp"
-        android:src="@drawable/recyclerext_fast_scroll_handle"
+        android:background="@drawable/recyclerext_fast_scroll_handle"
         tools:ignore="ContentDescription,RtlHardcoded,RtlSymmetry"/>
 </RelativeLayout>

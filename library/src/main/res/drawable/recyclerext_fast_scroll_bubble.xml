@@ -8,7 +8,8 @@
         android:bottomLeftRadius="44dp"
         android:bottomRightRadius="0px"/>
 
-    <solid android:color="?attr/colorAccent"/>
+    <!-- This color is just a placeholder, the actual color is set is source -->
+    <solid android:color="#ffffffff"/>
 
     <size
         android:height="88dp"

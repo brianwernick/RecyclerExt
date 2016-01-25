@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--TODO: this needs to match the one seen in the Marshmallow launcher -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="2dp"/>
 
-            <solid android:color="?attr/colorAccent"/>
+            <!-- This color is just a placeholder, the actual color is set is source -->
+            <solid android:color="#ffffffff"/>
 
             <size
                 android:height="32dp"

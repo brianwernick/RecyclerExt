@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.FastScroll;
+import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
