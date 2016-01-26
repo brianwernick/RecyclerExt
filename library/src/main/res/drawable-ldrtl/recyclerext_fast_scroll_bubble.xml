@@ -5,8 +5,8 @@
     <corners
         android:topLeftRadius="44dp"
         android:topRightRadius="44dp"
-        android:bottomLeftRadius="44dp"
-        android:bottomRightRadius="0dp"/>
+        android:bottomLeftRadius="0dp"
+        android:bottomRightRadius="44dp"/>
 
     <!-- This color is just a placeholder, the actual color is set is source -->
     <solid android:color="#ffffffff"/>

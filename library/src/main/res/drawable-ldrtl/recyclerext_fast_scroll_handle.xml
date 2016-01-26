@@ -2,7 +2,7 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <corners android:topLeftRadius="2dp" android:topRightRadius="0dp" android:bottomRightRadius="0dp" android:bottomLeftRadius="2dp"/>
+            <corners android:topLeftRadius="0dp" android:topRightRadius="2dp" android:bottomRightRadius="2dp" android:bottomLeftRadius="0dp"/>
 
             <!-- This color is just a placeholder, the actual color is set is source -->
             <solid android:color="#ffffffff"/>

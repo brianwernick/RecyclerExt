@@ -19,10 +19,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:visibility="gone"
-        app:re_show_bubble="false"
-        app:re_bubble_color="#7F000000"
-        app:re_handle_color="#7F000000"
-        app:re_bubble_text_color="#7FFFFFFF"
         tools:visibility="visible"/>
 
 </RelativeLayout>

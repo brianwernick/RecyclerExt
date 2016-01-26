@@ -8,6 +8,8 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DimenRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +18,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,29 +35,31 @@ import com.devbrackets.android.recyclerext.animation.FastScrollBubbleVisibilityA
  *
  * TODO:
  * We needs options to:
- *  * padding/margin?
- *  * rtl support?
- *  * Horizontal support (already support vertical)
- *  * Callbacks when hiding/showing the bubble and when we should hide/show the handle & track
+ *  * Option to hide on short lists, or when scrolling is inactive (not currently scrolling)
+ *  * Option to specify the delay before hiding and showing the bubble (separate for hide and show)
+ *  * Horizontal support?
+ *  * Callbacks when hiding/showing the bubble and when we should hide/show the handle
+ *  * customize visibility animation for bubble
  */
 public class FastScroll extends FrameLayout {
     private static final String TAG = "FastScroll";
-    private static final int TRACK_SNAP_RANGE = 5;
+    protected static final int TRACK_SNAP_RANGE = 5;
 
     public interface FastScrollPopupCallbacks {
         String getFastScrollPopupText(int position);
     }
 
-    private PositionSupportImageView handle;
-    private PositionSupportTextView bubble;
+    protected PositionSupportImageView handle;
+    protected PositionSupportTextView bubble;
 
-    private RecyclerView recyclerView;
-    private FastScrollPopupCallbacks popupCallbacks;
+    protected RecyclerView recyclerView;
+    @Nullable
+    protected FastScrollPopupCallbacks popupCallbacks;
 
-    private int height;
+    protected int height;
 
-    private Animation currentAnimation;
-    private FastScrollListener scrollListener = new FastScrollListener();
+    protected Animation currentAnimation;
+    protected FastScrollListener scrollListener = new FastScrollListener();
 
     private boolean showBubble;
 
@@ -131,7 +136,10 @@ public class FastScroll extends FrameLayout {
         }
 
         this.recyclerView = recyclerView;
-        popupCallbacks = (FastScrollPopupCallbacks)recyclerView.getAdapter();
+
+        if (showBubble) {
+            popupCallbacks = (FastScrollPopupCallbacks) recyclerView.getAdapter();
+        }
 
         recyclerView.addOnScrollListener(scrollListener);
         recyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -143,6 +151,64 @@ public class FastScroll extends FrameLayout {
                 return true;
             }
         });
+    }
+
+    public void setShowBubble(boolean showBubble) {
+        if (this.showBubble == showBubble) {
+            return;
+        }
+
+        this.showBubble = showBubble;
+        if (recyclerView == null || !showBubble) {
+            return;
+        }
+
+        if ((recyclerView.getAdapter() instanceof FastScrollPopupCallbacks)) {
+            Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + FastScrollPopupCallbacks.class.getSimpleName());
+            return;
+        }
+
+        popupCallbacks = (FastScrollPopupCallbacks) recyclerView.getAdapter();
+    }
+
+    public void setTextColorRes(@ColorRes int colorRes) {
+        setTextColor(getColor(colorRes));
+    }
+
+    public void setTextColor(@ColorInt int color) {
+        bubble.setTextColor(color);
+    }
+
+    public void setTextSize(@DimenRes int dimenRes) {
+        bubble.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimensionPixelSize(dimenRes));
+    }
+
+    public void setTextSize(float size) {
+        bubble.setTextSize(size);
+    }
+
+    public void setBubbleColorRes(@ColorRes int colorRes) {
+        setBubbleColor(getColor(colorRes));
+    }
+
+    public void setBubbleColor(@ColorInt int color) {
+        bubble.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_bubble), color));
+    }
+
+    public void setBubbleDrawable(Drawable drawable) {
+        bubble.setBackground(drawable);
+    }
+
+    public void setHandleColorRes(@ColorRes int colorRes) {
+        setHandleColor(getColor(colorRes));
+    }
+
+    public void setHandleColor(@ColorInt int color) {
+        handle.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_handle), color));
+    }
+
+    public void setHandleDrawable(Drawable drawable) {
+        handle.setBackground(drawable);
     }
 
     protected void init(Context context, AttributeSet attrs) {
@@ -159,7 +225,6 @@ public class FastScroll extends FrameLayout {
 
     /**
      * Reads the attributes associated with this view, setting any values found
-     * TODO: make sure to add source modifiers for all attributes as well
      *
      * @param context The context to retrieve the styled attributes with
      * @param attrs The {@link AttributeSet} to retrieve the values from
@@ -183,26 +248,29 @@ public class FastScroll extends FrameLayout {
     protected void retrieveBubbleAttributes(TypedArray typedArray) {
         showBubble = typedArray.getBoolean(R.styleable.FastScroll_re_show_bubble, true);
 
-        int textColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_text_color, 0xFFFFFFFF); //TODO: leave as white?
+        int textColor = getColor(R.color.recyclerext_fast_scroll_bubble_text_color_default);
+        textColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_text_color, textColor);
 
-        int textSize = getResources().getDimensionPixelSize(R.dimen.recyclerext_default_fast_scroll_bubble_text_size);
+        int textSize = getResources().getDimensionPixelSize(R.dimen.recyclerext_fast_scroll_bubble_text_size_default);
         textSize = typedArray.getDimensionPixelSize(R.styleable.FastScroll_re_bubble_text_size, textSize);
 
         Drawable backgroundDrawable = typedArray.getDrawable(R.styleable.FastScroll_re_bubble_background);
-        int backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_color, 0xFF4433FF); //TODO: accent color or fallback...
+        int backgroundColor = getColor(R.color.recyclerext_fast_scroll_bubble_color_default);
+        backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_color, backgroundColor);
 
         if (backgroundDrawable == null) {
             backgroundDrawable = tint(getDrawable(R.drawable.recyclerext_fast_scroll_bubble), backgroundColor);
         }
 
-        bubble.setTextSize(textSize);
+        bubble.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         bubble.setTextColor(textColor);
         bubble.setBackground(backgroundDrawable);
     }
 
     protected void retrieveHandleAttributes(TypedArray typedArray) {
         Drawable backgroundDrawable = typedArray.getDrawable(R.styleable.FastScroll_re_handle_background);
-        int backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_handle_color, 0xFF4433FF); //TODO: accent color or fallback...
+        int backgroundColor = getColor(R.color.recyclerext_fast_scroll_handle_color_default);
+        backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_handle_color, backgroundColor);
 
         if (backgroundDrawable == null) {
             backgroundDrawable = tint(getDrawable(R.drawable.recyclerext_fast_scroll_handle), backgroundColor);
@@ -225,14 +293,11 @@ public class FastScroll extends FrameLayout {
 
         int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
         ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(targetPos, 0);
-        String bubbleText = popupCallbacks.getFastScrollPopupText(targetPos);
 
-        bubble.setText(bubbleText);
-    }
-
-    protected int getValueInRange(int min, int max, int value) {
-        int minimum = Math.max(min, value);
-        return Math.min(minimum, max);
+        if (showBubble && popupCallbacks != null) {
+            String bubbleText = popupCallbacks.getFastScrollPopupText(targetPos);
+            bubble.setText(bubbleText);
+        }
     }
 
     protected void setBubbleAndHandlePosition(float y) {
@@ -280,7 +345,22 @@ public class FastScroll extends FrameLayout {
         }
 
         //noinspection deprecation
-        return getResources().getDrawable(R.drawable.recyclerext_fast_scroll_handle);
+        return getResources().getDrawable(res);
+    }
+
+    @ColorInt
+    protected int getColor(@ColorRes int res) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return getResources().getColor(res, getContext().getTheme());
+        }
+
+        //noinspection deprecation
+        return getResources().getColor(res);
+    }
+
+    protected int getValueInRange(int min, int max, int value) {
+        int minimum = Math.max(min, value);
+        return Math.min(minimum, max);
     }
 
     /**
