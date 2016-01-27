@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="recyclerext_fast_scroll_handle_color_default">#009688</color>
+    <color name="recyclerext_fast_scroll_bubble_color_default">@color/recyclerext_fast_scroll_handle_color_default</color>
+    <color name="recyclerext_fast_scroll_bubble_text_color_default">#FFFFFFFF</color>
+</resources>

@@ -44,7 +44,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         //create and save some dummy items...
-        for (int i = 1; i <= 200; i++) {
+        for (int i = 1; i <= 500; i++) {
             ItemDAO item = new ItemDAO("RecyclerExt Demo Item " + i);
             item.save(database);
         }

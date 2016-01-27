@@ -1,9 +1,9 @@
 package com.devbrackets.android.recyclerextdemo.ui.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,7 +19,7 @@ import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolde
 /**
  * An activity that lists the example items.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
 
     @Override

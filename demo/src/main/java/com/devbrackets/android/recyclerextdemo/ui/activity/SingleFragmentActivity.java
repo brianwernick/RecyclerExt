@@ -2,7 +2,7 @@ package com.devbrackets.android.recyclerextdemo.ui.activity;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.Example;
@@ -13,10 +13,7 @@ import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderCursorFragment
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListHorizontalFragment;
 
-/**
- *
- */
-public class SingleFragmentActivity extends FragmentActivity {
+public class SingleFragmentActivity extends AppCompatActivity {
     public static final String EXTRA_FRAGMENT_TYPE = "EXTRA_FRAGMENT_TYPE";
 
     @Override

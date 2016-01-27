@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
@@ -26,6 +27,7 @@ import java.util.List;
 public class HeaderListFragment extends Fragment {
     private DBHelper dbHelper;
     private RecyclerView recyclerView;
+    private FastScroll fastScroll;
 
     public static HeaderListFragment newInstance() {
         return new HeaderListFragment();
@@ -35,6 +37,8 @@ public class HeaderListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
+        fastScroll = (FastScroll)view.findViewById(R.id.recyclerext_fast_scroll);
+        fastScroll.setVisibility(View.VISIBLE);
         return view;
     }
 
@@ -57,6 +61,8 @@ public class HeaderListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        fastScroll.attach(recyclerView);
+
         //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
         recyclerView.addItemDecoration(new StickyHeaderDecoration(recyclerView));
     }
@@ -65,7 +71,7 @@ public class HeaderListFragment extends Fragment {
      * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> {
+    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> implements FastScroll.FastScrollPopupCallbacks {
         private LayoutInflater inflater;
         private List<ItemDAO> items;
 
@@ -107,6 +113,11 @@ public class HeaderListFragment extends Fragment {
         @Override
         public long getHeaderId(int childPosition) {
             return items.get(childPosition).getOrder() / 10;
+        }
+
+        @Override
+        public String getFastScrollPopupText(int position) {
+            return getHeaderId(determineChildPosition(position)) + "0s";
         }
     }
 }
