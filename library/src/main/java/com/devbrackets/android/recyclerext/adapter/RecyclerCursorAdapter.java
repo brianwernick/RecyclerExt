@@ -196,9 +196,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
 
         //Performs the actual cursor swap
         setupCursor(newCursor, idColumnName);
-        if (newCursor != null) {
-            notifyDataSetChanged();
-        }
+        notifyDataSetChanged();
 
         return oldCursor;
     }

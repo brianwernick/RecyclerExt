@@ -23,7 +23,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
 import android.widget.FrameLayout;
 
 import com.devbrackets.android.recyclerext.R;
@@ -49,19 +48,17 @@ public class FastScroll extends FrameLayout {
         String getFastScrollPopupText(int position);
     }
 
+    @Nullable
+    protected FastScrollPopupCallbacks popupCallbacks;
+
     protected PositionSupportImageView handle;
     protected PositionSupportTextView bubble;
 
     protected RecyclerView recyclerView;
-    @Nullable
-    protected FastScrollPopupCallbacks popupCallbacks;
+    protected RecyclerScrollListener scrollListener = new RecyclerScrollListener();
 
     protected int height;
-
-    protected Animation currentAnimation;
-    protected FastScrollListener scrollListener = new FastScrollListener();
-
-    private boolean showBubble;
+    protected boolean showBubble;
 
     public FastScroll(Context context) {
         super(context);
@@ -322,13 +319,11 @@ public class FastScroll extends FrameLayout {
             return;
         }
 
-        if (currentAnimation != null) {
-            bubble.clearAnimation();
-        }
+        bubble.clearAnimation();
 
         Log.d(TAG, "updating bubble visibility" + toVisible);
-        currentAnimation = new FastScrollBubbleVisibilityAnimation(bubble, toVisible);
-        bubble.startAnimation(currentAnimation);
+        FastScrollBubbleVisibilityAnimation animation = new FastScrollBubbleVisibilityAnimation(bubble, toVisible);
+        bubble.startAnimation(animation);
     }
 
     protected Drawable tint(@Nullable Drawable drawable, @ColorInt int color) {
@@ -367,7 +362,7 @@ public class FastScroll extends FrameLayout {
      * Listens to the scroll position changes of the parent (RecyclerView)
      * so that the handle will always have the correct position
      */
-    protected class FastScrollListener extends RecyclerView.OnScrollListener {
+    protected class RecyclerScrollListener extends RecyclerView.OnScrollListener {
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
             if (handle.isSelected()) {
