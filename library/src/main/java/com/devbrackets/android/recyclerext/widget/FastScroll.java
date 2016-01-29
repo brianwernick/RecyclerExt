@@ -345,7 +345,7 @@ public class FastScroll extends FrameLayout {
 
     @ColorInt
     protected int getColor(@ColorRes int res) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return getResources().getColor(res, getContext().getTheme());
         }
 
