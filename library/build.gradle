@@ -3,8 +3,8 @@ apply plugin: 'maven'
 apply plugin: 'bintray-release'
 
 def versionMajor = 0
-def versionMinor = 17
-def versionPatch = 1
+def versionMinor = 18
+def versionPatch = 0
 
 // Maven GAV
 def libraryGroupId = 'com.devbrackets.android'
@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.2.0'
+    compile 'com.android.support:recyclerview-v7:23.2.0'
 }
 
 android {
