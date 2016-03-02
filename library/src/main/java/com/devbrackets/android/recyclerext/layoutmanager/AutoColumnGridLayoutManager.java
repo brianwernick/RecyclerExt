@@ -281,7 +281,8 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
                 recyclerView.getPaddingBottom()
         );
 
-        spacerDecoration.update(separatorSpacing, matchSpacing ? separatorSpacing : rowSpacing / 2);
+        //Due to the GridLayoutManager already adding padding between columns since 23.2.0, we don't add our own horizontal padding
+        spacerDecoration.update(0, matchSpacing ? separatorSpacing : rowSpacing / 2);
     }
 
     /**
