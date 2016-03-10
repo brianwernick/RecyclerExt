@@ -232,7 +232,6 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         //Sets the decoration for the calculated spacing
         if (spacerDecoration == null) {
             spacerDecoration = new SpacerDecoration();
-            spacerDecoration.setAllowedEdgeSpacing(SpacerDecoration.EDGE_SPACING_LEFT | SpacerDecoration.EDGE_SPACING_RIGHT);
             recyclerView.addItemDecoration(spacerDecoration);
         }
 
@@ -268,16 +267,16 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             } else { //SEPARATOR
                 separatorSpacing = spacerCount == 0 ? 0 : freeSpace / spacerCount;
             }
-
-            edgeSpacing -= separatorSpacing;
         }
 
+        //Because the support library is adding padding between items only on the right side, we remove that amount from the recyclerView padding
+        int supportGridRightPadding = (usableWidth - (columnCount * gridItemWidth)) / columnCount;
 
         //Updates the spacing using the decoration and padding
         recyclerView.setPadding(
                 recyclerView.getPaddingLeft() + edgeSpacing,
                 recyclerView.getPaddingTop(),
-                recyclerView.getPaddingRight() + edgeSpacing,
+                recyclerView.getPaddingRight() + edgeSpacing - supportGridRightPadding,
                 recyclerView.getPaddingBottom()
         );
 
