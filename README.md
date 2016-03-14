@@ -13,8 +13,10 @@ RecyclerView.
 
 Website And Documentation
 -------
-The RecyclerExt website can be found [here][Java Doc]
-The RecyclerExt documentation website can be found on the website linked above or [here][Website]
+The RecyclerExt website can be found [here][Website]
+
+
+The RecyclerExt documentation website can be found on the website linked above or [here][Java Doc]
 
 
 Use
@@ -29,7 +31,7 @@ repositories {
 
 dependencies {
     //...
-    compile 'com.devbrackets.android:recyclerext:0.18.1'
+    compile 'com.devbrackets.android:recyclerext:1.0.0'
 }
 ```
 
@@ -55,4 +57,4 @@ License
 
  [JCenter]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
  [Website]: http://devbrackets.com/dev/libs/recyclerext.html
- [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/0.14.0/index.html
+ [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/1.0.0/index.html
