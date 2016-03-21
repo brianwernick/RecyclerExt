@@ -10,7 +10,8 @@ public enum Example {
     HEADER_AS_CHILD_LIST("Contacts Header List"),
     REORDER_LIST_HORIZONTAL("Reorder List Horizontal"),
     REORDER_LIST_VERTICAL("Reorder List Vertical"),
-    REORDER_CURSOR_VERTICAL("Reorder Cursor Vertical");
+    REORDER_CURSOR_VERTICAL("Reorder Cursor Vertical"),
+    GRID("Grid");
 
     private final String title;
 

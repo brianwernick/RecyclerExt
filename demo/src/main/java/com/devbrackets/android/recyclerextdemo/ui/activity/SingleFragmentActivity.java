@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.Example;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.CursorFragment;
+import com.devbrackets.android.recyclerextdemo.ui.fragment.GridFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderAsChildListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderCursorFragment;
@@ -58,6 +59,10 @@ public class SingleFragmentActivity extends AppCompatActivity {
             case HEADER_AS_CHILD_LIST:
                 pushHeaderAsChildListFragment();
                 break;
+
+            case GRID:
+                pushGridFragment();
+                break;
         }
     }
 
@@ -68,6 +73,11 @@ public class SingleFragmentActivity extends AppCompatActivity {
 
     private void pushReorderListFragment() {
         Fragment fragment = ReorderListFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    private void pushGridFragment() {
+        Fragment fragment = GridFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 
