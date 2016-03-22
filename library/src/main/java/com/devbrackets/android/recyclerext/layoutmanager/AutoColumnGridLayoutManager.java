@@ -36,6 +36,10 @@ import java.lang.ref.WeakReference;
  * of the number of columns.  It will then determine the number of columns
  * that are possible, enforcing the size specified by adding spacing
  * between the columns to make sure the grid items width isn't resized.
+ *
+ * <b>NOTE:</b> Due to limitations of the {@link GridLayoutManager} the layout
+ * for the grid items should have a width of "match_parent", otherwise the items
+ * won't be correctly centered
  */
 public class AutoColumnGridLayoutManager extends GridLayoutManager {
     public enum SpacingMethod {
@@ -113,6 +117,30 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      */
     public void setColumnWidth(int gridItemWidth) {
         requestedColumnWidth = gridItemWidth;
+        setSpanCount(determineColumnCount(requestedColumnWidth));
+    }
+
+    /**
+     * Sets the minimum amount of spacing there should be between items in the grid.  This
+     * will be used when determining the number of columns possible with the gridItemWidth specified
+     * with {@link #AutoColumnGridLayoutManager(Context, int)} or {@link #setColumnWidth(int)}
+     *
+     * @param minColumnSpacing The minimum amount of spacing between items in the grid
+     */
+    public void setMinColumnSpacing(int minColumnSpacing) {
+        this.minColumnSpacingSeparator = minColumnSpacing;
+        setSpanCount(determineColumnCount(requestedColumnWidth));
+    }
+
+    /**
+     * Sets the minimum amount of spacing there should be on the sides of the grid.  This
+     * will be used when determining the number of columns possible with the gridItemWidth specified
+     * with {@link #AutoColumnGridLayoutManager(Context, int)} or {@link #setColumnWidth(int)}
+     *
+     * @param minEdgeSpacing The minimum amount of spacing that should exist at the edges of the grid
+     */
+    public void setMinEdgeSpacing(int minEdgeSpacing) {
+        this.minColumnSpacingEdge = minEdgeSpacing;
         setSpanCount(determineColumnCount(requestedColumnWidth));
     }
 
@@ -232,6 +260,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         //Sets the decoration for the calculated spacing
         if (spacerDecoration == null) {
             spacerDecoration = new SpacerDecoration();
+            spacerDecoration.setAllowedEdgeSpacing(SpacerDecoration.EDGE_SPACING_LEFT | SpacerDecoration.EDGE_SPACING_RIGHT);
             recyclerView.addItemDecoration(spacerDecoration);
         }
 
@@ -267,21 +296,19 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             } else { //SEPARATOR
                 separatorSpacing = spacerCount == 0 ? 0 : freeSpace / spacerCount;
             }
-        }
 
-        //Because the support library is adding padding between items only on the right side, we remove that amount from the recyclerView padding
-        int supportGridRightPadding = (usableWidth - (columnCount * gridItemWidth)) / columnCount;
+            edgeSpacing -= separatorSpacing;
+        }
 
         //Updates the spacing using the decoration and padding
         recyclerView.setPadding(
                 recyclerView.getPaddingLeft() + edgeSpacing,
                 recyclerView.getPaddingTop(),
-                recyclerView.getPaddingRight() + edgeSpacing - supportGridRightPadding,
+                recyclerView.getPaddingRight() + edgeSpacing,
                 recyclerView.getPaddingBottom()
         );
 
-        //Due to the GridLayoutManager already adding padding between columns since 23.2.0, we don't add our own horizontal padding
-        spacerDecoration.update(0, matchSpacing ? separatorSpacing : rowSpacing / 2);
+        spacerDecoration.update(separatorSpacing, matchSpacing ? separatorSpacing : rowSpacing / 2);
     }
 
     /**

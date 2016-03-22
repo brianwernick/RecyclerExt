@@ -5,13 +5,13 @@ package com.devbrackets.android.recyclerextdemo.data;
  * {@link com.devbrackets.android.recyclerextdemo.ui.activity.MainActivity}
  */
 public enum Example {
+    GRID("Grid"),
     CURSOR("Cursor"),
     HEADER_LIST("Header List"),
     HEADER_AS_CHILD_LIST("Contacts Header List"),
     REORDER_LIST_HORIZONTAL("Reorder List Horizontal"),
     REORDER_LIST_VERTICAL("Reorder List Vertical"),
-    REORDER_CURSOR_VERTICAL("Reorder Cursor Vertical"),
-    GRID("Grid");
+    REORDER_CURSOR_VERTICAL("Reorder Cursor Vertical");
 
     private final String title;
 
