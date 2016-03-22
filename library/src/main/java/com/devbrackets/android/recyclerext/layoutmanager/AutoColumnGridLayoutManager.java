@@ -36,6 +36,10 @@ import java.lang.ref.WeakReference;
  * of the number of columns.  It will then determine the number of columns
  * that are possible, enforcing the size specified by adding spacing
  * between the columns to make sure the grid items width isn't resized.
+ *
+ * <b>NOTE:</b> Due to limitations of the {@link GridLayoutManager} the layout
+ * for the grid items should have a width of "match_parent", otherwise the items
+ * won't be correctly centered
  */
 public class AutoColumnGridLayoutManager extends GridLayoutManager {
     public enum SpacingMethod {
@@ -48,8 +52,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     protected SpacerDecoration spacerDecoration;
 
     protected int rowSpacing = 0;
-    protected int edgeSpacingLeft = 0;
-    protected int edgeSpacingRight = 0;
+    protected int edgeSpacing = 0;
     protected boolean matchSpacing = false;
     protected int minColumnSpacingEdge = 0;
     protected int minColumnSpacingSeparator = 0;
@@ -257,11 +260,11 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
         //Sets the decoration for the calculated spacing
         if (spacerDecoration == null) {
             spacerDecoration = new SpacerDecoration();
+            spacerDecoration.setAllowedEdgeSpacing(SpacerDecoration.EDGE_SPACING_LEFT | SpacerDecoration.EDGE_SPACING_RIGHT);
             recyclerView.addItemDecoration(spacerDecoration);
         }
 
-        edgeSpacingLeft = minColumnSpacingEdge;
-        edgeSpacingRight = minColumnSpacingEdge;
+        edgeSpacing = minColumnSpacingEdge;
         int separatorSpacing = minColumnSpacingSeparator / 2;
 
 
@@ -287,30 +290,25 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
                 int totalSeparatorSpace = (int)((1d - edgeSpacePercentage) * freeSpace);
 
                 separatorSpacing = spacerCount == 0 ? 0 : totalSeparatorSpace / spacerCount;
-                edgeSpacingLeft = ((freeSpace - totalSeparatorSpace) / 2) + separatorSpacing;
-                edgeSpacingRight = edgeSpacingLeft;
+                edgeSpacing = ((freeSpace - totalSeparatorSpace) / 2) + separatorSpacing;
             } else if (spacingMethod == SpacingMethod.EDGES) {
-                edgeSpacingLeft = (freeSpace - (separatorSpacing * spacerCount)) / 2;
-                edgeSpacingRight = edgeSpacingLeft;
+                edgeSpacing = (freeSpace - (separatorSpacing * spacerCount)) / 2;
             } else { //SEPARATOR
                 separatorSpacing = spacerCount == 0 ? 0 : freeSpace / spacerCount;
             }
-        }
 
-        //Because the support library is adding padding between items only on the right side, we remove that amount from the recyclerView padding
-        int supportGridRightPadding = (usableWidth - (columnCount * gridItemWidth)) / columnCount;
-        edgeSpacingRight -= supportGridRightPadding;
+            edgeSpacing -= separatorSpacing;
+        }
 
         //Updates the spacing using the decoration and padding
         recyclerView.setPadding(
-                recyclerView.getPaddingLeft() + edgeSpacingLeft,
+                recyclerView.getPaddingLeft() + edgeSpacing,
                 recyclerView.getPaddingTop(),
-                recyclerView.getPaddingRight() + edgeSpacingRight,
+                recyclerView.getPaddingRight() + edgeSpacing,
                 recyclerView.getPaddingBottom()
         );
 
-        //Due to the GridLayoutManager already adding padding between columns since 23.2.0, we don't add our own horizontal padding
-        spacerDecoration.update(0, matchSpacing ? separatorSpacing : rowSpacing / 2);
+        spacerDecoration.update(separatorSpacing, matchSpacing ? separatorSpacing : rowSpacing / 2);
     }
 
     /**
@@ -355,9 +353,9 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      */
     protected void resetRecyclerPadding(RecyclerView recyclerView) {
         recyclerView.setPadding(
-                recyclerView.getPaddingLeft() - edgeSpacingLeft,
+                recyclerView.getPaddingLeft() - edgeSpacing,
                 recyclerView.getPaddingTop(),
-                recyclerView.getPaddingRight() - edgeSpacingRight,
+                recyclerView.getPaddingRight() - edgeSpacing,
                 recyclerView.getPaddingBottom()
         );
     }
