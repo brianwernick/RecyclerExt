@@ -160,7 +160,7 @@ public class FastScroll extends FrameLayout {
             return;
         }
 
-        if ((recyclerView.getAdapter() instanceof FastScrollPopupCallbacks)) {
+        if (!(recyclerView.getAdapter() instanceof FastScrollPopupCallbacks)) {
             Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + FastScrollPopupCallbacks.class.getSimpleName());
             return;
         }
