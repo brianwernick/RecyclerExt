@@ -16,6 +16,7 @@
 
 package com.devbrackets.android.recyclerext.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
@@ -155,7 +156,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      *
      * @param itemList The list of items to add
      */
-    public void addAll(List<T> itemList) {
+    public void addAll(@NonNull List<T> itemList) {
         synchronized (lock) {
             if (items == null) {
                 items = new ArrayList<>();
