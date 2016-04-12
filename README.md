@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     //...
-    compile 'com.devbrackets.android:recyclerext:1.0.2'
+    compile 'com.devbrackets.android:recyclerext:1.1.0'
 }
 ```
 
@@ -54,7 +54,13 @@ License
     limitations under the License.
 
 
+Attribution
+-----------
+* Uses [AppCompat-v7](http://developer.android.com/tools/support-library/features.html#v7-appcompat) licensed under [Apache 2.0][Apache 2.0]
+* Uses [RecyclerView-v7](http://developer.android.com/tools/support-library/features.html#v7-recyclerview) licensed under [Apache 2.0][Apache 2.0]
+
 
  [JCenter]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
  [Website]: http://devbrackets.com/dev/libs/recyclerext.html
- [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/1.0.0/index.html
+ [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/1.1.0/index.html
+ [Apache 2.0]: https://opensource.org/licenses/Apache-2.0
