@@ -35,7 +35,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
     @Nullable
     protected List<T> items;
     protected boolean notifyOnChange = true;
-    private final Object lock = new Object();
+    protected final Object lock = new Object();
 
     /**
      * Creates an adapter with no initial items
