@@ -113,6 +113,28 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
     }
 
     /**
+     * Clears all the current items in the list and
+     * adds all the specified items to the list
+     *
+     * @param itemList the list of items to add
+     */
+    public void set(@NonNull List<T> itemList) {
+        synchronized (lock) {
+            if (items == null) {
+                items = new ArrayList<>();
+            } else {
+                items.clear();
+            }
+
+            items.addAll(itemList);
+        }
+
+        if (notifyOnChange) {
+            notifyItemRangeChanged(0, itemList.size());
+        }
+    }
+
+    /**
      * Adds the specified item to the end of the list
      *
      * @param item The item to add to the list
