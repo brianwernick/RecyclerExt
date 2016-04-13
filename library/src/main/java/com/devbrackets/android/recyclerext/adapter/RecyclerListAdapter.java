@@ -130,7 +130,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyItemRangeChanged(0, itemList.size());
+            notifyDataSetChanged();
         }
     }
 
