@@ -27,6 +27,7 @@ import android.view.View;
 import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderCursorAdapter;
+import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderListAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 
 /**
@@ -66,10 +67,12 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * @param parent The RecyclerView to couple the ItemDecoration to
      */
     public StickyHeaderDecoration(RecyclerView parent) {
-        boolean headerAdapter = parent.getAdapter() instanceof RecyclerHeaderAdapter || parent.getAdapter() instanceof RecyclerHeaderCursorAdapter;
+        boolean headerAdapter = parent.getAdapter() instanceof RecyclerHeaderAdapter ||
+                parent.getAdapter() instanceof RecyclerHeaderCursorAdapter ||
+                parent.getAdapter() instanceof RecyclerHeaderListAdapter;
 
         if (parent.getAdapter() == null || !headerAdapter) {
-            throw new ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter or RecyclerHeaderCursorAdapter");
+            throw new ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter, RecyclerHeaderListAdapter or RecyclerHeaderCursorAdapter");
         }
 
         this.parent = parent;
