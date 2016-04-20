@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     //...
-    compile 'com.devbrackets.android:recyclerext:1.1.0'
+    compile 'com.devbrackets.android:recyclerext:1.1.1'
 }
 ```
 
