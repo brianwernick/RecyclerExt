@@ -188,7 +188,11 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyItemRangeChanged(items.size() - itemList.size(), itemList.size());
+            if (items.size() - itemList.size() != 0) {
+                notifyItemRangeChanged(items.size() - itemList.size(), itemList.size());
+            } else {
+                notifyDataSetChanged();
+            }
         }
     }
 
@@ -337,7 +341,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         if (notifyOnChange) {
-            notifyItemRangeChanged(0, items.size());
+            notifyDataSetChanged();
         }
     }
 }

@@ -39,7 +39,7 @@ dependencies {
 License
 -------
 
-    Copyright 2015 Brian Wernick
+    Copyright 2016 Brian Wernick
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
