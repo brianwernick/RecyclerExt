@@ -4,7 +4,7 @@ apply plugin: 'bintray-release'
 
 def versionMajor = 1
 def versionMinor = 1
-def versionPatch = 1
+def versionPatch = 2
 
 // Maven GAV
 def libraryGroupId = 'com.devbrackets.android'
@@ -17,7 +17,7 @@ repositories {
 }
 
 ext {
-    supportLibVersion = "23.3.0"
+    supportLibVersion = "24.0.0"
 }
 
 dependencies {
@@ -26,12 +26,12 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion '23.0.3'
 
     defaultConfig {
         minSdkVersion 7
-        targetSdkVersion 23
+        targetSdkVersion 24
 
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"

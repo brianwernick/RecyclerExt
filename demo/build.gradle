@@ -6,7 +6,7 @@ repositories {
 }
 
 ext {
-    supportLibVersion = "23.3.0"
+    supportLibVersion = "24.0.0"
 }
 
 dependencies {
@@ -28,7 +28,7 @@ android {
     defaultConfig {
         applicationId "com.devbrackets.android.recyclerextdemo"
         minSdkVersion 7
-        targetSdkVersion 23
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
     }
