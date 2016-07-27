@@ -17,7 +17,7 @@ repositories {
 }
 
 ext {
-    supportLibVersion = "24.0.0"
+    supportLibVersion = "24.1.1"
 }
 
 dependencies {

@@ -6,7 +6,7 @@ repositories {
 }
 
 ext {
-    supportLibVersion = "24.0.0"
+    supportLibVersion = "24.1.1"
 }
 
 dependencies {
@@ -18,7 +18,7 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion "23.0.3"
 
     lintOptions {
