@@ -167,7 +167,12 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
 
     @Override
     public int determineChildPosition(int viewPosition) {
-        return core.determineChildPosition(viewPosition);
+        return core.getChildPosition(viewPosition);
+    }
+
+    @Override
+    public int getAdapterPositionForChild(int childPosition) {
+        return core.getAdapterPositionForChild(childPosition);
     }
 
     @Override

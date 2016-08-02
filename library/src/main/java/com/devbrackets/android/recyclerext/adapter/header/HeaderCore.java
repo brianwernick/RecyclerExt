@@ -120,7 +120,7 @@ public class HeaderCore {
      * @return The type of ViewHolder for the <code>position</code>
      */
     public int getItemViewType(int position) {
-        int childPosition = determineChildPosition(position);
+        int childPosition = getChildPosition(position);
 
         if (isHeader(position)) {
             return headerApi.getHeaderViewType(childPosition) | HeaderApi.HEADER_VIEW_TYPE_MASK;
@@ -155,28 +155,51 @@ public class HeaderCore {
     /**
      * Determines the child position given the position in the RecyclerView
      *
-     * @param viewPosition The position in the RecyclerView (includes Headers and Children)
+     * @param adapterPosition The position in the RecyclerView (includes Headers and Children)
      * @return The child index
      */
-    public int determineChildPosition(int viewPosition) {
+    public int getChildPosition(int adapterPosition) {
         if (showHeaderAsChild) {
-            return viewPosition;
+            return adapterPosition;
         }
 
         int headerCount = 0;
         for (HeaderItem item : headerItems) {
-            if (item.getViewPosition() < viewPosition) {
+            if (item.getViewPosition() < adapterPosition) {
                 headerCount++;
             } else {
                 break;
             }
         }
 
-        return viewPosition - headerCount;
+        return adapterPosition - headerCount;
     }
 
     /**
-     * Determines the position for the header associated with
+     * Determines the adapter position given the child position in
+     * the RecyclerView
+     *
+     * @param childPosition The child position
+     * @return The adapter position
+     */
+    public int getAdapterPositionForChild(int childPosition) {
+        if (showHeaderAsChild) {
+            return childPosition;
+        }
+
+        for (HeaderItem item : headerItems) {
+            if (item.getViewPosition() <= childPosition) {
+                childPosition++;
+            } else {
+                break;
+            }
+        }
+
+        return childPosition;
+    }
+
+    /**
+     * Determines the adapter position for the header associated with
      * the <code>headerId</code>
      *
      * @param headerId The id to find the header for

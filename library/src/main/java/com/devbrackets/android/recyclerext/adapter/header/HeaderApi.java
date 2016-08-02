@@ -99,6 +99,15 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
     int determineChildPosition(int viewPosition);
 
     /**
+     * Determines the adapter position given the child position in
+     * the RecyclerView
+     *
+     * @param childPosition The child position
+     * @return The adapter position
+     */
+    int getAdapterPositionForChild(int childPosition);
+
+    /**
      * Determines the position for the header associated with
      * the <code>headerId</code>
      *
