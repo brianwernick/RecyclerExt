@@ -117,7 +117,7 @@ public class HeaderListFragment extends Fragment {
 
         @Override
         public String getFastScrollPopupText(int position) {
-            return getHeaderId(determineChildPosition(position)) + "0s";
+            return getHeaderId(getChildPosition(position)) + "0s";
         }
     }
 }

@@ -170,9 +170,18 @@ public abstract class RecyclerHeaderListAdapter<H extends ViewHolder, C extends 
         return RecyclerView.NO_ID;
     }
 
+    /**
+     * @deprecated use {@link #getChildPosition(int)}
+     */
     @Override
+    @Deprecated
     public int determineChildPosition(int viewPosition) {
-        return core.getChildPosition(viewPosition);
+        return getChildPosition(viewPosition);
+    }
+
+    @Override
+    public int getChildPosition(int adapterPosition) {
+        return core.getChildPosition(adapterPosition);
     }
 
     @Override
