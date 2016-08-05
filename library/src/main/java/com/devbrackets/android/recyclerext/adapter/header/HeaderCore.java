@@ -16,6 +16,7 @@
 
 package com.devbrackets.android.recyclerext.adapter.header;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -62,6 +63,23 @@ public class HeaderCore {
      */
     public int getHeaderCount() {
         return headerItems.size();
+    }
+
+    /**
+     * Returns a list containing the adapter positions for the
+     * headers
+     *
+     * @return A list of the adapter positions for headers
+     */
+    @NonNull
+    public List<Integer> getHeaderPositions() {
+        List<Integer> positions = new ArrayList<>();
+
+        for (HeaderItem item : headerItems) {
+            positions.add(item.getViewPosition());
+        }
+
+        return positions;
     }
 
     /**
