@@ -6,12 +6,13 @@
                 android:clipChildren="false"
                 tools:ignore="UseCompoundDrawables">
 
+    <!--TODO maybe add the margins as padding to the drawables? this would allow extensions to provide their own -->
     <com.devbrackets.android.recyclerext.widget.PositionSupportTextView
         android:id="@+id/recyclerext_fast_scroll_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
+        android:layout_toStartOf="@+id/recyclerext_fast_scroll_handle"
+        android:layout_toLeftOf="@+id/recyclerext_fast_scroll_handle"
         android:layout_marginRight="16dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/recyclerext_fast_scroll_bubble"

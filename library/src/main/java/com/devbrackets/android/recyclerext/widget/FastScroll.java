@@ -33,6 +33,7 @@ import com.devbrackets.android.recyclerext.animation.FastScrollBubbleVisibilityA
  * for the attached {@link android.support.v7.widget.RecyclerView}
  *
  * TODO:
+ *
  * We needs options to:
  *  * Option to hide on short lists, or when scrolling is inactive (not currently scrolling)
  *  * Option to specify the delay before hiding and showing the bubble (separate for hide and show)
@@ -59,6 +60,8 @@ public class FastScroll extends FrameLayout {
 
     protected int height;
     protected boolean showBubble;
+    protected boolean draggingHandle = false;
+    protected boolean allowTrackClicks = false;
 
     public FastScroll(Context context) {
         super(context);
@@ -98,9 +101,15 @@ public class FastScroll extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
+        //Filters out touch events we don't need to handle
+        if (!draggingHandle && event.getAction() != MotionEvent.ACTION_DOWN) {
+            return super.onTouchEvent(event);
+        }
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getX() < handle.getX() - ViewCompat.getPaddingStart(handle)) {
+                //Verifies the event is within the allowed coordinates
+                if (ignoreTouchDown(event.getX(), event.getY())) {
                     return false;
                 }
 
@@ -108,6 +117,7 @@ public class FastScroll extends FrameLayout {
                     updateBubbleVisibility(true);
                 }
 
+                draggingHandle = true;
                 handle.setSelected(true);
                 //Purposefully falls through
 
@@ -118,6 +128,7 @@ public class FastScroll extends FrameLayout {
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                draggingHandle = false;
                 handle.setSelected(false);
                 updateBubbleVisibility(false);
                 return true;
@@ -166,6 +177,15 @@ public class FastScroll extends FrameLayout {
         }
 
         popupCallbacks = (FastScrollPopupCallbacks) recyclerView.getAdapter();
+    }
+
+    /**
+     * Specifies if clicks on the track should scroll to that position.
+     *
+     * @param allowed {@code true} to allow clicking on the track [default: {@code false}]
+     */
+    public void setAllowTrackClicks(boolean allowed) {
+        this.allowTrackClicks = allowed;
     }
 
     public void setTextColorRes(@ColorRes int colorRes) {
@@ -274,6 +294,28 @@ public class FastScroll extends FrameLayout {
         }
 
         handle.setBackground(backgroundDrawable);
+    }
+
+    protected boolean ignoreTouchDown(float xPos, float yPos) {
+        //Verifies the event is within the allowed X coordinates
+        if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_LTR) {
+            if (xPos < handle.getX() - ViewCompat.getPaddingStart(handle)) {
+                return true;
+            }
+        } else {
+            if (xPos > handle.getX() + handle.getWidth() + ViewCompat.getPaddingStart(handle)) {
+                return true;
+            }
+        }
+
+        if (!allowTrackClicks) {
+            //Enforces selection to only occur on the handle
+            if (yPos < handle.getY() - handle.getPaddingTop() || yPos > handle.getY() + handle.getHeight() + handle.getPaddingBottom()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected void setRecyclerViewPosition(float y) {
