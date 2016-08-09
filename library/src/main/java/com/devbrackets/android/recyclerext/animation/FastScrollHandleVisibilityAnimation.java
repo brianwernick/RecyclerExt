@@ -5,19 +5,18 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 
-
-public class FastScrollBubbleVisibilityAnimation extends AnimationSet {
-    private static final int DURATION = 100; //milliseconds
+public class FastScrollHandleVisibilityAnimation extends AnimationSet {
+    private static final int DURATION = 333; //milliseconds
     private final boolean toVisible;
 
-    public FastScrollBubbleVisibilityAnimation(View bubble, boolean toVisible) {
+    public FastScrollHandleVisibilityAnimation(View handle, boolean toVisible) {
         super(false);
 
         this.toVisible = toVisible;
-        setup(bubble);
+        setup(handle);
     }
 
-    private void setup(View bubble) {
+    private void setup(View handle) {
         float startAlpha = toVisible ? 0 : 1;
         float endAlpha = toVisible ? 1 : 0;
 
@@ -25,35 +24,35 @@ public class FastScrollBubbleVisibilityAnimation extends AnimationSet {
         alphaAnimation.setDuration(DURATION);
         addAnimation(alphaAnimation);
 
-        setAnimationListener(new BubbleVisibilityAnimationListener(bubble, toVisible));
+        setAnimationListener(new HandleAnimationListener(handle, toVisible));
 
         //Works around the issue of the animation never starting because the view is GONE
-        if (bubble.getVisibility() == View.GONE) {
-            bubble.setVisibility(View.INVISIBLE);
+        if (handle.getVisibility() == View.GONE) {
+            handle.setVisibility(View.INVISIBLE);
         }
     }
 
     /**
      * Listens to the {@link FastScrollBubbleVisibilityAnimation}
-     * making sure the bubble has the correct visibilities at the start and end of the animation
+     * making sure the handle has the correct visibilities at the start and end of the animation
      */
-    protected static class BubbleVisibilityAnimationListener implements Animation.AnimationListener {
-        private View bubble;
+    protected static class HandleAnimationListener implements Animation.AnimationListener {
+        private View handle;
         private boolean toVisible;
 
-        public BubbleVisibilityAnimationListener(View bubble, boolean toVisible) {
-            this.bubble = bubble;
+        public HandleAnimationListener(View handle, boolean toVisible) {
+            this.handle = handle;
             this.toVisible = toVisible;
         }
 
         @Override
         public void onAnimationStart(Animation animation) {
-            bubble.setVisibility(View.VISIBLE);
+            handle.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            bubble.setVisibility(toVisible ? View.VISIBLE : View.GONE);
+            handle.setVisibility(toVisible ? View.VISIBLE : View.GONE);
         }
 
         @Override

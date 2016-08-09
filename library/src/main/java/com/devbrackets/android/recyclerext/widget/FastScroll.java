@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
@@ -23,24 +24,20 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
 import android.widget.FrameLayout;
 
 import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.animation.FastScrollBubbleVisibilityAnimation;
+import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityAnimation;
 
 /**
  * A class that provides the functionality of a fast scroll
  * for the attached {@link android.support.v7.widget.RecyclerView}
  *
- * TODO:
- *
- * We needs options to:
- *  * Option to hide on short lists, or when scrolling is inactive (not currently scrolling)
- *  * Option to specify the delay before hiding and showing the bubble (separate for hide and show)
- *  * Horizontal support?
- *  * Callbacks when hiding/showing the bubble and when we should hide/show the handle
- *  * customize visibility animation for bubble
+ * TODO: Option to hide on short lists
  */
+@SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
     private static final String TAG = "FastScroll";
     protected static final int TRACK_SNAP_RANGE = 5;
@@ -56,12 +53,31 @@ public class FastScroll extends FrameLayout {
     protected PositionSupportTextView bubble;
 
     protected RecyclerView recyclerView;
+
+    @NonNull
     protected RecyclerScrollListener scrollListener = new RecyclerScrollListener();
+    @NonNull
+    protected Handler delayHandler = new Handler();
+
+    @NonNull
+    protected HandleHideRunnable handleHideRunnable = new HandleHideRunnable();
+    @NonNull
+    protected BubbleHideRunnable bubbleHideRunnable = new BubbleHideRunnable();
+
+    @Nullable
+    protected AnimationProvider animationProvider;
 
     protected int height;
     protected boolean showBubble;
+
+    protected boolean hideHandleAllowed = true;
     protected boolean draggingHandle = false;
-    protected boolean allowTrackClicks = false;
+    protected boolean trackClicksAllowed = false;
+
+    protected long handleHideDelay = 1_000; //Milliseconds
+    protected long bubbleHideDelay = 0; //Milliseconds
+
+    protected Boolean requestedHandleVisibility;
 
     public FastScroll(Context context) {
         super(context);
@@ -130,7 +146,8 @@ public class FastScroll extends FrameLayout {
             case MotionEvent.ACTION_CANCEL:
                 draggingHandle = false;
                 handle.setSelected(false);
-                updateBubbleVisibility(false);
+                hideBubbleDelayed();
+                hideHandleDelayed();
                 return true;
         }
 
@@ -184,8 +201,28 @@ public class FastScroll extends FrameLayout {
      *
      * @param allowed {@code true} to allow clicking on the track [default: {@code false}]
      */
-    public void setAllowTrackClicks(boolean allowed) {
-        this.allowTrackClicks = allowed;
+    public void setTrackClicksAllowed(boolean allowed) {
+        this.trackClicksAllowed = allowed;
+    }
+
+    public void setHideHandleAllowed(boolean allowed) {
+        this.hideHandleAllowed = allowed;
+    }
+
+    public void setHandleHideDelay(long delayMilliseconds) {
+        this.handleHideDelay = delayMilliseconds;
+    }
+
+    public long getHandleHideDelay() {
+        return handleHideDelay;
+    }
+
+    public void setBubbleHideDelay(long delayMilliseconds) {
+        this.bubbleHideDelay = delayMilliseconds;
+    }
+
+    public long getBubbleHideDelay() {
+        return bubbleHideDelay;
     }
 
     public void setTextColorRes(@ColorRes int colorRes) {
@@ -226,6 +263,10 @@ public class FastScroll extends FrameLayout {
 
     public void setHandleDrawable(Drawable drawable) {
         handle.setBackground(drawable);
+    }
+
+    public void setAnimationProvider(@Nullable AnimationProvider animationProvider) {
+        this.animationProvider = animationProvider;
     }
 
     protected void init(Context context, AttributeSet attrs) {
@@ -308,7 +349,7 @@ public class FastScroll extends FrameLayout {
             }
         }
 
-        if (!allowTrackClicks) {
+        if (!trackClicksAllowed) {
             //Enforces selection to only occur on the handle
             if (yPos < handle.getY() - handle.getPaddingTop() || yPos > handle.getY() + handle.getHeight() + handle.getPaddingBottom()) {
                 return true;
@@ -363,9 +404,60 @@ public class FastScroll extends FrameLayout {
 
         bubble.clearAnimation();
 
-        Log.d(TAG, "updating bubble visibility" + toVisible);
-        FastScrollBubbleVisibilityAnimation animation = new FastScrollBubbleVisibilityAnimation(bubble, toVisible);
-        bubble.startAnimation(animation);
+        Log.d(TAG, "updating bubble visibility " + toVisible);
+        bubble.startAnimation(getBubbleAnimation(bubble, toVisible));
+    }
+
+    protected void updateHandleVisibility(boolean toVisible) {
+        if (requestedHandleVisibility != null && requestedHandleVisibility == toVisible) {
+            return;
+        }
+
+        requestedHandleVisibility = toVisible;
+        handle.clearAnimation();
+
+        Log.d(TAG, "updating handle visibility " + toVisible);
+        handle.startAnimation(getHandleAnimation(handle, toVisible));
+    }
+
+    /**
+     * Handles the functionality to delay the hiding of the
+     * bubble if the bubble is shown
+     */
+    protected void hideBubbleDelayed() {
+        delayHandler.removeCallbacks(bubbleHideRunnable);
+        if (showBubble && !draggingHandle) {
+            delayHandler.postDelayed(bubbleHideRunnable, bubbleHideDelay);
+        }
+    }
+
+    /**
+     * Handles the functionality to delay the hiding of the
+     * handle if allowed
+     */
+    protected void hideHandleDelayed() {
+        delayHandler.removeCallbacks(handleHideRunnable);
+        if (hideHandleAllowed && !draggingHandle) {
+            delayHandler.postDelayed(handleHideRunnable, handleHideDelay);
+        }
+    }
+
+    protected Animation getBubbleAnimation(@NonNull View bubble, final boolean toVisible) {
+        Animation animation = animationProvider != null ? animationProvider.getBubbleAnimation(bubble, toVisible) : null;
+        if (animation == null) {
+            animation = new FastScrollBubbleVisibilityAnimation(bubble, toVisible);
+        }
+
+        return animation;
+    }
+
+    protected Animation getHandleAnimation(@NonNull View handle, final boolean toVisible) {
+        Animation animation = animationProvider != null ? animationProvider.getHandleAnimation(handle, toVisible) : null;
+        if (animation == null) {
+            animation = new FastScrollHandleVisibilityAnimation(handle, toVisible);
+        }
+
+        return animation;
     }
 
     protected Drawable tint(@Nullable Drawable drawable, @ColorInt int color) {
@@ -407,14 +499,41 @@ public class FastScroll extends FrameLayout {
     protected class RecyclerScrollListener extends RecyclerView.OnScrollListener {
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            //Makes sure the handle is shown when scrolling
+            updateHandleVisibility(true);
+            delayHandler.removeCallbacks(handleHideRunnable);
+
             if (handle.isSelected()) {
                 return;
             }
+
+            hideHandleDelayed();
 
             int verticalScrollOffset = recyclerView.computeVerticalScrollOffset();
             int verticalScrollRange = recyclerView.computeVerticalScrollRange();
             float proportion = (float) verticalScrollOffset / ((float) verticalScrollRange - height);
             setBubbleAndHandlePosition(height * proportion);
         }
+    }
+
+    protected class HandleHideRunnable implements Runnable {
+        @Override
+        public void run() {
+            updateHandleVisibility(false);
+        }
+    }
+
+    protected class BubbleHideRunnable implements Runnable {
+        @Override
+        public void run() {
+            updateBubbleVisibility(false);
+        }
+    }
+
+    public interface AnimationProvider {
+        @Nullable
+        Animation getBubbleAnimation(@NonNull View bubble, boolean toVisible);
+        @Nullable
+        Animation getHandleAnimation(@NonNull View handle, boolean toVisible);
     }
 }
