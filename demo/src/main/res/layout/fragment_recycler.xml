@@ -19,6 +19,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:visibility="gone"
+        app:re_bubble_alignment="bottomToTop"
         tools:visibility="visible"/>
 
 </RelativeLayout>

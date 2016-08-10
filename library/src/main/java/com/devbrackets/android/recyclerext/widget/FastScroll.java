@@ -36,6 +36,7 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
  * for the attached {@link android.support.v7.widget.RecyclerView}
  *
  * TODO: Option to hide on short lists
+ * TODO: Smooth scrolling
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
@@ -69,6 +70,8 @@ public class FastScroll extends FrameLayout {
 
     protected int height;
     protected boolean showBubble;
+    @NonNull
+    protected BubbleAlignment bubbleAlignment = BubbleAlignment.TOP;
 
     protected boolean hideHandleAllowed = true;
     protected boolean draggingHandle = false;
@@ -269,6 +272,10 @@ public class FastScroll extends FrameLayout {
         this.animationProvider = animationProvider;
     }
 
+    public void setBubbleAlignment(@NonNull BubbleAlignment gravity) {
+        bubbleAlignment = gravity;
+    }
+
     protected void init(Context context, AttributeSet attrs) {
         LayoutInflater inflater = LayoutInflater.from(context);
         inflater.inflate(R.layout.recyclerext_fast_scroll, this, true);
@@ -305,6 +312,7 @@ public class FastScroll extends FrameLayout {
 
     protected void retrieveBubbleAttributes(TypedArray typedArray) {
         showBubble = typedArray.getBoolean(R.styleable.FastScroll_re_show_bubble, true);
+        bubbleAlignment = BubbleAlignment.get(typedArray.getInt(R.styleable.FastScroll_re_bubble_alignment, 3));
 
         int textColor = getColor(R.color.recyclerext_fast_scroll_bubble_text_color_default);
         textColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_text_color, textColor);
@@ -382,11 +390,39 @@ public class FastScroll extends FrameLayout {
 
     protected void setBubbleAndHandlePosition(float y) {
         int handleHeight = handle.getHeight();
-        handle.setY(getValueInRange(0, height - handleHeight, (int) (y - handleHeight / 2)));
+        float handleY = getValueInRange(0, height - handleHeight, (int) (y - handleHeight / 2));
+        handle.setY(handleY);
 
-        if (bubble != null) {
-            int bubbleHeight = bubble.getHeight();
-            bubble.setY(getValueInRange(0, height - bubbleHeight - handleHeight / 2, (int) (y - bubbleHeight)));
+        if (showBubble) {
+            setBubblePosition(handleY, y);
+        }
+    }
+
+    protected void setBubblePosition(float handleY, float requestedY) {
+        int maxY = height - bubble.getHeight();
+
+        float handleCenter = handleY + (handle.getHeight() / 2);
+        float handleBottom = handleY + handle.getHeight();
+
+        switch (bubbleAlignment) {
+            case TOP: //TOP_TO_TOP
+                bubble.setY(getValueInRange(0, maxY, (int)handleY));
+                break;
+            case CENTER: //CENTER_TO_CENTER
+                bubble.setY(getValueInRange(0, maxY, (int)(handleCenter - (bubble.getHeight() / 2))));
+                break;
+            case BOTTOM: //BOTTOM_TO_BOTTOM
+                bubble.setY(getValueInRange(0, maxY, (int)(handleBottom - bubble.getHeight())));
+                break;
+            case BOTTOM_TO_TOP: //Bubble bottom to handle top
+                bubble.setY(getValueInRange(0, maxY, (int)(handleY - bubble.getHeight())));
+                break;
+            case TOP_TO_BOTTOM: //Bubble top to handle bottom
+                bubble.setY(getValueInRange(0, maxY, (int)handleBottom));
+                break;
+            case BOTTOM_TO_CENTER: //Bubble bottom to handle center
+                bubble.setY(getValueInRange(0, maxY, (int)(handleCenter - bubble.getHeight())));
+                break;
         }
     }
 
@@ -535,5 +571,18 @@ public class FastScroll extends FrameLayout {
         Animation getBubbleAnimation(@NonNull View bubble, boolean toVisible);
         @Nullable
         Animation getHandleAnimation(@NonNull View handle, boolean toVisible);
+    }
+
+    public enum BubbleAlignment {
+        TOP,
+        CENTER,
+        BOTTOM,
+        BOTTOM_TO_TOP,
+        TOP_TO_BOTTOM,
+        BOTTOM_TO_CENTER;
+
+        private static BubbleAlignment get(int index) {
+            return BubbleAlignment.values()[index];
+        }
     }
 }
