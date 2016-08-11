@@ -9,6 +9,7 @@ RecyclerView.
  * Header Adapters (Sticky and non)
  * Enhanced LayoutManagers
  * Expanded ViewHolders
+ * Quick Scrolling (FastScroll)
 
 
 Website And Documentation
@@ -31,7 +32,7 @@ repositories {
 
 dependencies {
     //...
-    compile 'com.devbrackets.android:recyclerext:1.2.0'
+    compile 'com.devbrackets.android:recyclerext:1.3.0'
 }
 ```
 
