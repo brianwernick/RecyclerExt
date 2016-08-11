@@ -218,72 +218,246 @@ public class FastScroll extends FrameLayout {
         this.trackClicksAllowed = allowed;
     }
 
+    /**
+     * Specifies if the drag handle can hide after a short delay (see {@link #setHandleHideDelay(long)})
+     * after scrolling has completely stopped
+     *
+     * @param allowed {@code true} if the drag handle can hide [default: {@code true}]
+     */
     public void setHideHandleAllowed(boolean allowed) {
         this.hideHandleAllowed = allowed;
     }
 
+    /**
+     * Sets the delay used when hiding the drag handle, which occurs after scrolling
+     * has completely stopped.
+     *
+     * @param delayMilliseconds the delay to hide the drag handle [default: {@code 1_000}]
+     */
     public void setHandleHideDelay(long delayMilliseconds) {
         this.handleHideDelay = delayMilliseconds;
     }
 
+    /**
+     * Retrieves the delay used when hiding the drag handle which occurs after scrolling
+     * has completely stopped.
+     *
+     * @return The millisecond delay used for hiding the drag handle [default: {@code 1_000}]
+     */
     public long getHandleHideDelay() {
         return handleHideDelay;
     }
 
+    /**
+     * Sets the delay used when hiding the bubble which occurs after the drag handle
+     * is released
+     *
+     * @param delayMilliseconds The delay to hide the bubble
+     */
     public void setBubbleHideDelay(long delayMilliseconds) {
         this.bubbleHideDelay = delayMilliseconds;
     }
 
+    /**
+     * Retrieves the delay used when hiding the bubble (occurs after the drag handle
+     * is released)
+     *
+     * @return The millisecond delay used for hiding the bubble
+     */
     public long getBubbleHideDelay() {
         return bubbleHideDelay;
     }
 
+    /**
+     * Sets the text color for the popup bubble
+     * This can also be specified with {@code re_bubble_text_color} in xml
+     *
+     * @param colorRes The resource id for the color
+     */
     public void setTextColorRes(@ColorRes int colorRes) {
         setTextColor(getColor(colorRes));
     }
 
+    /**
+     * Sets the text color for the popup bubble
+     * This can also be specified with {@code re_bubble_text_color} in xml
+     *
+     * @param color The integer representation for the color
+     */
     public void setTextColor(@ColorInt int color) {
         bubble.setTextColor(color);
     }
 
+    /**
+     * Sets the text size of the popup bubble via the {@code dimeRes}
+     * This can also be specified with {@code re_bubble_text_size} in xml
+     *
+     * @param dimenRes The dimension resource for the text size
+     */
     public void setTextSize(@DimenRes int dimenRes) {
         bubble.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimensionPixelSize(dimenRes));
     }
 
+    /**
+     * Sets the text size of the popup bubble, interpreted as "scaled pixel" units.
+     * This size is adjusted based on the current density and user font size preference.
+     * This can also be specified with {@code re_bubble_text_size} in xml
+     *
+     * @param size The scaled pixel size
+     */
     public void setTextSize(float size) {
         bubble.setTextSize(size);
     }
 
+    /**
+     * Tints the popup bubble with the specified color resource, this is different from the
+     * standard view {@code setBackgroundColorRes()} in that it will only tint the background
+     * drawable for the bubble (see {@link #setBubbleDrawable(Drawable)}).
+     * This can also be specified with {@code re_bubble_color} in xml
+     *
+     * @param colorRes The resource id for the color to tint the popup bubble with
+     * @deprecated use {@link #setBubbleTintRes(int)} instead
+     */
+    @Deprecated
     public void setBubbleColorRes(@ColorRes int colorRes) {
         setBubbleColor(getColor(colorRes));
     }
 
+    /**
+     * Tints the popup bubble background (see {@link #setBubbleDrawable(Drawable)}) with the
+     * color defined by {@code colorRes}.
+     * This can also be specified with {@code re_bubble_color} in xml
+     *
+     * @param colorRes The resource id for the color to tint the popup bubble with
+     */
+    public void setBubbleTintRes(@ColorRes int colorRes) {
+        setBubbleTint(getColor(colorRes));
+    }
+
+    /**
+     * Tints the popup bubble with the specified color, this is different from the
+     * standard view {@code setBackgroundColor()} in that it will only tint the background
+     * drawable for the bubble (see {@link #setBubbleDrawable(Drawable)}).
+     * This can also be specified with {@code re_bubble_color} in xml
+     *
+     * @param color The integer representation for the tint color
+     * @deprecated use {@link #setBubbleTint(int)} instead
+     */
+    @Deprecated
     public void setBubbleColor(@ColorInt int color) {
         bubble.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_bubble), color));
     }
 
+    /**
+     * Tints the popup bubble background (see {@link #setBubbleDrawable(Drawable)}) with the
+     * specified color.
+     * This can also be specified with {@code re_bubble_color} in xml
+     *
+     * @param tint The integer representation for the tint color
+     */
+    public void setBubbleTint(@ColorInt int tint) {
+        bubble.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_bubble), tint));
+    }
+
+    /**
+     * Sets the background drawable for the popup bubble.
+     * This can also be specified with {@code re_bubble_background} in xml
+     *
+     * @param drawable The drawable for the popup bubble background
+     */
     public void setBubbleDrawable(Drawable drawable) {
         bubble.setBackground(drawable);
     }
 
+    /**
+     * Tints the drag handle with the specified color resource, this is different from the
+     * standard view {@code setBackgroundColorRes()} in that it will only tint the background
+     * drawable for the handle (see {@link #setHandleDrawable(Drawable)}).
+     * This can also be specified with {@code re_handle_color} in xml
+     *
+     * @param colorRes The resource id for the color to tint the drag handle with
+     * @deprecated use {@link #setHandleTintRes(int)} instead
+     */
+    @Deprecated
     public void setHandleColorRes(@ColorRes int colorRes) {
         setHandleColor(getColor(colorRes));
     }
 
+    /**
+     * Tints the drag handle background (see {@link #setHandleDrawable(Drawable)}) with the
+     * color defined by {@code colorRes}.
+     * This can also be specified with {@code re_handle_color} in xml
+     *
+     * @param colorRes The resource id for the color to tint the drag handle with
+     */
+    public void setHandleTintRes(@ColorRes int colorRes) {
+        setHandleTint(getColor(colorRes));
+    }
+
+    /**
+     * Tints the drag handle with the specified color, this is different from the
+     * standard view {@code setBackgroundColor()} in that it will only tint the background
+     * drawable for the handle (see {@link #setHandleDrawable(Drawable)}).
+     * This can also be specified with {@code re_handle_color} in xml
+     *
+     * @param color The integer representation for the tint color
+     * @deprecated use {@link #setHandleTint(int)} instead
+     */
+    @Deprecated
     public void setHandleColor(@ColorInt int color) {
         handle.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_handle), color));
     }
 
+    /**
+     * Tints the drag handle background (see {@link #setHandleDrawable(Drawable)} with the specified color.
+     * This can also be specified with {@code re_handle_color} in xml
+     *
+     * @param tint The integer representation for the tint color
+     */
+    public void setHandleTint(@ColorInt int tint) {
+        handle.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_handle), tint));
+    }
+
+    /**
+     * Sets the drawable for the drag handle.
+     * This can also be specified with {@code re_handle_background} in xml
+     *
+     * @param drawable The drawable for the drag handle background
+     */
     public void setHandleDrawable(Drawable drawable) {
         handle.setBackground(drawable);
     }
 
+    /**
+     * Sets the provider that allows the animations for the popup bubble and drag handle
+     * to be customized or overridden
+     *
+     * @param animationProvider The animation provider for the popup bubble and drag handle
+     */
     public void setAnimationProvider(@Nullable AnimationProvider animationProvider) {
         this.animationProvider = animationProvider;
     }
 
-    public void setBubbleAlignment(@NonNull BubbleAlignment gravity) {
-        bubbleAlignment = gravity;
+    /**
+     * Specifies the alignment the popup bubble has in relation to the drag handle,
+     * see {@link BubbleAlignment} for more details
+     * This can also be specified with {@code re_bubble_alignment} in xml
+     *
+     * @param alignment The alignment type
+     */
+    public void setBubbleAlignment(@NonNull BubbleAlignment alignment) {
+        bubbleAlignment = alignment;
+    }
+
+    /**
+     * Specifies the amount of time it takes for the attached {@link RecyclerView}
+     * (see {@link #attach(RecyclerView)} to quickly scroll between two points when
+     * dragging the handle.
+     *
+     * @param milliseconds The duration for the smooth scroll animation [default: {@value FastSmoothScroller#DEFAULT_TOTAL_SCROLL_TIME}]
+     */
+    public void setSmoothScrollDuration(int milliseconds) {
+        fastSmoothScroller.setTotalScrollTime(milliseconds);
     }
 
     /**
@@ -683,7 +857,7 @@ public class FastScroll extends FrameLayout {
      * as the time it takes to scroll between the two points.
      */
     protected class FastSmoothScroller extends LinearSmoothScroller {
-        protected static final int DEFAULT_TOTAL_SCROLL_TIME = 50; //Milliseconds
+        protected static final int DEFAULT_TOTAL_SCROLL_TIME = 33; //Milliseconds
         protected int totalScrollTime = DEFAULT_TOTAL_SCROLL_TIME;
 
         public FastSmoothScroller(Context context) {
