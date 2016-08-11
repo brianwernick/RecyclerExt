@@ -7,6 +7,14 @@
         <attr name="re_bubble_background" format="reference" />
         <attr name="re_bubble_text_color" format="color" />
         <attr name="re_bubble_text_size" format="dimension" />
+        <attr name="re_bubble_alignment" format="enum">
+            <enum name="top" value="0"/>
+            <enum name="center" value="1"/>
+            <enum name="bottom" value="2"/>
+            <enum name="bottomToTop" value="3"/>
+            <enum name="topToBottom" value="4"/>
+            <enum name="bottomToCenter" value="5"/>
+        </attr>
 
         <attr name="re_handle_color" format="color" />
         <attr name="re_handle_background" format="reference" />
