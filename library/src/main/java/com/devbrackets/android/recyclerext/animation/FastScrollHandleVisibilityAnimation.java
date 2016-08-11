@@ -1,12 +1,12 @@
 package com.devbrackets.android.recyclerext.animation;
 
 import android.view.View;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 
 public class FastScrollHandleVisibilityAnimation extends AnimationSet {
-    private static final int DURATION = 333; //milliseconds
+    private static final int DURATION = 250; //milliseconds
     private final boolean toVisible;
 
     public FastScrollHandleVisibilityAnimation(View handle, boolean toVisible) {
@@ -17,12 +17,14 @@ public class FastScrollHandleVisibilityAnimation extends AnimationSet {
     }
 
     private void setup(View handle) {
-        float startAlpha = toVisible ? 0 : 1;
-        float endAlpha = toVisible ? 1 : 0;
+        float xDelta = handle.getWidth();
 
-        AlphaAnimation alphaAnimation = new AlphaAnimation(startAlpha, endAlpha);
-        alphaAnimation.setDuration(DURATION);
-        addAnimation(alphaAnimation);
+        float startPos = toVisible ? xDelta : 0F;
+        float endPos = toVisible ? 0F : xDelta;
+
+        TranslateAnimation translateAnimation = new TranslateAnimation(startPos, endPos, 0F, 0F);
+        translateAnimation.setDuration(DURATION);
+        addAnimation(translateAnimation);
 
         setAnimationListener(new HandleAnimationListener(handle, toVisible));
 
