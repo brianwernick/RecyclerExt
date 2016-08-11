@@ -3,6 +3,7 @@ package com.devbrackets.android.recyclerext.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -16,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -36,7 +38,6 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
  * for the attached {@link android.support.v7.widget.RecyclerView}
  *
  * TODO: Option to hide on short lists
- * TODO: Smooth scrolling
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
@@ -54,6 +55,7 @@ public class FastScroll extends FrameLayout {
     protected PositionSupportTextView bubble;
 
     protected RecyclerView recyclerView;
+    protected FastSmoothScroller fastSmoothScroller;
 
     @NonNull
     protected RecyclerScrollListener scrollListener = new RecyclerScrollListener();
@@ -286,6 +288,7 @@ public class FastScroll extends FrameLayout {
         bubble.setVisibility(View.GONE);
 
         readAttributes(context, attrs);
+        fastSmoothScroller = new FastSmoothScroller(context);
     }
 
     /**
@@ -379,13 +382,18 @@ public class FastScroll extends FrameLayout {
             proportion = y / (float) height;
         }
 
-        int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
-        ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(targetPos, 0);
+        int position = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
+        smoothScrollToPosition(position);
 
         if (showBubble && popupCallbacks != null) {
-            String bubbleText = popupCallbacks.getFastScrollPopupText(targetPos);
+            String bubbleText = popupCallbacks.getFastScrollPopupText(position);
             bubble.setText(bubbleText);
         }
+    }
+
+    protected void smoothScrollToPosition(int position) {
+        fastSmoothScroller.setTargetPosition(position);
+        recyclerView.getLayoutManager().startSmoothScroll(fastSmoothScroller);
     }
 
     protected void setBubbleAndHandlePosition(float y) {
@@ -549,6 +557,30 @@ public class FastScroll extends FrameLayout {
             int verticalScrollRange = recyclerView.computeVerticalScrollRange();
             float proportion = (float) verticalScrollOffset / ((float) verticalScrollRange - height);
             setBubbleAndHandlePosition(height * proportion);
+        }
+    }
+
+    protected class FastSmoothScroller extends LinearSmoothScroller {
+        protected static final int DEFAULT_TOTAL_SCROLL_TIME = 50; //Milliseconds
+        protected int totalScrollTime = DEFAULT_TOTAL_SCROLL_TIME;
+
+        public FastSmoothScroller(Context context) {
+            super(context);
+        }
+
+        public FastSmoothScroller(Context context, int totalScrollTime) {
+            this(context);
+            this.totalScrollTime = totalScrollTime;
+        }
+
+        @Override
+        public PointF computeScrollVectorForPosition(int targetPosition) {
+            return ((LinearLayoutManager)recyclerView.getLayoutManager()).computeScrollVectorForPosition(targetPosition);
+        }
+
+        @Override
+        protected int calculateTimeForScrolling(int dx) {
+            return totalScrollTime;
         }
     }
 
