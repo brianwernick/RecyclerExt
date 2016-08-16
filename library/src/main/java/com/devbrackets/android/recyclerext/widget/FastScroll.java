@@ -3,7 +3,6 @@ package com.devbrackets.android.recyclerext.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -16,8 +15,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -37,12 +34,19 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
  * A class that provides the functionality of a fast scroll
  * for the attached {@link android.support.v7.widget.RecyclerView}
  *
- * TODO: Option to hide on short lists
+ * TODO:
+ *  Options
+ *      * Hide on short lists
+ *      * Snap to item tops (when possible)
+ *      * Snap to first item in section (dependent on bubble text, see now launcher app drawer)
+ *
+ *  Optimizations / Enhancements
+ *      * Update the popup callbacks to use ids as well (so we only ask for text when the id changes)
+ *      * Add wiggle room to the finger position on the drag handle?
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
     private static final String TAG = "FastScroll";
-    protected static final int TRACK_SNAP_RANGE = 5;
 
     @Nullable
     protected FastScrollPopupCallbacks popupCallbacks;
@@ -51,7 +55,6 @@ public class FastScroll extends FrameLayout {
     protected PositionSupportTextView bubble;
 
     protected RecyclerView recyclerView;
-    protected FastSmoothScroller fastSmoothScroller;
 
     @NonNull
     protected RecyclerScrollListener scrollListener = new RecyclerScrollListener();
@@ -129,6 +132,9 @@ public class FastScroll extends FrameLayout {
                 if (ignoreTouchDown(event.getX(), event.getY())) {
                     return false;
                 }
+
+                delayHandler.removeCallbacks(handleHideRunnable);
+                updateHandleVisibility(true);
 
                 if (bubble.getVisibility() != VISIBLE) {
                     updateBubbleVisibility(true);
@@ -454,10 +460,12 @@ public class FastScroll extends FrameLayout {
      * (see {@link #attach(RecyclerView)} to quickly scroll between two points when
      * dragging the handle.
      *
-     * @param milliseconds The duration for the smooth scroll animation [default: {@value FastSmoothScroller#DEFAULT_TOTAL_SCROLL_TIME}]
+     * @param milliseconds The duration for the smooth scroll animation
+     * @deprecated smooth scroll is handled differently now, no duration can be specified
      */
+    @Deprecated
     public void setSmoothScrollDuration(int milliseconds) {
-        fastSmoothScroller.setTotalScrollTime(milliseconds);
+        //NO OP
     }
 
     /**
@@ -477,7 +485,6 @@ public class FastScroll extends FrameLayout {
         bubble.setVisibility(View.GONE);
 
         readAttributes(context, attrs);
-        fastSmoothScroller = new FastSmoothScroller(context);
     }
 
     /**
@@ -588,22 +595,25 @@ public class FastScroll extends FrameLayout {
      * @param y The y coordinate to find the adapter position for
      */
     protected void setRecyclerViewPosition(float y) {
-        float proportion;
-        int itemCount = recyclerView.getAdapter().getItemCount();
-
-        //Boxes the percent
-        if (handle.getY() == 0) {
-            proportion = 0f;
-        } else if (handle.getY() + handle.getHeight() >= height - TRACK_SNAP_RANGE) {
-            proportion = 1f;
+        //Boxes the ratio between handleCenter and height - handleCenter
+        float ratio;
+        int halfHandle = handle.getHeight() / 2;
+        if (y <= halfHandle) {
+            ratio = 0;
+        } else if (y >= (height - halfHandle)) {
+            ratio = 1;
         } else {
-            proportion = y / (float) height;
+            ratio = (y - halfHandle) / (height - handle.getHeight());
         }
 
-        int position = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
-        smoothScrollToPosition(position);
+        //Performs the distance and scrolling
+        scrollToLocation(ratio);
 
+        //Displays the popup bubble when enabled
         if (showBubble && popupCallbacks != null) {
+            int itemCount = recyclerView.getAdapter().getItemCount();
+            int position = getValueInRange(0, itemCount - 1, (int) (ratio * itemCount));
+
             String bubbleText = popupCallbacks.getFastScrollPopupText(position);
             bubble.setText(bubbleText);
         }
@@ -613,11 +623,14 @@ public class FastScroll extends FrameLayout {
      * Informs the {@link #recyclerView} that we need to smoothly scroll
      * to the requested position.
      *
-     * @param position The adapter position to scroll to
+     * @param ratio The scroll location as a ratio of the total in the range [0, 1]
      */
-    protected void smoothScrollToPosition(int position) {
-        fastSmoothScroller.setTargetPosition(position);
-        recyclerView.getLayoutManager().startSmoothScroll(fastSmoothScroller);
+    protected void scrollToLocation(float ratio) {
+        int scrollRange = recyclerView.computeVerticalScrollRange();
+        if (scrollRange > 0) {
+            int deltaY = (int) (ratio * scrollRange) - recyclerView.computeVerticalScrollOffset();
+            recyclerView.scrollBy(0, deltaY);
+        }
     }
 
     /**
@@ -847,41 +860,6 @@ public class FastScroll extends FrameLayout {
             int verticalScrollRange = recyclerView.computeVerticalScrollRange();
             float proportion = (float) verticalScrollOffset / ((float) verticalScrollRange - height);
             setBubbleAndHandlePosition(height * proportion);
-        }
-    }
-
-    /**
-     * Handles the calculations and overall functionality of smoothly scrolling
-     * between the current position and the requested position when dragging
-     * the handle. By default this will use {@value DEFAULT_TOTAL_SCROLL_TIME}
-     * as the time it takes to scroll between the two points.
-     */
-    protected class FastSmoothScroller extends LinearSmoothScroller {
-        protected static final int DEFAULT_TOTAL_SCROLL_TIME = 33; //Milliseconds
-        protected int totalScrollTime = DEFAULT_TOTAL_SCROLL_TIME;
-
-        public FastSmoothScroller(Context context) {
-            super(context);
-        }
-
-        /**
-         * Sets the time it takes to scroll between the current position and
-         * the requested position when dragging the handle
-         *
-         * @param milliseconds The time in milliseconds to scroll [default: {@value DEFAULT_TOTAL_SCROLL_TIME}]
-         */
-        public void setTotalScrollTime(int milliseconds) {
-            this.totalScrollTime = milliseconds;
-        }
-
-        @Override
-        public PointF computeScrollVectorForPosition(int targetPosition) {
-            return ((LinearLayoutManager)recyclerView.getLayoutManager()).computeScrollVectorForPosition(targetPosition);
-        }
-
-        @Override
-        protected int calculateTimeForScrolling(int dx) {
-            return totalScrollTime;
         }
     }
 
