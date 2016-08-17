@@ -15,6 +15,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -525,7 +526,7 @@ public class FastScroll extends FrameLayout {
         int textSize = getResources().getDimensionPixelSize(R.dimen.recyclerext_fast_scroll_bubble_text_size_default);
         textSize = typedArray.getDimensionPixelSize(R.styleable.FastScroll_re_bubble_text_size, textSize);
 
-        Drawable backgroundDrawable = typedArray.getDrawable(R.styleable.FastScroll_re_bubble_background);
+        Drawable backgroundDrawable = getDrawable(typedArray, R.styleable.FastScroll_re_bubble_background);
         int backgroundColor = getColor(R.color.recyclerext_fast_scroll_bubble_color_default);
         backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_color, backgroundColor);
 
@@ -545,7 +546,7 @@ public class FastScroll extends FrameLayout {
      * @param typedArray The array of attributes to use
      */
     protected void retrieveHandleAttributes(TypedArray typedArray) {
-        Drawable backgroundDrawable = typedArray.getDrawable(R.styleable.FastScroll_re_handle_background);
+        Drawable backgroundDrawable = getDrawable(typedArray, R.styleable.FastScroll_re_handle_background);
         int backgroundColor = getColor(R.color.recyclerext_fast_scroll_handle_color_default);
         backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_handle_color, backgroundColor);
 
@@ -555,6 +556,7 @@ public class FastScroll extends FrameLayout {
 
         handle.setBackground(backgroundDrawable);
     }
+
 
     /**
      * Determines if the {@link MotionEvent#ACTION_DOWN} event should be ignored.
@@ -792,18 +794,35 @@ public class FastScroll extends FrameLayout {
 
     /**
      * A utility method to retrieve a drawable that correctly abides by the
-     * theme in Lollpop (API 23) +
+     * theme in Lollipop (API 23) +
      *
-     * @param res The resource id for the drawable
-     * @return The drawable associated with {@code res}
+     * @param resourceId The resource id for the drawable
+     * @return The drawable associated with {@code resourceId}
      */
-    protected Drawable getDrawable(@DrawableRes int res) {
+    @Nullable
+    protected Drawable getDrawable(@DrawableRes int resourceId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return getResources().getDrawable(res, getContext().getTheme());
+            return getResources().getDrawable(resourceId, getContext().getTheme());
         }
 
-        //noinspection deprecation
-        return getResources().getDrawable(res);
+        return AppCompatDrawableManager.get().getDrawable(getContext(), resourceId);
+    }
+
+    /**
+     * Retrieves the specified image drawable in a manner that will correctly
+     * wrap VectorDrawables on platforms that don't natively support them
+     *
+     * @param typedArray The TypedArray containing the attributes for the view
+     * @param index The index in the {@code typedArray} for the drawable
+     */
+    @Nullable
+    protected Drawable getDrawable(TypedArray typedArray, int index) {
+        int imageResId = typedArray.getResourceId(index, 0);
+        if (imageResId == 0) {
+            return null;
+        }
+
+        return AppCompatDrawableManager.get().getDrawable(getContext(), imageResId);
     }
 
     /**
