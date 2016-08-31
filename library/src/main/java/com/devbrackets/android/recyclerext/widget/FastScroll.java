@@ -43,7 +43,6 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
  *
  *  Optimizations / Enhancements
  *      * Update the popup callbacks to use ids as well (so we only ask for text when the id changes)
- *      * Add wiggle room to the finger position on the drag handle?
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
@@ -78,6 +77,9 @@ public class FastScroll extends FrameLayout {
     protected boolean hideHandleAllowed = true;
     protected boolean draggingHandle = false;
     protected boolean trackClicksAllowed = false;
+
+    // The offset for the finger from the center of the drag handle
+    protected float fingerCenterOffset;
 
     protected long handleHideDelay = 1_000; //Milliseconds
     protected long bubbleHideDelay = 0; //Milliseconds
@@ -142,12 +144,13 @@ public class FastScroll extends FrameLayout {
                 }
 
                 draggingHandle = true;
+                fingerCenterOffset = (handle.getY() + (handle.getHeight() / 2)) - event.getY();
                 handle.setSelected(true);
                 //Purposefully falls through
 
             case MotionEvent.ACTION_MOVE:
-                setBubbleAndHandlePosition(event.getY());
-                setRecyclerViewPosition(event.getY());
+                setBubbleAndHandlePosition(event.getY() + fingerCenterOffset);
+                setRecyclerViewPosition(event.getY() + fingerCenterOffset);
                 return true;
 
             case MotionEvent.ACTION_UP:
