@@ -875,10 +875,10 @@ public class FastScroll extends FrameLayout {
 
             hideHandleDelayed();
 
-            int verticalScrollOffset = recyclerView.computeVerticalScrollOffset();
-            int verticalScrollRange = recyclerView.computeVerticalScrollRange();
-            float proportion = (float) verticalScrollOffset / ((float) verticalScrollRange - height);
-            setBubbleAndHandlePosition(height * proportion);
+            float ratio = (float)recyclerView.computeVerticalScrollOffset() / (float)recyclerView.computeVerticalScrollRange();
+            float halfHandleHeight = (handle.getHeight() / 2);
+
+            setBubbleAndHandlePosition((height - halfHandleHeight) * ratio + halfHandleHeight);
         }
     }
 
