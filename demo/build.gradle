@@ -6,7 +6,7 @@ repositories {
 }
 
 ext {
-    supportLibVersion = "24.1.1"
+    supportLibVersion = "24.2.1"
 }
 
 dependencies {
@@ -19,7 +19,7 @@ dependencies {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.2"
 
     lintOptions {
         abortOnError false
@@ -27,7 +27,7 @@ android {
 
     defaultConfig {
         applicationId "com.devbrackets.android.recyclerextdemo"
-        minSdkVersion 7
+        minSdkVersion 9
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
