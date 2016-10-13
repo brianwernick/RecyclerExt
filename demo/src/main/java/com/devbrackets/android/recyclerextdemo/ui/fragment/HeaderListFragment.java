@@ -2,6 +2,8 @@ package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -116,8 +118,14 @@ public class HeaderListFragment extends Fragment {
         }
 
         @Override
-        public String getFastScrollPopupText(int position) {
-            return getHeaderId(getChildPosition(position)) + "0s";
+        public long getSectionId(@IntRange(from = 0) int position) {
+            return (long)(getChildPosition(position) / 10);
+        }
+
+        @NonNull
+        @Override
+        public String getPopupText(int position, long sectionId) {
+            return sectionId + "0s";
         }
     }
 }
