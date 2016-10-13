@@ -194,15 +194,6 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
         return 0;
     }
 
-    /**
-     * @deprecated use {@link #getChildPosition(int)}
-     */
-    @Override
-    @Deprecated
-    public int determineChildPosition(int viewPosition) {
-        return getChildPosition(viewPosition);
-    }
-
     @Override
     public int getChildPosition(int adapterPosition) {
         return core.getChildPosition(adapterPosition);

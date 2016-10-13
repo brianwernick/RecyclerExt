@@ -320,20 +320,6 @@ public class FastScroll extends FrameLayout {
     }
 
     /**
-     * Tints the popup bubble with the specified color resource, this is different from the
-     * standard view {@code setBackgroundColorRes()} in that it will only tint the background
-     * drawable for the bubble (see {@link #setBubbleDrawable(Drawable)}).
-     * This can also be specified with {@code re_bubble_color} in xml
-     *
-     * @param colorRes The resource id for the color to tint the popup bubble with
-     * @deprecated use {@link #setBubbleTintRes(int)} instead
-     */
-    @Deprecated
-    public void setBubbleColorRes(@ColorRes int colorRes) {
-        setBubbleColor(getColor(colorRes));
-    }
-
-    /**
      * Tints the popup bubble background (see {@link #setBubbleDrawable(Drawable)}) with the
      * color defined by {@code colorRes}.
      * This can also be specified with {@code re_bubble_color} in xml
@@ -342,20 +328,6 @@ public class FastScroll extends FrameLayout {
      */
     public void setBubbleTintRes(@ColorRes int colorRes) {
         setBubbleTint(getColor(colorRes));
-    }
-
-    /**
-     * Tints the popup bubble with the specified color, this is different from the
-     * standard view {@code setBackgroundColor()} in that it will only tint the background
-     * drawable for the bubble (see {@link #setBubbleDrawable(Drawable)}).
-     * This can also be specified with {@code re_bubble_color} in xml
-     *
-     * @param color The integer representation for the tint color
-     * @deprecated use {@link #setBubbleTint(int)} instead
-     */
-    @Deprecated
-    public void setBubbleColor(@ColorInt int color) {
-        bubble.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_bubble), color));
     }
 
     /**
@@ -380,20 +352,6 @@ public class FastScroll extends FrameLayout {
     }
 
     /**
-     * Tints the drag handle with the specified color resource, this is different from the
-     * standard view {@code setBackgroundColorRes()} in that it will only tint the background
-     * drawable for the handle (see {@link #setHandleDrawable(Drawable)}).
-     * This can also be specified with {@code re_handle_color} in xml
-     *
-     * @param colorRes The resource id for the color to tint the drag handle with
-     * @deprecated use {@link #setHandleTintRes(int)} instead
-     */
-    @Deprecated
-    public void setHandleColorRes(@ColorRes int colorRes) {
-        setHandleColor(getColor(colorRes));
-    }
-
-    /**
      * Tints the drag handle background (see {@link #setHandleDrawable(Drawable)}) with the
      * color defined by {@code colorRes}.
      * This can also be specified with {@code re_handle_color} in xml
@@ -402,20 +360,6 @@ public class FastScroll extends FrameLayout {
      */
     public void setHandleTintRes(@ColorRes int colorRes) {
         setHandleTint(getColor(colorRes));
-    }
-
-    /**
-     * Tints the drag handle with the specified color, this is different from the
-     * standard view {@code setBackgroundColor()} in that it will only tint the background
-     * drawable for the handle (see {@link #setHandleDrawable(Drawable)}).
-     * This can also be specified with {@code re_handle_color} in xml
-     *
-     * @param color The integer representation for the tint color
-     * @deprecated use {@link #setHandleTint(int)} instead
-     */
-    @Deprecated
-    public void setHandleColor(@ColorInt int color) {
-        handle.setBackground(tint(getDrawable(R.drawable.recyclerext_fast_scroll_handle), color));
     }
 
     /**
@@ -457,19 +401,6 @@ public class FastScroll extends FrameLayout {
      */
     public void setBubbleAlignment(@NonNull BubbleAlignment alignment) {
         bubbleAlignment = alignment;
-    }
-
-    /**
-     * Specifies the amount of time it takes for the attached {@link RecyclerView}
-     * (see {@link #attach(RecyclerView)} to quickly scroll between two points when
-     * dragging the handle.
-     *
-     * @param milliseconds The duration for the smooth scroll animation
-     * @deprecated smooth scroll is handled differently now, no duration can be specified
-     */
-    @Deprecated
-    public void setSmoothScrollDuration(int milliseconds) {
-        //NO OP
     }
 
     /**
