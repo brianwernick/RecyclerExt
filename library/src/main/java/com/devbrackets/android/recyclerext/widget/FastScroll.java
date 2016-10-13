@@ -12,6 +12,7 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -37,16 +38,14 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
  *
  * TODO:
  *  Options
- *      * Hide on short lists
+ *      * Hide on short lists (listView only shows the quick scroll when the total scroll height is >= 4x the visible height)
  *      * Snap to item tops (when possible)
  *      * Snap to first item in section (dependent on bubble text, see now launcher app drawer)
- *
- *  Optimizations / Enhancements
- *      * Update the popup callbacks to use ids as well (so we only ask for text when the id changes)
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
     private static final String TAG = "FastScroll";
+    public static final long INVALID_POPUP_ID = -1;
 
     @Nullable
     protected FastScrollPopupCallbacks popupCallbacks;
@@ -85,6 +84,7 @@ public class FastScroll extends FrameLayout {
     protected long bubbleHideDelay = 0; //Milliseconds
 
     protected Boolean requestedHandleVisibility;
+    protected long currentSectionId = INVALID_POPUP_ID;
 
     public FastScroll(Context context) {
         super(context);
@@ -619,8 +619,12 @@ public class FastScroll extends FrameLayout {
             int itemCount = recyclerView.getAdapter().getItemCount();
             int position = getValueInRange(0, itemCount - 1, (int) (ratio * itemCount));
 
-            String bubbleText = popupCallbacks.getFastScrollPopupText(position);
-            bubble.setText(bubbleText);
+            long sectionId = popupCallbacks.getSectionId(position);
+            if (currentSectionId != sectionId) {
+                currentSectionId = sectionId;
+                String bubbleText = popupCallbacks.getPopupText(position, sectionId);
+                bubble.setText(bubbleText);
+            }
         }
     }
 
@@ -787,6 +791,7 @@ public class FastScroll extends FrameLayout {
      * @param color The color to tint the {@code drawable} with
      * @return The tinted {@code drawable}
      */
+    @Nullable
     protected Drawable tint(@Nullable Drawable drawable, @ColorInt int color) {
         if (drawable != null) {
             drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY));
@@ -938,7 +943,27 @@ public class FastScroll extends FrameLayout {
      * when enabled.
      */
     public interface FastScrollPopupCallbacks {
-        String getFastScrollPopupText(int position);
+        /**
+         * Called when the section id specified with {@link #getSectionId(int)} changes,
+         * indicating the popup text needs to be changed. This will only be called if
+         * {@link #setShowBubble(boolean)} is true.
+         *
+         * @param position The position for the item with the {@code sectionId}
+         * @param sectionId The id for the section the text is associated with
+         * @return The text for the bubble
+         */
+        @NonNull
+        String getPopupText(int position, long sectionId);
+
+        /**
+         * Called for each item as the list is scrolled via the FastScroll to determine what the
+         * items section is. This will only be called if {@link #setShowBubble(boolean)} is true.
+         *
+         * @param position The position to determine the section id for
+         * @return The id associated with the section the {@code position} is a member of
+         */
+        @IntRange(from = INVALID_POPUP_ID)
+        long getSectionId(@IntRange(from = 0) int position);
     }
 
     /**

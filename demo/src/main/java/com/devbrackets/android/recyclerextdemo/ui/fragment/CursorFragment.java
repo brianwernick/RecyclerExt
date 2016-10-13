@@ -3,6 +3,8 @@ package com.devbrackets.android.recyclerextdemo.ui.fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,8 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter;
+import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
@@ -85,8 +87,14 @@ public class CursorFragment extends Fragment {
         }
 
         @Override
-        public String getFastScrollPopupText(int position) {
-            return "" + (position / 10);
+        public long getSectionId(@IntRange(from = 0) int position) {
+            return (long)(position / 10);
+        }
+
+        @NonNull
+        @Override
+        public String getPopupText(int position, long sectionId) {
+            return "" + sectionId;
         }
     }
 }
