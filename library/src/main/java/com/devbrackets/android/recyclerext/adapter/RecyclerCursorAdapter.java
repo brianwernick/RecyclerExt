@@ -20,6 +20,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
@@ -32,18 +33,25 @@ import com.devbrackets.android.recyclerext.filter.CursorFilter;
 /**
  * A base cursor adapter for the RecyclerView
  */
+@SuppressWarnings("unused")
 public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable, CursorFilter.CursorFilterClient {
     protected static final String DEFAULT_ID_COLUMN_NAME = "_id";
 
+    @Nullable
     protected Cursor cursor;
     protected boolean isValidData;
     protected int idColumn;
 
+    @Nullable
     protected CursorFilter cursorFilter;
+    @Nullable
     protected ChangeObserver internalChangeObserver;
+    @Nullable
     protected DataSetObserver internalDataSetObserver;
+    @Nullable
     protected FilterQueryProvider filterQueryProvider;
 
+    @NonNull
     private String idColumnName = DEFAULT_ID_COLUMN_NAME;
 
     /**
@@ -54,12 +62,12 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * @param cursor The cursor representing the item at <code>position</code>
      * @param position The position of the item to bind the <code>holder</code> for
      */
-    public abstract void onBindViewHolder(VH holder, Cursor cursor, int position);
+    public abstract void onBindViewHolder(@NonNull VH holder, @NonNull Cursor cursor, int position);
 
     /**
      * @param cursor The cursor from which to get the data.
      */
-    public RecyclerCursorAdapter(Cursor cursor) {
+    public RecyclerCursorAdapter(@Nullable Cursor cursor) {
         this(cursor, null);
     }
 
@@ -67,7 +75,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * @param cursor The cursor from which to get the data.
      * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
      */
-    public RecyclerCursorAdapter(Cursor cursor, String idColumnName) {
+    public RecyclerCursorAdapter(@Nullable Cursor cursor, @Nullable String idColumnName) {
         this.idColumnName = idColumnName != null ? idColumnName : DEFAULT_ID_COLUMN_NAME;
         setupCursor(cursor, this.idColumnName);
     }
@@ -80,8 +88,10 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * @param position The position to update the <code>holder</code> with
      */
     @Override
-    public void onBindViewHolder(VH holder, int position) {
+    public void onBindViewHolder(@NonNull VH holder, int position) {
         Cursor c = getCursor(position);
+
+        //noinspection ConstantConditions
         onBindViewHolder(holder, c, position);
     }
 
@@ -159,7 +169,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * @param newCursor The new cursor to be used
      */
     @Override
-    public void changeCursor(Cursor newCursor) {
+    public void changeCursor(@Nullable Cursor newCursor) {
         Cursor oldCursor = swapCursor(newCursor);
         if (oldCursor != null && !oldCursor.isClosed()) {
             oldCursor.close();
@@ -177,7 +187,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * Cursor, null is also returned.
      */
     @Nullable
-    public Cursor swapCursor(Cursor newCursor) {
+    public Cursor swapCursor(@Nullable Cursor newCursor) {
         if (newCursor == cursor) {
             return null;
         }
@@ -210,7 +220,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * @param cursor the cursor to convert to a CharSequence
      * @return a CharSequence representing the value
      */
-    public CharSequence convertToString(Cursor cursor) {
+    public CharSequence convertToString(@Nullable Cursor cursor) {
         return cursor == null ? "" : cursor.toString();
     }
 
@@ -238,7 +248,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      * @see #setFilterQueryProvider(android.widget.FilterQueryProvider)
      */
     @Nullable
-    public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
+    public Cursor runQueryOnBackgroundThread(@NonNull CharSequence constraint) {
         if (filterQueryProvider != null) {
             return filterQueryProvider.runQuery(constraint);
         }
@@ -252,6 +262,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      *
      * @return A filter for the items
      */
+    @NonNull
     public Filter getFilter() {
         if (cursorFilter == null) {
             cursorFilter = new CursorFilter(this);
@@ -294,7 +305,7 @@ public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> 
      *
      * @param cursor The cursor from which to get the data
      */
-    private void setupCursor(Cursor cursor, String idColumnName) {
+    private void setupCursor(@Nullable Cursor cursor, @NonNull String idColumnName) {
         this.cursor = cursor;
         isValidData = cursor != null;
         idColumn = isValidData ? cursor.getColumnIndexOrThrow(idColumnName) : -1;

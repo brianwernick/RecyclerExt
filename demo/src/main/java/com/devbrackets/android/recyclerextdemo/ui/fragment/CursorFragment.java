@@ -80,7 +80,7 @@ public class CursorFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(SimpleTextViewHolder holder, Cursor cursor, int position) {
+        public void onBindViewHolder(@NonNull SimpleTextViewHolder holder, @NonNull Cursor cursor, int position) {
             ItemDAO item = new ItemDAO(cursor);
             holder.setText(item.getText() != null ? item.getText() : "");
             holder.setPosition(position);

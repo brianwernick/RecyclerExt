@@ -31,11 +31,13 @@ import java.util.List;
  * @param <VH> The ViewHolder to use
  * @param <T>  The object type for the list
  */
+@SuppressWarnings("unused")
 public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T> extends RecyclerView.Adapter<VH> {
+    @NonNull
+    protected final Object lock = new Object();
     @Nullable
     protected List<T> items;
     protected boolean notifyOnChange = true;
-    protected final Object lock = new Object();
 
     /**
      * Creates an adapter with no initial items
@@ -139,7 +141,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      *
      * @param item The item to add to the list
      */
-    public void add(T item) {
+    public void add(@NonNull T item) {
         synchronized (lock) {
             if (items == null) {
                 items = new ArrayList<>();
@@ -159,7 +161,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      * @param position The position to insert the item at
      * @param item The item to add to the list
      */
-    public void add(int position, T item) {
+    public void add(int position, @NonNull T item) {
         synchronized (lock) {
             if (items == null) {
                 items = new ArrayList<>();
@@ -201,7 +203,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      *
      * @param item The item to remove from the list
      */
-    public void remove(T item) {
+    public void remove(@NonNull T item) {
         int removeIndex;
 
         synchronized (lock) {
@@ -331,7 +333,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      *
      * @param comparator The comparator to sort the list with
      */
-    public void sort(Comparator<? super T> comparator) {
+    public void sort(@NonNull Comparator<? super T> comparator) {
         synchronized (lock) {
             if (items == null) {
                 return;

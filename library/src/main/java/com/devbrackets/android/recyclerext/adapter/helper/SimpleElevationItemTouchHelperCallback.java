@@ -2,6 +2,7 @@ package com.devbrackets.android.recyclerext.adapter.helper;
 
 import android.graphics.Canvas;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -11,6 +12,7 @@ import android.view.View;
  * Extends the {@link android.support.v7.widget.helper.ItemTouchHelper.SimpleCallback} to provide
  * support for specifying the elevation to use when an item is active (being dragged or swiped)
  */
+@SuppressWarnings("unused")
 public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
     public static final float DEFAULT_ACTIVE_ELEVATION_CHANGE = 1f; //NOTE: the support library implementation uses 1f as the default
 
@@ -59,8 +61,7 @@ public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHe
     }
 
     @Override
-    public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY,
-                            int actionState, boolean isCurrentlyActive) {
+    public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             return;
@@ -87,7 +88,7 @@ public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHe
      * @param holder The ViewHolder to increase or decrease the elevation for
      * @param elevate True if the <code>holder</code> should have it's elevation increased
      */
-    protected void updateElevation(RecyclerView recyclerView, RecyclerView.ViewHolder holder, boolean elevate) {
+    protected void updateElevation(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder holder, boolean elevate) {
         if (elevate) {
             originalElevation = ViewCompat.getElevation(holder.itemView);
             float newElevation = activeElevationChange + findMaxElevation(recyclerView);
@@ -107,7 +108,7 @@ public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHe
      *
      * @param recyclerView The RecyclerView to use when determining the height of all the visible ViewHolders
      */
-    protected float findMaxElevation(RecyclerView recyclerView) {
+    protected float findMaxElevation(@NonNull RecyclerView recyclerView) {
         float maxChildElevation = 0;
 
         for (int i = 0; i < recyclerView.getChildCount(); i++) {

@@ -2,6 +2,7 @@ package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -82,18 +83,20 @@ public class HeaderAsChildListFragment extends Fragment {
             showHeaderAsChild(true);
         }
 
+        @NonNull
         @Override
-        public ContactsHeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
+        public ContactsHeaderViewHolder onCreateHeaderViewHolder(@NonNull ViewGroup parent, int viewType) {
             return ContactsHeaderViewHolder.newInstance(inflater, parent);
         }
 
+        @NonNull
         @Override
-        public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent, int viewType) {
+        public SimpleTextViewHolder onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType) {
             return SimpleTextViewHolder.newInstance(inflater, parent);
         }
 
         @Override
-        public void onBindHeaderViewHolder(ContactsHeaderViewHolder holder, int childPosition) {
+        public void onBindHeaderViewHolder(@NonNull ContactsHeaderViewHolder holder, int childPosition) {
             ItemDAO item = items.get(childPosition);
 
             holder.setText(item.getText());
@@ -101,7 +104,7 @@ public class HeaderAsChildListFragment extends Fragment {
         }
 
         @Override
-        public void onBindChildViewHolder(SimpleTextViewHolder holder, int childPosition) {
+        public void onBindChildViewHolder(@NonNull SimpleTextViewHolder holder, int childPosition) {
             holder.setText(items.get(childPosition).getText());
             holder.setSpacingVisible(true);
         }

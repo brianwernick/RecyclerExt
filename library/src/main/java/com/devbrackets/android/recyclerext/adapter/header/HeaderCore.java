@@ -25,8 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class HeaderCore {
+    @NonNull
     protected HeaderApi headerApi;
+    @NonNull
     protected Observer observer = new Observer();
     protected boolean showHeaderAsChild = false;
 
@@ -34,10 +37,12 @@ public class HeaderCore {
      * Stores the number of child items associated with each header id.
      * (Key: HeaderId, Value: childCount)
      */
+    @NonNull
     protected Map<Long, Integer> headerChildCountMap = new HashMap<>();
+    @NonNull
     protected List<HeaderItem> headerItems = new ArrayList<>();
 
-    public HeaderCore(HeaderApi api) {
+    public HeaderCore(@NonNull HeaderApi api) {
         this.headerApi = api;
     }
 
@@ -123,7 +128,8 @@ public class HeaderCore {
      * @param viewType The type for the ViewHolder
      * @return The correct ViewHolder for the specified viewType
      */
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if ((viewType & HeaderApi.HEADER_VIEW_TYPE_MASK) != 0) {
             return headerApi.onCreateHeaderViewHolder(parent, viewType);
         }
@@ -153,7 +159,7 @@ public class HeaderCore {
      *
      * @param adapter The RecyclerView.Adapter that the observer will be registered for
      */
-    public void registerObserver(RecyclerView.Adapter adapter) {
+    public void registerObserver(@NonNull RecyclerView.Adapter adapter) {
         adapter.registerAdapterDataObserver(observer);
         observer.onChanged();
     }
@@ -165,7 +171,7 @@ public class HeaderCore {
      *
      * @param adapter The RecyclerView.Adapter that the observer needs to be unregistered for
      */
-    public void unregisterObserver(RecyclerView.Adapter adapter) {
+    public void unregisterObserver(@NonNull RecyclerView.Adapter adapter) {
         adapter.unregisterAdapterDataObserver(observer);
         headerItems.clear();
     }

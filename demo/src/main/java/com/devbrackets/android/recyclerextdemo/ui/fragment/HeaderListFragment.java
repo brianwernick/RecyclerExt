@@ -82,24 +82,26 @@ public class HeaderListFragment extends Fragment {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
+        @NonNull
         @Override
-        public SimpleTextViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
+        public SimpleTextViewHolder onCreateHeaderViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return SimpleTextViewHolder.newInstance(inflater, parent);
+        }
+
+        @NonNull
+        @Override
+        public SimpleTextViewHolder onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType) {
             return SimpleTextViewHolder.newInstance(inflater, parent);
         }
 
         @Override
-        public SimpleTextViewHolder onCreateChildViewHolder(ViewGroup parent, int viewType) {
-            return SimpleTextViewHolder.newInstance(inflater, parent);
-        }
-
-        @Override
-        public void onBindHeaderViewHolder(SimpleTextViewHolder holder, int childPosition) {
+        public void onBindHeaderViewHolder(@NonNull SimpleTextViewHolder holder, int childPosition) {
             holder.setText(getHeaderId(childPosition) + "0s");
             holder.setBackgroundColor(0xFFCCCCCC);
         }
 
         @Override
-        public void onBindChildViewHolder(SimpleTextViewHolder holder, int childPosition) {
+        public void onBindChildViewHolder(@NonNull SimpleTextViewHolder holder, int childPosition) {
             holder.setText(items.get(childPosition).getText());
         }
 

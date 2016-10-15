@@ -39,8 +39,6 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
  * TODO:
  *  Options
  *      * Hide on short lists (listView only shows the quick scroll when the total scroll height is >= 4x the visible height)
- *      * Snap to item tops (when possible)
- *      * Snap to first item in section (dependent on bubble text, see now launcher app drawer)
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
@@ -50,7 +48,11 @@ public class FastScroll extends FrameLayout {
     @Nullable
     protected FastScrollPopupCallbacks popupCallbacks;
 
+    @NonNull
+    @SuppressWarnings("NullableProblems")
     protected PositionSupportImageView handle;
+    @NonNull
+    @SuppressWarnings("NullableProblems")
     protected PositionSupportTextView bubble;
 
     protected RecyclerView recyclerView;
@@ -67,11 +69,11 @@ public class FastScroll extends FrameLayout {
 
     @Nullable
     protected AnimationProvider animationProvider;
+    @NonNull
+    protected BubbleAlignment bubbleAlignment = BubbleAlignment.TOP;
 
     protected int height;
     protected boolean showBubble;
-    @NonNull
-    protected BubbleAlignment bubbleAlignment = BubbleAlignment.TOP;
 
     protected boolean hideHandleAllowed = true;
     protected boolean draggingHandle = false;
@@ -83,6 +85,9 @@ public class FastScroll extends FrameLayout {
     protected long handleHideDelay = 1_000; //Milliseconds
     protected long bubbleHideDelay = 0; //Milliseconds
 
+    /**
+     * Only {@code null} before an initial request for a visibility change
+     */
     protected Boolean requestedHandleVisibility;
     protected long currentSectionId = INVALID_POPUP_ID;
 
@@ -347,7 +352,7 @@ public class FastScroll extends FrameLayout {
      *
      * @param drawable The drawable for the popup bubble background
      */
-    public void setBubbleDrawable(Drawable drawable) {
+    public void setBubbleDrawable(@Nullable Drawable drawable) {
         bubble.setBackground(drawable);
     }
 
@@ -378,7 +383,7 @@ public class FastScroll extends FrameLayout {
      *
      * @param drawable The drawable for the drag handle background
      */
-    public void setHandleDrawable(Drawable drawable) {
+    public void setHandleDrawable(@Nullable Drawable drawable) {
         handle.setBackground(drawable);
     }
 
@@ -410,7 +415,7 @@ public class FastScroll extends FrameLayout {
      * @param context The context of the widget
      * @param attrs The attributes associated with the widget
      */
-    protected void init(Context context, @Nullable AttributeSet attrs) {
+    protected void init(@NonNull Context context, @Nullable AttributeSet attrs) {
         LayoutInflater inflater = LayoutInflater.from(context);
         inflater.inflate(R.layout.recyclerext_fast_scroll, this, true);
 
@@ -428,7 +433,7 @@ public class FastScroll extends FrameLayout {
      * @param context The context to retrieve the styled attributes with
      * @param attrs The {@link AttributeSet} to retrieve the values from
      */
-    protected void readAttributes(Context context, @Nullable AttributeSet attrs) {
+    protected void readAttributes(@NonNull Context context, @Nullable AttributeSet attrs) {
         if (attrs == null || isInEditMode()) {
             return;
         }
@@ -450,7 +455,7 @@ public class FastScroll extends FrameLayout {
      *
      * @param typedArray The array of attributes to use
      */
-    protected void retrieveBubbleAttributes(TypedArray typedArray) {
+    protected void retrieveBubbleAttributes(@NonNull TypedArray typedArray) {
         showBubble = typedArray.getBoolean(R.styleable.FastScroll_re_show_bubble, true);
         bubbleAlignment = BubbleAlignment.get(typedArray.getInt(R.styleable.FastScroll_re_bubble_alignment, 3));
 
@@ -479,7 +484,7 @@ public class FastScroll extends FrameLayout {
      *
      * @param typedArray The array of attributes to use
      */
-    protected void retrieveHandleAttributes(TypedArray typedArray) {
+    protected void retrieveHandleAttributes(@NonNull TypedArray typedArray) {
         Drawable backgroundDrawable = getDrawable(typedArray, R.styleable.FastScroll_re_handle_background);
         int backgroundColor = getColor(R.color.recyclerext_fast_scroll_handle_color_default);
         backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_handle_color, backgroundColor);
@@ -490,7 +495,6 @@ public class FastScroll extends FrameLayout {
 
         handle.setBackground(backgroundDrawable);
     }
-
 
     /**
      * Determines if the {@link MotionEvent#ACTION_DOWN} event should be ignored.
@@ -755,7 +759,7 @@ public class FastScroll extends FrameLayout {
      * @param index The index in the {@code typedArray} for the drawable
      */
     @Nullable
-    protected Drawable getDrawable(TypedArray typedArray, int index) {
+    protected Drawable getDrawable(@NonNull TypedArray typedArray, int index) {
         int imageResId = typedArray.getResourceId(index, 0);
         if (imageResId == 0) {
             return null;
@@ -803,7 +807,7 @@ public class FastScroll extends FrameLayout {
      */
     protected class RecyclerScrollListener extends RecyclerView.OnScrollListener {
         @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             //Makes sure the handle is shown when scrolling
             updateHandleVisibility(true);
             delayHandler.removeCallbacks(handleHideRunnable);
@@ -931,7 +935,8 @@ public class FastScroll extends FrameLayout {
          */
         BOTTOM_TO_CENTER;
 
-        private static BubbleAlignment get(int index) {
+        @NonNull
+        private static BubbleAlignment get(@IntRange(from = 0, to = 5) int index) {
             return BubbleAlignment.values()[index];
         }
     }

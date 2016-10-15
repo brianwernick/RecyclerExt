@@ -16,6 +16,7 @@
 
 package com.devbrackets.android.recyclerext.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -36,6 +37,8 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     /**
      * Contains the base processing for the header adapters
      */
+    @NonNull
+    @SuppressWarnings("NullableProblems")
     protected HeaderCore core;
 
     /**
@@ -45,7 +48,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @param holder The ViewHolder which should be updated
      * @param firstChildPosition The position of the child immediately after this header
      */
-    public abstract void onBindHeaderViewHolder(H holder, int firstChildPosition);
+    public abstract void onBindHeaderViewHolder(@NonNull H holder, int firstChildPosition);
 
     /**
      * Called to display the child information with the <code>childPosition</code> being the
@@ -54,7 +57,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @param holder The ViewHolder which should be updated
      * @param childPosition The position of the child
      */
-    public abstract void onBindChildViewHolder(C holder, int childPosition);
+    public abstract void onBindChildViewHolder(@NonNull C holder, int childPosition);
 
     public RecyclerHeaderAdapter() {
         init();
@@ -70,7 +73,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @return The correct ViewHolder for the specified viewType
      */
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return core.onCreateViewHolder(parent, viewType);
     }
 
@@ -84,9 +87,9 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     @Override
     @SuppressWarnings("unchecked") //Unchecked cast
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
-        int childPosition = determineChildPosition(position);
+        int childPosition = getChildPosition(position);
 
         if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
             onBindHeaderViewHolder((H) holder, childPosition);
@@ -116,7 +119,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @param recyclerView The RecyclerView that was attached
      */
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         core.registerObserver(this);
     }
 
@@ -128,7 +131,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @param recyclerView The RecyclerView that has been detached
      */
     @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         core.unregisterObserver(this);
     }
 

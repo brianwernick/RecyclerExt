@@ -18,6 +18,7 @@ package com.devbrackets.android.recyclerext.adapter.viewholder;
 
 import android.support.annotation.IdRes;
 import android.support.annotation.MenuRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.PopupMenu;
 import android.view.Menu;
@@ -31,8 +32,11 @@ import android.view.View;
  */
 public abstract class MenuViewHolder extends ClickableViewHolder implements PopupMenu.OnMenuItemClickListener {
 
+    /**
+     * Used to listen for menu item selections
+     */
     public interface OnMenuItemSelectedListener {
-        boolean onMenuItemSelected(MenuViewHolder viewHolder, MenuItem menuItem);
+        boolean onMenuItemSelected(@NonNull MenuViewHolder viewHolder, @NonNull MenuItem menuItem);
     }
 
     @Nullable
@@ -56,7 +60,7 @@ public abstract class MenuViewHolder extends ClickableViewHolder implements Popu
     @MenuRes
     protected abstract int getMenuResourceId();
 
-    public MenuViewHolder(View itemView) {
+    public MenuViewHolder(@NonNull View itemView) {
         super(itemView);
         initializeMenuClickListener();
     }
@@ -66,7 +70,7 @@ public abstract class MenuViewHolder extends ClickableViewHolder implements Popu
     }
 
     @Override
-    public boolean onMenuItemClick(MenuItem item) {
+    public boolean onMenuItemClick(@NonNull MenuItem item) {
         return onMenuItemSelectedListener != null && onMenuItemSelectedListener.onMenuItemSelected(this, item);
     }
 
@@ -88,7 +92,7 @@ public abstract class MenuViewHolder extends ClickableViewHolder implements Popu
      * @param anchor The view to show the popup menu from
      * @param menuResourceId The resource id for the menu to show
      */
-    protected void showMenu(View anchor, @MenuRes int menuResourceId) {
+    protected void showMenu(@NonNull View anchor, @MenuRes int menuResourceId) {
         PopupMenu menu = new PopupMenu(anchor.getContext(), anchor);
         MenuInflater inflater = menu.getMenuInflater();
         inflater.inflate(menuResourceId, menu.getMenu());
@@ -104,7 +108,7 @@ public abstract class MenuViewHolder extends ClickableViewHolder implements Popu
      *
      * @param menu The menu to customize
      */
-    protected void onPreparePopupMenu(Menu menu) {
+    protected void onPreparePopupMenu(@NonNull Menu menu) {
         //Purposefully left blank
     }
 
@@ -113,7 +117,7 @@ public abstract class MenuViewHolder extends ClickableViewHolder implements Popu
      */
     protected class MenuClickListener implements View.OnClickListener {
         @Override
-        public void onClick(View view) {
+        public void onClick(@NonNull View view) {
             showMenu(view, getMenuResourceId());
         }
     }

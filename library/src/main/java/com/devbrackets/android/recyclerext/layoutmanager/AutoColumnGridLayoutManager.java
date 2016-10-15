@@ -16,10 +16,10 @@
 
 package com.devbrackets.android.recyclerext.layoutmanager;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,6 +41,7 @@ import java.lang.ref.WeakReference;
  * for the grid items should have a width of "match_parent", otherwise the items
  * won't be correctly centered
  */
+@SuppressWarnings("unused")
 public class AutoColumnGridLayoutManager extends GridLayoutManager {
     public enum SpacingMethod {
         ALL,
@@ -56,11 +57,13 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     protected boolean matchSpacing = false;
     protected int minColumnSpacingEdge = 0;
     protected int minColumnSpacingSeparator = 0;
+    @NonNull
     protected SpacingMethod spacingMethod = SpacingMethod.ALL;
 
     protected int requestedColumnWidth;
     protected int maxColumnCount = Integer.MAX_VALUE;
 
+    @NonNull
     protected WeakReference<RecyclerView> parent = new WeakReference<>(null);
 
     /**
@@ -70,7 +73,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * @param context The context to use for the layout manager
      * @param gridItemWidth The width for the items in each column
      */
-    public AutoColumnGridLayoutManager(Context context, int gridItemWidth) {
+    public AutoColumnGridLayoutManager(@NonNull Context context, int gridItemWidth) {
         super(context, 1);
         requestedColumnWidth = gridItemWidth;
     }
@@ -83,7 +86,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * @param recyclerView The {@link RecyclerView} this layout manager is attached to
      */
     @Override
-    public void onAttachedToWindow(RecyclerView recyclerView) {
+    public void onAttachedToWindow(@NonNull RecyclerView recyclerView) {
         super.onAttachedToWindow(recyclerView);
         parent = new WeakReference<>(recyclerView);
         setColumnWidth(requestedColumnWidth);
@@ -97,7 +100,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * @param recycler The {@link RecyclerView.Recycler}
      */
     @Override
-    public void onDetachedFromWindow(RecyclerView recyclerView, RecyclerView.Recycler recycler) {
+    public void onDetachedFromWindow(@NonNull  RecyclerView recyclerView, @NonNull RecyclerView.Recycler recycler) {
         super.onDetachedFromWindow(recyclerView, recycler);
 
         //If we have setup the decoration then remove it
@@ -212,7 +215,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      *
      * @param spacingMethod The method for displaying the spacing
      */
-    public void setSpacingMethod(SpacingMethod spacingMethod) {
+    public void setSpacingMethod(@NonNull SpacingMethod spacingMethod) {
         this.spacingMethod = spacingMethod;
         setSpanCount(determineColumnCount(requestedColumnWidth));
     }
@@ -256,7 +259,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * @param gridItemWidth The requested width for the items
      * @param columnCount The number of columns to display
      */
-    protected void updateSpacing(RecyclerView recyclerView, int gridItemWidth, int columnCount) {
+    protected void updateSpacing(@NonNull RecyclerView recyclerView, int gridItemWidth, int columnCount) {
         //Sets the decoration for the calculated spacing
         if (spacerDecoration == null) {
             spacerDecoration = new SpacerDecoration();
@@ -321,7 +324,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      * @param gridItemWidth The requested width for items to be
      * @return The calculated number of possible columns
      */
-    protected int getColumnCount(RecyclerView recyclerView, int gridItemWidth) {
+    protected int getColumnCount(@NonNull RecyclerView recyclerView, int gridItemWidth) {
         int padding = recyclerView.getPaddingLeft() + recyclerView.getPaddingRight();
         int usableWidth = recyclerView.getWidth() - padding;
 
@@ -351,7 +354,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
      *
      * @param recyclerView The RecyclerView to remove the padding from
      */
-    protected void resetRecyclerPadding(RecyclerView recyclerView) {
+    protected void resetRecyclerPadding(@NonNull RecyclerView recyclerView) {
         recyclerView.setPadding(
                 recyclerView.getPaddingLeft() - edgeSpacing,
                 recyclerView.getPaddingTop(),
@@ -367,7 +370,7 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
     protected class LayoutListener implements ViewTreeObserver.OnGlobalLayoutListener {
         private RecyclerView recyclerView;
 
-        public LayoutListener(RecyclerView recyclerView) {
+        public LayoutListener(@NonNull RecyclerView recyclerView) {
             this.recyclerView = recyclerView;
         }
 
@@ -379,13 +382,12 @@ public class AutoColumnGridLayoutManager extends GridLayoutManager {
             gridLayoutManager.setSpanCount(determineColumnCount(requestedColumnWidth));
         }
 
-        @SuppressWarnings("deprecation") //removeGlobalOnLayoutListener
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-        public void removeOnGlobalLayoutListener(View v, ViewTreeObserver.OnGlobalLayoutListener listener){
+        public void removeOnGlobalLayoutListener(@NonNull  View view, @NonNull ViewTreeObserver.OnGlobalLayoutListener listener){
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                v.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
+                //noinspection deprecation
+                view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
             } else {
-                v.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
+                view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
             }
         }
     }

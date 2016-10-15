@@ -1,5 +1,6 @@
 package com.devbrackets.android.recyclerext.animation;
 
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -10,14 +11,14 @@ public class FastScrollBubbleVisibilityAnimation extends AnimationSet {
     private static final int DURATION = 100; //milliseconds
     private final boolean toVisible;
 
-    public FastScrollBubbleVisibilityAnimation(View bubble, boolean toVisible) {
+    public FastScrollBubbleVisibilityAnimation(@NonNull View bubble, boolean toVisible) {
         super(false);
 
         this.toVisible = toVisible;
         setup(bubble);
     }
 
-    private void setup(View bubble) {
+    private void setup(@NonNull View bubble) {
         float startAlpha = toVisible ? 0 : 1;
         float endAlpha = toVisible ? 1 : 0;
 

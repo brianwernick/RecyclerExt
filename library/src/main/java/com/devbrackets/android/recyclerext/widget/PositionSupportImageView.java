@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -58,7 +59,7 @@ public class PositionSupportImageView extends ImageView {
         }
     }
 
-    public void setBackground(Drawable drawable) {
+    public void setBackground(@Nullable Drawable drawable) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             super.setBackground(drawable);
         } else {

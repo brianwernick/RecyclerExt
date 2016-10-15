@@ -3,6 +3,7 @@ package com.devbrackets.android.recyclerextdemo.ui.fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -121,7 +122,7 @@ public class ReorderCursorFragment extends Fragment implements ReorderDecoration
         }
 
         @Override
-        public void onBindViewHolder(SimpleDragItemViewHolder holder, Cursor cursor, int position) {
+        public void onBindViewHolder(@NonNull SimpleDragItemViewHolder holder, @NonNull Cursor cursor, int position) {
             ItemDAO item = new ItemDAO(cursor);
             holder.setText(item.getText() != null ? item.getText() : "");
             holder.setPosition(position);

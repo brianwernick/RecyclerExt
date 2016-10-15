@@ -17,6 +17,8 @@
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -33,12 +35,15 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <H> The Header {@link ViewHolder}
  * @param <C> The Child or content {@link ViewHolder}
  */
+@SuppressWarnings("unused")
 public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerCursorAdapter<ViewHolder>
         implements HeaderApi<H, C> {
 
     /**
      * Contains the base processing for the header adapters
      */
+    @NonNull
+    @SuppressWarnings("NullableProblems")
     protected HeaderCore core;
 
     /**
@@ -49,7 +54,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @param cursor The cursor representing the first child for the header
      * @param firstChildPosition The position of the child immediately after this header
      */
-    public abstract void onBindHeaderViewHolder(H holder, Cursor cursor, int firstChildPosition);
+    public abstract void onBindHeaderViewHolder(@NonNull H holder, @NonNull Cursor cursor, int firstChildPosition);
 
     /**
      * Called to display the child information with the <code>childPosition</code> being the
@@ -59,12 +64,12 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @param cursor The cursor representing child to bind
      * @param childPosition The position of the child
      */
-    public abstract void onBindChildViewHolder(C holder, Cursor cursor, int childPosition);
+    public abstract void onBindChildViewHolder(@NonNull C holder, @NonNull Cursor cursor, int childPosition);
 
     /**
      * @param cursor The cursor from which to get the data.
      */
-    public RecyclerHeaderCursorAdapter(Cursor cursor) {
+    public RecyclerHeaderCursorAdapter(@Nullable Cursor cursor) {
         super(cursor);
         init();
     }
@@ -73,7 +78,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @param cursor The cursor from which to get the data.
      * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
      */
-    public RecyclerHeaderCursorAdapter(Cursor cursor, String idColumnName) {
+    public RecyclerHeaderCursorAdapter(@Nullable Cursor cursor, @Nullable String idColumnName) {
         super(cursor, idColumnName);
         init();
     }
@@ -88,7 +93,8 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @return The correct ViewHolder for the specified viewType
      */
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return core.onCreateViewHolder(parent, viewType);
     }
 
@@ -103,17 +109,19 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      */
     @Override
     @SuppressWarnings("unchecked")
-    public void onBindViewHolder(ViewHolder holder, Cursor cursor, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @NonNull Cursor cursor, int position) {
         int viewType = getItemViewType(position);
-        int childPosition = determineChildPosition(position);
+        int childPosition = getChildPosition(position);
         Cursor c = getCursor(childPosition);
 
         if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
+            //noinspection ConstantConditions
             onBindHeaderViewHolder((H) holder, c, childPosition);
             holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
             return;
         }
 
+        //noinspection ConstantConditions
         onBindChildViewHolder((C) holder, c, childPosition);
         holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
     }
@@ -136,7 +144,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @param recyclerView The RecyclerView that was attached
      */
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         core.registerObserver(this);
     }
 
@@ -148,7 +156,7 @@ public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extend
      * @param recyclerView The RecyclerView that has been detached
      */
     @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         core.unregisterObserver(this);
     }
 

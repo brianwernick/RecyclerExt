@@ -2,6 +2,7 @@ package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -76,7 +77,7 @@ public class GridFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(GridViewHolder holder, Cursor cursor, int position) {
+        public void onBindViewHolder(@NonNull GridViewHolder holder, @NonNull Cursor cursor, int position) {
             ItemDAO item = new ItemDAO(cursor);
             holder.setText(item.getText() != null ? item.getText() : "");
         }

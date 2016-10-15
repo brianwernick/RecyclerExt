@@ -17,6 +17,8 @@
 package com.devbrackets.android.recyclerext.decoration;
 
 import android.graphics.Rect;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -72,7 +74,7 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @Nullable RecyclerView.State state) {
         int position = ((RecyclerView.LayoutParams) view.getLayoutParams()).getViewAdapterPosition();
         int childCount = parent.getAdapter().getItemCount();
         if (spanLookup == null) {
@@ -94,7 +96,7 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
      * @param childCount The number of children in the RecyclerView (adapter)
      * @return True if the view at <code>position</code> is a top-most view
      */
-    protected boolean isTopEdge(SpanLookup spanLookup, int position, int childCount) {
+    protected boolean isTopEdge(@NonNull SpanLookup spanLookup, int position, int childCount) {
         int latestCheckedPosition = 0;
         for (; latestCheckedPosition < childCount; latestCheckedPosition++) {
             int spanEndIndex = spanLookup.getIndex(latestCheckedPosition) + spanLookup.getSpanSize(latestCheckedPosition) - 1;
@@ -113,7 +115,7 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
      * @param position The position to determine if the view is a right-most view
      * @return True if the view at <code>position</code> is a right-most view
      */
-    protected boolean isRightEdge(SpanLookup spanLookup, int position) {
+    protected boolean isRightEdge(@NonNull SpanLookup spanLookup, int position) {
         int spanIndex = spanLookup.getIndex(position);
         return (spanIndex + spanLookup.getSpanSize(position)) == spanLookup.getSpanCount();
     }
@@ -126,7 +128,7 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
      * @param childCount The number of children in the RecyclerView (adapter)
      * @return True if the view at <code>position</code> is a bottom-most view
      */
-    protected boolean isBottomEdge(SpanLookup spanLookup, int position, int childCount) {
+    protected boolean isBottomEdge(@NonNull SpanLookup spanLookup, int position, int childCount) {
         int latestCheckedPosition = childCount -1;
         for (; latestCheckedPosition >= 0; latestCheckedPosition--) {
             int spanIndex = spanLookup.getIndex(latestCheckedPosition);
@@ -145,7 +147,7 @@ public class SpacerDecoration extends RecyclerView.ItemDecoration {
      * @param position The position to determine if the view is a left-most view
      * @return True if the view at <code>position</code> is a left-most view
      */
-    protected boolean isLeftEdge(SpanLookup spanLookup, int position) {
+    protected boolean isLeftEdge(@NonNull SpanLookup spanLookup, int position) {
         int spanIndex = spanLookup.getIndex(position);
         return spanIndex == 0;
     }

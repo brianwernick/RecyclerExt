@@ -19,6 +19,7 @@ package com.devbrackets.android.recyclerext.decoration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -35,6 +36,7 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
  * the {@link RecyclerHeaderAdapter} to be persisted when they
  * reach the start of the RecyclerView's frame.
  */
+@SuppressWarnings("unused")
 public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private static final String TAG = "StickyHeaderDecoration";
 
@@ -66,7 +68,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      *
      * @param parent The RecyclerView to couple the ItemDecoration to
      */
-    public StickyHeaderDecoration(RecyclerView parent) {
+    public StickyHeaderDecoration(@NonNull RecyclerView parent) {
         boolean headerAdapter = parent.getAdapter() instanceof RecyclerHeaderAdapter ||
                 parent.getAdapter() instanceof RecyclerHeaderCursorAdapter ||
                 parent.getAdapter() instanceof RecyclerHeaderListAdapter;

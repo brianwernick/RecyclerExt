@@ -19,15 +19,17 @@
 package com.devbrackets.android.recyclerext.filter;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.widget.Filter;
 
 /*
  * Duplicate of the android.Widget.CursorFilter in order to make it public
  */
 public class CursorFilter extends Filter {
+    @NonNull
     CursorFilterClient filterClient;
 
-    public CursorFilter(CursorFilterClient client) {
+    public CursorFilter(@NonNull CursorFilterClient client) {
         this.filterClient = client;
     }
 

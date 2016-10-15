@@ -16,6 +16,7 @@
 
 package com.devbrackets.android.recyclerext.adapter.header;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -32,7 +33,8 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
      * @param viewType The type for the header view
      * @return The view type of the new View
      */
-    H onCreateHeaderViewHolder(ViewGroup parent, int viewType);
+    @NonNull
+    H onCreateHeaderViewHolder(@NonNull ViewGroup parent, int viewType);
 
     /**
      * Called when the RecyclerView needs a new {@link C} ViewHolder
@@ -41,7 +43,8 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
      * @param viewType The type for the child view
      * @return The view type of the new View
      */
-    C onCreateChildViewHolder(ViewGroup parent, int viewType);
+    @NonNull
+    C onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType);
 
     /**
      * Retrieves the view type for the header whos first child view

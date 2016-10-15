@@ -18,6 +18,7 @@ package com.devbrackets.android.recyclerext.adapter;
 
 import android.database.Cursor;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseIntArray;
@@ -30,13 +31,14 @@ import java.util.List;
  * {@link com.devbrackets.android.recyclerext.decoration.ReorderDecoration}
  */
 public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerCursorAdapter<VH> {
-    private boolean resetOnCursorChange = true;
+    @NonNull
     private SparseIntArray cursorPositionMap = new SparseIntArray();
+    private boolean resetOnCursorChange = true;
 
     /**
      * @param cursor The cursor from which to get the data.
      */
-    public RecyclerReorderCursorAdapter(Cursor cursor) {
+    public RecyclerReorderCursorAdapter(@Nullable Cursor cursor) {
         super(cursor);
     }
 
@@ -44,7 +46,7 @@ public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewH
      * @param cursor The cursor from which to get the data.
      * @param idColumnName The name for the id column to use when calling {@link #getItemId(int)} [default: {@value #DEFAULT_ID_COLUMN_NAME}]
      */
-    public RecyclerReorderCursorAdapter(Cursor cursor, String idColumnName) {
+    public RecyclerReorderCursorAdapter(@Nullable Cursor cursor, @Nullable String idColumnName) {
         super(cursor, idColumnName);
     }
 
@@ -80,7 +82,7 @@ public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewH
      * @param newCursor The new cursor to be used
      */
     @Override
-    public void changeCursor(Cursor newCursor) {
+    public void changeCursor(@Nullable Cursor newCursor) {
         super.changeCursor(newCursor);
 
         if (resetOnCursorChange) {
@@ -163,6 +165,7 @@ public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewH
      *
      * @return A SparseIntArray representing a map of list positions to cursor positions
      */
+    @NonNull
     public SparseIntArray getPositionMap() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             return cursorPositionMap.clone();
@@ -197,7 +200,8 @@ public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewH
      * @param sparseIntArray The {@link SparseIntArray} to clone
      * @return A clone of the specified <code>sparseIntArray</code>
      */
-    private SparseIntArray clone(SparseIntArray sparseIntArray) {
+    @NonNull
+    private SparseIntArray clone(@NonNull SparseIntArray sparseIntArray) {
         SparseIntArray clone = new SparseIntArray();
 
         //Iterates through the keys, adding the value to the clone

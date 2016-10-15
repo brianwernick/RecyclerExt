@@ -16,6 +16,7 @@
 
 package com.devbrackets.android.recyclerext.adapter.viewholder;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.HapticFeedbackConstants;
@@ -29,11 +30,11 @@ import android.view.View;
 public abstract class ClickableViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
     public interface OnClickListener {
-        void onClick(ClickableViewHolder viewHolder);
+        void onClick(@NonNull ClickableViewHolder viewHolder);
     }
 
     public interface OnLongClickListener {
-        boolean onLongClick(ClickableViewHolder viewHolder);
+        boolean onLongClick(@NonNull ClickableViewHolder viewHolder);
     }
 
     @Nullable
@@ -43,7 +44,7 @@ public abstract class ClickableViewHolder extends RecyclerView.ViewHolder implem
 
     protected boolean performLongClickHapticFeedback = true;
 
-    public ClickableViewHolder(View itemView) {
+    public ClickableViewHolder(@NonNull View itemView) {
         super(itemView);
         initializeClickListener();
     }
@@ -77,14 +78,14 @@ public abstract class ClickableViewHolder extends RecyclerView.ViewHolder implem
     }
 
     @Override
-    public void onClick(View view) {
+    public void onClick(@NonNull View view) {
         if (onClickListener != null) {
             onClickListener.onClick(this);
         }
     }
 
     @Override
-    public boolean onLongClick(View v) {
+    public boolean onLongClick(@NonNull View view) {
         if (onLongClickListener != null) {
             if (performLongClickHapticFeedback) {
                 itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);

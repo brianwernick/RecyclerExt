@@ -1,5 +1,6 @@
 package com.devbrackets.android.recyclerext.animation;
 
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -9,14 +10,14 @@ public class FastScrollHandleVisibilityAnimation extends AnimationSet {
     private static final int DURATION = 250; //milliseconds
     private final boolean toVisible;
 
-    public FastScrollHandleVisibilityAnimation(View handle, boolean toVisible) {
+    public FastScrollHandleVisibilityAnimation(@NonNull View handle, boolean toVisible) {
         super(false);
 
         this.toVisible = toVisible;
         setup(handle);
     }
 
-    private void setup(View handle) {
+    private void setup(@NonNull View handle) {
         float xDelta = handle.getWidth();
 
         float startPos = toVisible ? xDelta : 0F;
