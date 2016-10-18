@@ -35,10 +35,6 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
 /**
  * A class that provides the functionality of a fast scroll
  * for the attached {@link android.support.v7.widget.RecyclerView}
- *
- * TODO:
- *  Options
- *      * Hide on short lists (listView only shows the quick scroll when the total scroll height is >= 4x the visible height)
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
@@ -74,6 +70,10 @@ public class FastScroll extends FrameLayout {
 
     protected int height;
     protected boolean showBubble;
+
+    protected int minDisplayPageCount = 4;
+    protected int calculatedMinDisplayHeight = 0;
+    protected boolean hideOnShortLists = true;
 
     protected boolean hideHandleAllowed = true;
     protected boolean draggingHandle = false;
@@ -125,6 +125,7 @@ public class FastScroll extends FrameLayout {
     protected void onSizeChanged(int w, int h, int oldW, int oldH) {
         super.onSizeChanged(w, h, oldW, oldH);
         height = h;
+        calculatedMinDisplayHeight = h * minDisplayPageCount;
     }
 
     @Override
@@ -189,6 +190,7 @@ public class FastScroll extends FrameLayout {
         }
 
         recyclerView.addOnScrollListener(scrollListener);
+
         recyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
@@ -281,6 +283,50 @@ public class FastScroll extends FrameLayout {
      */
     public long getBubbleHideDelay() {
         return bubbleHideDelay;
+    }
+
+    /**
+     * Specifies if the FastScroll should be hidden when the list is shorter.
+     * This value is determined by {@link #setMinDisplayPageCount(int)}
+     *
+     * @param hideOnShortLists {@code true} if the FastScroll should be hidden on shorter lists [default: {@code true}]
+     */
+    public void setHideOnShortLists(boolean hideOnShortLists) {
+        this.hideOnShortLists = hideOnShortLists;
+    }
+
+    /**
+     * Determines if the FastScroll should be hidden when the list is shorter.
+     * This value is determined by {@link #setMinDisplayPageCount(int)}
+     *
+     * @return {@code true} if the FastScroll will be hidden on shorter lists [default: {@code true}]
+     */
+    public boolean getHideOnShortLists() {
+        return hideOnShortLists;
+    }
+
+    /**
+     * Specifies the minimum amount of pages to be contained in the list before the
+     * FastScroll will be displayed. This will only have an affect if {@link #setHideOnShortLists(boolean)}
+     * is enabled. If the {@code minDisplayPageCount} is set to 0 the FastScroll will always be shown
+     *
+     * @param minDisplayPageCount The minimum amount of pages in the list to show the FastScroll [default: {@code 4}]
+     */
+    public void setMinDisplayPageCount(@IntRange(from = 0) int minDisplayPageCount) {
+        this.minDisplayPageCount = minDisplayPageCount;
+        calculatedMinDisplayHeight = height * minDisplayPageCount;
+    }
+
+    /**
+     * Determines the minimum amount of pages to be contained in the list before the
+     * FastScroll will be displayed. This will only have an affect if {@link #setHideOnShortLists(boolean)}
+     * is enabled.
+     *
+     * @return The minimum amount of pages to display the FastScroll [default: {@code 4}]
+     */
+    @IntRange(from = 0)
+    public int getMinDisplayPageCount() {
+        return minDisplayPageCount;
     }
 
     /**
@@ -808,6 +854,14 @@ public class FastScroll extends FrameLayout {
     protected class RecyclerScrollListener extends RecyclerView.OnScrollListener {
         @Override
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            int verticalRange = recyclerView.computeVerticalScrollRange();
+
+            //Makes sure the FastScroll is correctly hidden on shorter lists
+            if (hideOnShortLists && verticalRange < calculatedMinDisplayHeight) {
+                updateHandleVisibility(false);
+                return;
+            }
+
             //Makes sure the handle is shown when scrolling
             updateHandleVisibility(true);
             delayHandler.removeCallbacks(handleHideRunnable);
@@ -818,7 +872,7 @@ public class FastScroll extends FrameLayout {
 
             hideHandleDelayed();
 
-            float ratio = (float)recyclerView.computeVerticalScrollOffset() / (float)recyclerView.computeVerticalScrollRange();
+            float ratio = (float)recyclerView.computeVerticalScrollOffset() / (float) (verticalRange - recyclerView.computeVerticalScrollExtent());
             float halfHandleHeight = (handle.getHeight() / 2);
 
             setBubbleAndHandlePosition((height - halfHandleHeight) * ratio + halfHandleHeight);
