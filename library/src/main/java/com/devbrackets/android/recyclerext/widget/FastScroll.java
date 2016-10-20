@@ -616,7 +616,7 @@ public class FastScroll extends FrameLayout {
      * @param ratio The scroll location as a ratio of the total in the range [0, 1]
      */
     protected void scrollToLocation(float ratio) {
-        int scrollRange = recyclerView.computeVerticalScrollRange();
+        int scrollRange = recyclerView.computeVerticalScrollRange() - recyclerView.computeVerticalScrollExtent();
         if (scrollRange > 0) {
             int deltaY = (int) (ratio * scrollRange) - recyclerView.computeVerticalScrollOffset();
             recyclerView.scrollBy(0, deltaY);
