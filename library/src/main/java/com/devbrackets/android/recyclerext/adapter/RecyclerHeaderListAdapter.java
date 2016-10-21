@@ -105,12 +105,12 @@ public abstract class RecyclerHeaderListAdapter<H extends ViewHolder, C extends 
     /**
      * Retrieves the view type for the specified position.
      *
-     * @param position The position to determine the view type for
-     * @return The type of ViewHolder for the <code>position</code>
+     * @param adapterPosition The position to determine the view type for
+     * @return The type of ViewHolder for the <code>adapterPosition</code>
      */
     @Override
-    public int getItemViewType(int position) {
-        return core.getItemViewType(position);
+    public int getItemViewType(int adapterPosition) {
+        return core.getItemViewType(adapterPosition);
     }
 
     /**
