@@ -22,19 +22,19 @@ package com.devbrackets.android.recyclerext.adapter.header;
  *  and {@link com.devbrackets.android.recyclerext.adapter.RecyclerHeaderCursorAdapter}
  */
 public class HeaderItem {
-    private long headerId;
-    private int viewPosition;
+    private long id;
+    private int adapterPosition;
 
-    public HeaderItem(long headerId, int viewPosition) {
-        this.headerId = headerId;
-        this.viewPosition = viewPosition;
+    public HeaderItem(long id, int adapterPosition) {
+        this.id = id;
+        this.adapterPosition = adapterPosition;
     }
 
-    public long getHeaderId() {
-        return headerId;
+    public long getId() {
+        return id;
     }
 
-    public int getViewPosition() {
-        return viewPosition;
+    public int getAdapterPosition() {
+        return adapterPosition;
     }
 }
