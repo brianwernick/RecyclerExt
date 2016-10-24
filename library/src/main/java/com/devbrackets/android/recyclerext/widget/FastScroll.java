@@ -632,6 +632,7 @@ public class FastScroll extends FrameLayout {
      * @param ratio The scroll location as a ratio of the total in the range [0, 1]
      */
     protected void scrollToLocation(float ratio) {
+        //TODO: use this to determine if the velocity is > the set velocity... ?
         int scrollRange = recyclerView.computeVerticalScrollRange() - recyclerView.computeVerticalScrollExtent();
         if (scrollRange > 0) {
             int deltaY = (int) (ratio * scrollRange) - recyclerView.computeVerticalScrollOffset();
@@ -968,6 +969,25 @@ public class FastScroll extends FrameLayout {
          */
         @IntRange(from = INVALID_POPUP_ID)
         long getSectionId(@IntRange(from = 0) int position);
+    }
+
+    /**
+     * Informs the listeners when the {@link FastScroll} is being used to
+     * quickly scroll (todo based on a configurable velocity) the items and
+     * when the quick scrolling ends.
+     */
+    public interface ScrollListener {
+        /**
+         * Called when the {@link FastScroll} is being used to quickly scroll
+         * through the items. This is dependent on (todo velocity value)
+         */
+        void onFastScrollStarted();
+
+        /**
+         * Called after {@link #onFastScrollStarted()} when the scroll velocity
+         * is below the threshold specified by (todo)
+         */
+        void onFastScrollEnded();
     }
 
     /**
