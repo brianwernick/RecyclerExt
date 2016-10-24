@@ -73,7 +73,7 @@ public class HeaderListFragment extends Fragment {
      * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> implements FastScroll.FastScrollPopupCallbacks {
+    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> implements FastScroll.PopupCallbacks {
         private LayoutInflater inflater;
         private List<ItemDAO> items;
 
