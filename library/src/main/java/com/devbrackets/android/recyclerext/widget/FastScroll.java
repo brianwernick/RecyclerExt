@@ -166,7 +166,10 @@ public class FastScroll extends FrameLayout {
                 }
 
                 draggingHandle = true;
-                fingerCenterOffset = (handle.getY() + (handle.getHeight() / 2)) - event.getY();
+                float halfHandle = handle.getHeight() / 2F;
+
+                fingerCenterOffset = handle.getY() + halfHandle - event.getY();
+                fingerCenterOffset = boxValue(fingerCenterOffset, halfHandle);
                 handle.setSelected(true);
                 //Purposefully falls through
 
@@ -861,6 +864,22 @@ public class FastScroll extends FrameLayout {
     protected int getValueInRange(int min, int max, int value) {
         int minimum = Math.max(min, value);
         return Math.min(minimum, max);
+    }
+
+    /**
+     * Enforces a restriction on the <code>value</code> to be at most or at least
+     * the <code>amount</code>
+     *
+     * @param value The value value to make sure is no smaller or larger than the <code>amount</code>
+     * @param amount The largest amount the <code>value</code> can have
+     * @return The value boxed to the amount
+     */
+    protected float boxValue(float value, float amount) {
+        if (Math.abs(value) < Math.abs(amount)) {
+            return value;
+        }
+
+        return value < 0 ? -amount : amount;
     }
 
     /**
