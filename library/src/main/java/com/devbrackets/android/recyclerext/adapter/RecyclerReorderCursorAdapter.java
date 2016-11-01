@@ -21,6 +21,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.SparseIntArray;
 
 import java.util.LinkedList;
@@ -127,7 +128,7 @@ public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewH
         cursorPositionMap.put(newPosition, curFrom);
 
         cleanMap();
-        notifyDataSetChanged();
+        notifyItemReordered(originalPosition, newPosition);
     }
 
     /**
@@ -172,6 +173,17 @@ public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewH
         }
 
         return clone(cursorPositionMap);
+    }
+
+    /**
+     * Notifies the adapter that one item was moved from one position to another.
+     * This method can be overridden by subclasses that use {@link ItemTouchHelper} as a way of
+     * interacting with the {@link RecyclerView} elements to call {@link #notifyItemMoved(int, int)}.
+     * @param originalPosition The original position of the item
+     * @param newPosition The new position of the item
+     */
+    protected void notifyItemReordered(int originalPosition, int newPosition) {
+        notifyDataSetChanged();
     }
 
     /**
