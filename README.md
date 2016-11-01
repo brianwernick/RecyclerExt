@@ -32,7 +32,7 @@ repositories {
 
 dependencies {
     //...
-    compile 'com.devbrackets.android:recyclerext:1.3.1'
+    compile 'com.devbrackets.android:recyclerext:2.0.0'
 }
 ```
 
@@ -63,5 +63,5 @@ Attribution
 
  [JCenter]: https://bintray.com/brianwernick/maven/RecyclerExt/view#files
  [Website]: http://devbrackets.com/dev/libs/recyclerext.html
- [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/1.1.0/index.html
+ [Java Doc]: http://devbrackets.com/dev/libs/docs/recyclerext/2.0.0/index.html
  [Apache 2.0]: https://opensource.org/licenses/Apache-2.0

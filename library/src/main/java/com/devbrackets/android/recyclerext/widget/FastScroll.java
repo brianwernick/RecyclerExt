@@ -58,7 +58,7 @@ public class FastScroll extends FrameLayout {
     public static final long INVALID_POPUP_ID = -1;
 
     @Nullable
-    protected FastScrollPopupCallbacks popupCallbacks;
+    protected PopupCallbacks popupCallbacks;
 
     @NonNull
     @SuppressWarnings("NullableProblems")
@@ -194,15 +194,15 @@ public class FastScroll extends FrameLayout {
      * @param recyclerView The {@link RecyclerView} to attach to
      */
     public void attach(@NonNull final RecyclerView recyclerView) {
-        if (showBubble && !(recyclerView.getAdapter() instanceof FastScrollPopupCallbacks)) {
-            Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + FastScrollPopupCallbacks.class.getSimpleName());
+        if (showBubble && !(recyclerView.getAdapter() instanceof PopupCallbacks)) {
+            Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + PopupCallbacks.class.getSimpleName());
             return;
         }
 
         this.recyclerView = recyclerView;
 
         if (showBubble) {
-            popupCallbacks = (FastScrollPopupCallbacks) recyclerView.getAdapter();
+            popupCallbacks = (PopupCallbacks) recyclerView.getAdapter();
         }
 
         recyclerView.addOnScrollListener(scrollListener);
@@ -234,12 +234,12 @@ public class FastScroll extends FrameLayout {
             return;
         }
 
-        if (!(recyclerView.getAdapter() instanceof FastScrollPopupCallbacks)) {
-            Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + FastScrollPopupCallbacks.class.getSimpleName());
+        if (!(recyclerView.getAdapter() instanceof PopupCallbacks)) {
+            Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + PopupCallbacks.class.getSimpleName());
             return;
         }
 
-        popupCallbacks = (FastScrollPopupCallbacks) recyclerView.getAdapter();
+        popupCallbacks = (PopupCallbacks) recyclerView.getAdapter();
     }
 
     /**
@@ -946,7 +946,7 @@ public class FastScroll extends FrameLayout {
      * Callback used to request the title for the fast scroll bubble
      * when enabled.
      */
-    public interface FastScrollPopupCallbacks {
+    public interface PopupCallbacks {
         /**
          * Called when the section id specified with {@link #getSectionId(int)} changes,
          * indicating the popup text needs to be changed. This will only be called if
