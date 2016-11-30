@@ -19,13 +19,12 @@ package com.devbrackets.android.recyclerext.adapter.helper;
 import android.graphics.Canvas;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.support.v7.widget.helper.ItemTouchUIUtil;
 import android.view.View;
 
 
 /**
- * Package private class to keep implementations. Putting them inside ItemTouchUIUtil makes them
+ * Package private class to keep implementations. Putting them inside StatefulItemTouchUIUtil makes them
  * public API, which is not desired in this case.
  */
 class StatefulItemTouchUIUtilImpl {
@@ -122,7 +121,7 @@ class StatefulItemTouchUIUtilImpl {
         @Override
         public void onDraw(Canvas c, RecyclerView recyclerView, View view,
                            float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            if (actionState != ItemTouchHelper.ACTION_STATE_DRAG) {
+            if (actionState != StatefulItemTouchHelper.ACTION_STATE_DRAG) {
                 draw(c, recyclerView, view, dX, dY);
             }
         }
@@ -131,7 +130,7 @@ class StatefulItemTouchUIUtilImpl {
         public void onDrawOver(Canvas c, RecyclerView recyclerView,
                                View view, float dX, float dY,
                                int actionState, boolean isCurrentlyActive) {
-            if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+            if (actionState == StatefulItemTouchHelper.ACTION_STATE_DRAG) {
                 draw(c, recyclerView, view, dX, dY);
             }
         }
