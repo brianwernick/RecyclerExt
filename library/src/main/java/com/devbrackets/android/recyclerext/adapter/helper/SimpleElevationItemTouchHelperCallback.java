@@ -21,15 +21,14 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 /**
- * Extends the {@link android.support.v7.widget.helper.ItemTouchHelper.SimpleCallback} to provide
+ * Extends the {@link StatefulItemTouchHelper.SimpleCallback} to provide
  * support for specifying the elevation to use when an item is active (being dragged or swiped)
  */
 @SuppressWarnings("unused")
-public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
+public abstract class SimpleElevationItemTouchHelperCallback extends StatefulItemTouchHelper.SimpleCallback {
     public static final float DEFAULT_ACTIVE_ELEVATION_CHANGE = 1f; //NOTE: the support library implementation uses 1f as the default
 
     protected boolean isElevated = false;
@@ -43,13 +42,13 @@ public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHe
      * and / or {@link #getDragDirs(RecyclerView, RecyclerView.ViewHolder)}.
      *
      * @param dragDirs  Binary OR of direction flags in which the Views can be dragged. Must be composed of
-     *                  {@link ItemTouchHelper#LEFT}, {@link ItemTouchHelper#RIGHT},
-     *                  {@link ItemTouchHelper#START}, {@link ItemTouchHelper#END},
-     *                  {@link ItemTouchHelper#UP} and {@link ItemTouchHelper#DOWN}
+     *                  {@link StatefulItemTouchHelper#LEFT}, {@link StatefulItemTouchHelper#RIGHT},
+     *                  {@link StatefulItemTouchHelper#START}, {@link StatefulItemTouchHelper#END},
+     *                  {@link StatefulItemTouchHelper#UP} and {@link StatefulItemTouchHelper#DOWN}
      * @param swipeDirs Binary OR of direction flags in which the Views can be swiped. Must be composed of
-     *                  {@link ItemTouchHelper#LEFT}, {@link ItemTouchHelper#RIGHT},
-     *                  {@link ItemTouchHelper#START}, {@link ItemTouchHelper#END},
-     *                  {@link ItemTouchHelper#UP} and {@link ItemTouchHelper#DOWN}
+     *                  {@link StatefulItemTouchHelper#LEFT}, {@link StatefulItemTouchHelper#RIGHT},
+     *                  {@link StatefulItemTouchHelper#START}, {@link StatefulItemTouchHelper#END},
+     *                  {@link StatefulItemTouchHelper#UP} and {@link StatefulItemTouchHelper#DOWN}
      */
     public SimpleElevationItemTouchHelperCallback(int dragDirs, int swipeDirs) {
         this(dragDirs, swipeDirs, DEFAULT_ACTIVE_ELEVATION_CHANGE);
@@ -62,13 +61,13 @@ public abstract class SimpleElevationItemTouchHelperCallback extends ItemTouchHe
      * and / or {@link #getDragDirs(RecyclerView, RecyclerView.ViewHolder)}.
      *
      * @param dragDirs  Binary OR of direction flags in which the Views can be dragged. Must be composed of
-     *                  {@link ItemTouchHelper#LEFT}, {@link ItemTouchHelper#RIGHT},
-     *                  {@link ItemTouchHelper#START}, {@link ItemTouchHelper#END},
-     *                  {@link ItemTouchHelper#UP} and {@link ItemTouchHelper#DOWN}
+     *                  {@link StatefulItemTouchHelper#LEFT}, {@link StatefulItemTouchHelper#RIGHT},
+     *                  {@link StatefulItemTouchHelper#START}, {@link StatefulItemTouchHelper#END},
+     *                  {@link StatefulItemTouchHelper#UP} and {@link StatefulItemTouchHelper#DOWN}
      * @param swipeDirs Binary OR of direction flags in which the Views can be swiped. Must be composed of
-     *                  {@link ItemTouchHelper#LEFT}, {@link ItemTouchHelper#RIGHT},
-     *                  {@link ItemTouchHelper#START}, {@link ItemTouchHelper#END},
-     *                  {@link ItemTouchHelper#UP} and {@link ItemTouchHelper#DOWN}
+     *                  {@link StatefulItemTouchHelper#LEFT}, {@link StatefulItemTouchHelper#RIGHT},
+     *                  {@link StatefulItemTouchHelper#START}, {@link StatefulItemTouchHelper#END},
+     *                  {@link StatefulItemTouchHelper#UP} and {@link StatefulItemTouchHelper#DOWN}
      * @param activeElevationChange The elevation change to use when an item becomes active
      */
     public SimpleElevationItemTouchHelperCallback(int dragDirs, int swipeDirs, float activeElevationChange) {
