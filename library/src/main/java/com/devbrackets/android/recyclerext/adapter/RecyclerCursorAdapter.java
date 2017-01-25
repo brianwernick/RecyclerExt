@@ -32,7 +32,14 @@ import com.devbrackets.android.recyclerext.filter.CursorFilter;
 
 /**
  * A base cursor adapter for the RecyclerView
+ * @deprecated While this class functions as expected there are inherent issues with using cursors
+ * in long-living manners. For the vast majority of the time they will work correctly but on some
+ * devices (with old or customized SQLite implementations) holding on to cursors may lockup the
+ * database, slowdown access, or the cursors may automatically be closed; all of which would cause
+ * major issues. It is recommended that you convert the cursor in to a List of objects and use the
+ * appropriate adapters instead (e.g. {@link RecyclerListAdapter})
  */
+@Deprecated
 @SuppressWarnings("unused")
 public abstract class RecyclerCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable, CursorFilter.CursorFilterClient {
     protected static final String DEFAULT_ID_COLUMN_NAME = "_id";

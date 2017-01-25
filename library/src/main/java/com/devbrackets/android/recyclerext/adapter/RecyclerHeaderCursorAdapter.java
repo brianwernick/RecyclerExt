@@ -34,7 +34,15 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  *
  * @param <H> The Header {@link ViewHolder}
  * @param <C> The Child or content {@link ViewHolder}
+ *
+ * @deprecated While this class functions as expected there are inherent issues with using cursors
+ * in long-living manners. For the vast majority of the time they will work correctly but on some
+ * devices (with old or customized SQLite implementations) holding on to cursors may lockup the
+ * database, slowdown access, or the cursors may automatically be closed; all of which would cause
+ * major issues. It is recommended that you convert the cursor in to a List of objects and use the
+ * appropriate adapters instead (e.g. {@link RecyclerHeaderListAdapter})
  */
+@Deprecated
 @SuppressWarnings("unused")
 public abstract class RecyclerHeaderCursorAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerCursorAdapter<ViewHolder>
         implements HeaderApi<H, C> {

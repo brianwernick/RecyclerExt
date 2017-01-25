@@ -30,7 +30,15 @@ import java.util.List;
 /**
  * A Cursor adapter for the RecyclerView that correctly keeps track of reorder changes made by the
  * {@link com.devbrackets.android.recyclerext.decoration.ReorderDecoration}
+ *
+ * @deprecated While this class functions as expected there are inherent issues with using cursors
+ * in long-living manners. For the vast majority of the time they will work correctly but on some
+ * devices (with old or customized SQLite implementations) holding on to cursors may lockup the
+ * database, slowdown access, or the cursors may automatically be closed; all of which would cause
+ * major issues. It is recommended that you convert the cursor in to a List of objects and use the
+ * appropriate adapters instead (e.g. {@link RecyclerListAdapter})
  */
+@Deprecated
 public abstract class RecyclerReorderCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerCursorAdapter<VH> {
     @NonNull
     private SparseIntArray cursorPositionMap = new SparseIntArray();
