@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:clipChildren="false"
-                android:background="@android:color/transparent"
-                tools:ignore="UseCompoundDrawables">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:clipChildren="false"
+    tools:ignore="UseCompoundDrawables">
 
     <com.devbrackets.android.recyclerext.widget.PositionSupportImageView
         android:id="@+id/recyclerext_fast_scroll_handle"
@@ -13,25 +14,28 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
+        android:background="@drawable/recyclerext_fast_scroll_handle"
         android:paddingLeft="8dp"
         android:paddingStart="8dp"
-        android:background="@drawable/recyclerext_fast_scroll_handle"
+        android:visibility="invisible"
         tools:backgroundTint="@color/recyclerext_fast_scroll_handle_color_default"
-        tools:ignore="ContentDescription,RtlHardcoded,RtlSymmetry"/>
+        tools:ignore="ContentDescription,RtlHardcoded,RtlSymmetry"
+        tools:visibility="visible"/>
 
     <com.devbrackets.android.recyclerext.widget.PositionSupportTextView
         android:id="@+id/recyclerext_fast_scroll_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/recyclerext_fast_scroll_handle"
+        android:layout_toStartOf="@+id/recyclerext_fast_scroll_handle"
         android:background="@drawable/recyclerext_fast_scroll_bubble"
         android:gravity="center"
         android:textColor="@color/recyclerext_fast_scroll_bubble_text_color_default"
         android:textSize="@dimen/recyclerext_fast_scroll_bubble_text_size_default"
-        android:visibility="visible"
-        tools:ignore="RtlHardcoded"
+        android:visibility="invisible"
         tools:backgroundTint="@color/recyclerext_fast_scroll_bubble_color_default"
+        tools:ignore="RtlHardcoded"
         tools:text="A"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/recyclerext_fast_scroll_handle"
-        android:layout_toStartOf="@+id/recyclerext_fast_scroll_handle"/>
+        tools:visibility="visible"/>
 </RelativeLayout>

@@ -104,7 +104,7 @@ public class FastScroll extends FrameLayout {
     /**
      * Only {@code null} before an initial request for a visibility change
      */
-    protected Boolean requestedHandleVisibility;
+    protected boolean requestedHandleVisibility;
     protected long currentSectionId = INVALID_POPUP_ID;
 
     public FastScroll(Context context) {
@@ -717,7 +717,7 @@ public class FastScroll extends FrameLayout {
      * @param toVisible {@code true} if the drag handle should be visible at the end of the change
      */
     protected void updateHandleVisibility(boolean toVisible) {
-        if (requestedHandleVisibility != null && requestedHandleVisibility == toVisible) {
+        if (requestedHandleVisibility == toVisible) {
             return;
         }
 
@@ -892,7 +892,7 @@ public class FastScroll extends FrameLayout {
             int verticalRange = recyclerView.computeVerticalScrollRange();
 
             //Makes sure the FastScroll is correctly hidden on shorter lists
-            if (hideOnShortLists && verticalRange < calculatedMinDisplayHeight) {
+            if (hideOnShortLists && (verticalRange < calculatedMinDisplayHeight || calculatedMinDisplayHeight == 0)) {
                 updateHandleVisibility(false);
                 return;
             }
