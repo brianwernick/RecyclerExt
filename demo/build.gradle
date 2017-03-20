@@ -1,12 +1,7 @@
 apply plugin: 'com.android.application'
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 ext {
-    supportLibVersion = "25.2.0"
+    supportLibVersion = "25.3.0"
 }
 
 dependencies {

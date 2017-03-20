@@ -11,13 +11,8 @@ def libraryGroupId = 'com.devbrackets.android'
 def libraryBaseName = 'recyclerext'
 def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 ext {
-    supportLibVersion = "25.2.0"
+    supportLibVersion = "25.3.0"
 }
 
 dependencies {
