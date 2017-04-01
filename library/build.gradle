@@ -4,7 +4,7 @@ apply plugin: 'com.novoda.bintray-release'
 
 def versionMajor = 2
 def versionMinor = 1
-def versionPatch = 0
+def versionPatch = 1
 
 // Maven GAV
 def libraryGroupId = 'com.devbrackets.android'
@@ -12,7 +12,7 @@ def libraryBaseName = 'recyclerext'
 def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
 
 ext {
-    supportLibVersion = "25.3.0"
+    supportLibVersion = "25.3.1"
 }
 
 dependencies {
