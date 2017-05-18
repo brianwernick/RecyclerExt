@@ -23,8 +23,8 @@ import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
 
 public class FastScrollHandleVisibilityAnimation extends AnimationSet {
-    private static final int DURATION = 250; //milliseconds
-    private final boolean toVisible;
+    protected static final int DURATION = 250; //milliseconds
+    protected final boolean toVisible;
 
     public FastScrollHandleVisibilityAnimation(@NonNull View handle, boolean toVisible) {
         super(false);
@@ -33,7 +33,7 @@ public class FastScrollHandleVisibilityAnimation extends AnimationSet {
         setup(handle);
     }
 
-    private void setup(@NonNull View handle) {
+    protected void setup(@NonNull View handle) {
         float xDelta = handle.getWidth();
 
         float startPos = toVisible ? xDelta : 0F;
@@ -56,8 +56,8 @@ public class FastScrollHandleVisibilityAnimation extends AnimationSet {
      * making sure the handle has the correct visibilities at the start and end of the animation
      */
     protected static class HandleAnimationListener implements Animation.AnimationListener {
-        private View handle;
-        private boolean toVisible;
+        protected View handle;
+        protected boolean toVisible;
 
         public HandleAnimationListener(View handle, boolean toVisible) {
             this.handle = handle;
@@ -71,7 +71,7 @@ public class FastScrollHandleVisibilityAnimation extends AnimationSet {
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            handle.setVisibility(toVisible ? View.VISIBLE : View.GONE);
+            handle.setVisibility(toVisible ? View.VISIBLE : View.INVISIBLE);
         }
 
         @Override
