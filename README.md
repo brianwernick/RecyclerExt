@@ -4,7 +4,6 @@ An Android RecyclerView enhancement library focused on simplifying
 common use cases and filling in gaps between the ListView and the
 RecyclerView.
 
- * Database Cursor Adapters
  * Item Reordering
  * Header Adapters (Sticky and non)
  * Enhanced LayoutManagers
