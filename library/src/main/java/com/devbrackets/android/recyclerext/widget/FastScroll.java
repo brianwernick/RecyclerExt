@@ -612,7 +612,7 @@ public class FastScroll extends FrameLayout {
             ratio = (y - halfHandle) / (height - handle.getHeight());
         }
 
-        //Performs the distance and scrolling
+        //Performs the scrolling and updates the bubble
         scrollToLocation(ratio);
         updateBubbleText((float)recyclerView.computeVerticalScrollOffset() / (float)recyclerView.computeVerticalScrollRange());
     }

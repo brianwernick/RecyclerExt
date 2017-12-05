@@ -16,9 +16,7 @@
 
 package com.devbrackets.android.recyclerext.decoration;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -44,14 +42,13 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Nullable
-    private Bitmap stickyHeader;
+    private RecyclerView.ViewHolder stickyViewHolder;
 
     private RecyclerView parent;
     private RecyclerView.Adapter adapter;
     private AdapterDataObserver dataObserver;
     private StickyViewScrollListener scrollListener;
 
-    private int stickyHeaderLeft, stickyHeaderTop;
     private long currentStickyId = Long.MIN_VALUE;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
 
@@ -82,8 +79,15 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        if (stickyHeader != null) {
-            c.drawBitmap(stickyHeader, stickyHeaderLeft, stickyHeaderTop, null);
+        RecyclerView.ViewHolder holder = stickyViewHolder;
+        if (holder == null) {
+            return;
+        }
+
+        int stickyViewId = ((HeaderApi) adapter).getCustomStickyHeaderViewId();
+        View stickyView = stickyViewId != 0 ? holder.itemView.findViewById(stickyViewId) : holder.itemView;
+        if (stickyView != null) {
+            stickyView.draw(c);
         }
     }
 
@@ -106,11 +110,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * Clears the current sticky header from the view.
      */
     public void clearStickyHeader() {
-        if (stickyHeader != null) {
-            stickyHeader.recycle();
-        }
-
-        stickyHeader = null;
+        stickyViewHolder = null;
         currentStickyId = RecyclerView.NO_ID;
     }
 
@@ -130,27 +130,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      */
     public LayoutOrientation getOrientation() {
         return orientation;
-    }
-
-    /**
-     * Generates the Bitmap that will be used to represent the view stuck at the top of the
-     * parent RecyclerView.
-     *
-     * @param view The view to create the drag bitmap from
-     * @return The bitmap representing the drag view
-     */
-    private Bitmap createStickyViewBitmap(View view) {
-        //Makes sure the location opposite the scroll orientation is persisted
-        stickyHeaderLeft = orientation == LayoutOrientation.HORIZONTAL ? 0 : view.getLeft();
-        stickyHeaderTop = orientation == LayoutOrientation.VERTICAL ? 0 : view.getTop();
-
-        Rect stickyViewBounds = new Rect(0, 0, view.getRight() - view.getLeft(), view.getBottom() - view.getTop());
-
-        Bitmap bitmap = Bitmap.createBitmap(stickyViewBounds.width(), stickyViewBounds.height(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        view.draw(canvas);
-
-        return bitmap;
     }
 
     /**
@@ -175,8 +154,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private class StickyViewScrollListener extends RecyclerView.OnScrollListener {
         private int[] windowLocation = new int[2];
         private int parentStart = Integer.MIN_VALUE;
-
-        private RecyclerView.ViewHolder fallbackHolder;
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -229,26 +206,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @param headerPosition The position in the RecyclerView for the header
          */
         private void updateHeader(long headerId, int headerPosition) {
-            //Retrieve the header ViewHolder
-            RecyclerView.ViewHolder holder = getHeaderViewHolder(headerPosition);
-            if (holder == null) {
-                return;
-            }
-
             currentStickyId = headerId;
-
-            //Creates the actual sticky header (or view)
-            int stickyViewId = getCustomStickyViewId();
-            if (stickyViewId != 0) {
-                View stickyView = holder.itemView.findViewById(stickyViewId);
-                if (stickyView != null) {
-                    stickyHeader = createStickyViewBitmap(stickyView);
-                    return;
-                }
-            }
-
-            //If the user hasn't specified a sticky view id or it was null, use the entire view holder
-            stickyHeader = createStickyViewBitmap(holder.itemView);
+            stickyViewHolder = getHeaderViewHolder(headerPosition);
         }
 
         /**
@@ -336,23 +295,16 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         @Nullable
         @SuppressWarnings("unchecked")
         private RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
-            //If we can get the actual viewHolder for the header then return that
-            RecyclerView.ViewHolder holder = parent.findViewHolderForAdapterPosition(headerPosition);
-            if (holder != null) {
-                return holder;
-            }
-
-            //Otherwise try to create a temporary one
-            fallbackHolder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
+            RecyclerView.ViewHolder holder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
 
             //Measure it
-            if (!measureViewHolder(fallbackHolder)) {
+            if (!measureViewHolder(holder)) {
                 return null;
             }
 
-            //Bind it to get the correct values and return the temporary holder
-            adapter.onBindViewHolder(fallbackHolder, headerPosition);
-            return fallbackHolder;
+            //Bind it to get the correct values
+            adapter.onBindViewHolder(holder, headerPosition);
+            return holder;
         }
 
         /**
