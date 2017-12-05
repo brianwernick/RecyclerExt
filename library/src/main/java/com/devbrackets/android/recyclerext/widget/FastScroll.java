@@ -16,6 +16,7 @@
 
 package com.devbrackets.android.recyclerext.widget;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -484,8 +485,8 @@ public class FastScroll extends FrameLayout {
         LayoutInflater inflater = LayoutInflater.from(context);
         inflater.inflate(R.layout.recyclerext_fast_scroll, this, true);
 
-        bubble = (PositionSupportTextView) findViewById(R.id.recyclerext_fast_scroll_bubble);
-        handle = (PositionSupportImageView) findViewById(R.id.recyclerext_fast_scroll_handle);
+        bubble = findViewById(R.id.recyclerext_fast_scroll_bubble);
+        handle = findViewById(R.id.recyclerext_fast_scroll_handle);
 
         bubble.setVisibility(View.GONE);
 
@@ -613,19 +614,7 @@ public class FastScroll extends FrameLayout {
 
         //Performs the distance and scrolling
         scrollToLocation(ratio);
-
-        //Displays the popup bubble when enabled
-        if (showBubble && popupCallbacks != null) {
-            int itemCount = recyclerView.getAdapter().getItemCount();
-            int position = getValueInRange(0, itemCount - 1, (int) (ratio * itemCount));
-
-            long sectionId = popupCallbacks.getSectionId(position);
-            if (currentSectionId != sectionId) {
-                currentSectionId = sectionId;
-                String bubbleText = popupCallbacks.getPopupText(position, sectionId);
-                bubble.setText(bubbleText);
-            }
-        }
+        updateBubbleText((float)recyclerView.computeVerticalScrollOffset() / (float)recyclerView.computeVerticalScrollRange());
     }
 
     /**
@@ -689,6 +678,21 @@ public class FastScroll extends FrameLayout {
             case BOTTOM_TO_CENTER: //Bubble bottom to handle center
                 bubble.setY(getValueInRange(0, maxY, (int)(handleCenter - bubble.getHeight())));
                 break;
+        }
+    }
+
+    protected void updateBubbleText(float ratio) {
+        if (!showBubble || popupCallbacks == null) {
+            return;
+        }
+
+        int itemCount = recyclerView.getAdapter().getItemCount();
+        int position = getValueInRange(0, itemCount - 1, (int) (ratio * itemCount));
+
+        long sectionId = popupCallbacks.getSectionId(position);
+        if (currentSectionId != sectionId) {
+            currentSectionId = sectionId;
+            bubble.setText(popupCallbacks.getPopupText(position, sectionId));
         }
     }
 
@@ -808,6 +812,7 @@ public class FastScroll extends FrameLayout {
      * @return The drawable associated with {@code resourceId}
      */
     @Nullable
+    @SuppressLint("RestrictedApi")
     protected Drawable getDrawable(@DrawableRes int resourceId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return getResources().getDrawable(resourceId, getContext().getTheme());
@@ -824,6 +829,7 @@ public class FastScroll extends FrameLayout {
      * @param index The index in the {@code typedArray} for the drawable
      */
     @Nullable
+    @SuppressLint("RestrictedApi")
     protected Drawable getDrawable(@NonNull TypedArray typedArray, int index) {
         int imageResId = typedArray.getResourceId(index, 0);
         if (imageResId == 0) {
