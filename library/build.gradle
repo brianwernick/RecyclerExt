@@ -12,7 +12,7 @@ def libraryBaseName = 'recyclerext'
 def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
 
 ext {
-    supportLibVersion = "26.1.0"
+    supportLibVersion = "27.0.1"
 }
 
 dependencies {
@@ -21,12 +21,11 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    compileSdkVersion 27
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
+        targetSdkVersion 27
 
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -42,10 +41,6 @@ android {
     }
 
     packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 }

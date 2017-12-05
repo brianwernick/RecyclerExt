@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 ext {
-    supportLibVersion = "26.1.0"
+    supportLibVersion = "27.0.1"
 }
 
 dependencies {
@@ -13,8 +13,7 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    compileSdkVersion 27
 
     lintOptions {
         abortOnError false
@@ -23,7 +22,7 @@ android {
     defaultConfig {
         applicationId "com.devbrackets.android.recyclerextdemo"
         minSdkVersion 14
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
     }
