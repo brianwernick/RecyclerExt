@@ -6,12 +6,10 @@ package com.devbrackets.android.recyclerextdemo.data;
  */
 public enum Example {
     GRID("Grid"),
-    CURSOR("Cursor"),
     HEADER_LIST("Header List"),
     HEADER_AS_CHILD_LIST("Contacts Header List"),
     REORDER_LIST_HORIZONTAL("Reorder List Horizontal"),
-    REORDER_LIST_VERTICAL("Reorder List Vertical"),
-    REORDER_CURSOR_VERTICAL("Reorder Cursor Vertical");
+    REORDER_LIST_VERTICAL("Reorder List Vertical");
 
     private final String title;
 

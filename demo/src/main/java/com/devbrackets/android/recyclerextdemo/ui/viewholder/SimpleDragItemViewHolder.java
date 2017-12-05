@@ -22,7 +22,7 @@ public class SimpleDragItemViewHolder extends RecyclerView.ViewHolder {
     public SimpleDragItemViewHolder(View itemView) {
         super(itemView);
 
-        textView = (TextView)itemView.findViewById(R.id.simple_drag_item_text_view);
+        textView = itemView.findViewById(R.id.simple_drag_item_text_view);
     }
 
     public void setText(String text) {

@@ -20,7 +20,7 @@ public class GridViewHolder extends RecyclerView.ViewHolder {
 
     public GridViewHolder(View itemView) {
         super(itemView);
-        textView = (TextView)itemView.findViewById(R.id.text);
+        textView = itemView.findViewById(R.id.text);
     }
 
     public void setText(@Nullable CharSequence text) {

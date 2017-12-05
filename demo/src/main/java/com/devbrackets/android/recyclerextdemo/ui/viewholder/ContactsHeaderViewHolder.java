@@ -23,8 +23,8 @@ public class ContactsHeaderViewHolder extends RecyclerView.ViewHolder {
     public ContactsHeaderViewHolder(View itemView) {
         super(itemView);
 
-        textView = (TextView)itemView.findViewById(R.id.contacts_header_item_text_view);
-        regionTextView = (TextView)itemView.findViewById(R.id.contacts_header_item_region_text_view);
+        textView = itemView.findViewById(R.id.contacts_header_item_text_view);
+        regionTextView = itemView.findViewById(R.id.contacts_header_item_region_text_view);
     }
 
     public void setText(String text) {

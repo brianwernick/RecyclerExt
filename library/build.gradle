@@ -6,10 +6,9 @@ def versionMajor = 3
 def versionMinor = 0
 def versionPatch = 0
 
-// Maven GAV
 def libraryGroupId = 'com.devbrackets.android'
 def libraryBaseName = 'recyclerext'
-def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}" // release version
+def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
 
 ext {
     supportLibVersion = "27.0.1"

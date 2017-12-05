@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
+import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderListAdapter;
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
@@ -35,9 +36,9 @@ public class HeaderAsChildListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
-        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
+        recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler);
         return view;
     }
 
@@ -68,11 +69,12 @@ public class HeaderAsChildListFragment extends Fragment {
      * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderAdapter<ContactsHeaderViewHolder, SimpleTextViewHolder> {
+    private class HeaderAdapter extends RecyclerHeaderListAdapter<ContactsHeaderViewHolder, SimpleTextViewHolder, ItemDAO> {
         private LayoutInflater inflater;
-        private List<ItemDAO> items;
 
         public HeaderAdapter(Context context, List<ItemDAO> items) {
+            super();
+
             this.items = items;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -107,11 +109,6 @@ public class HeaderAsChildListFragment extends Fragment {
         public void onBindChildViewHolder(@NonNull SimpleTextViewHolder holder, int childPosition) {
             holder.setText(items.get(childPosition).getText());
             holder.setSpacingVisible(true);
-        }
-
-        @Override
-        public int getChildCount() {
-            return items.size();
         }
 
         /**

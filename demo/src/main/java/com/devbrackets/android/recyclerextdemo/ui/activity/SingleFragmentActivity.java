@@ -6,11 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.Example;
-import com.devbrackets.android.recyclerextdemo.ui.fragment.CursorFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.GridFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderAsChildListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderListFragment;
-import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderCursorFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListFragment;
 import com.devbrackets.android.recyclerextdemo.ui.fragment.ReorderListHorizontalFragment;
 
@@ -44,14 +42,6 @@ public class SingleFragmentActivity extends AppCompatActivity {
                 pushReorderListFragment();
                 break;
 
-            case CURSOR:
-                pushCursorFragment();
-                break;
-
-            case REORDER_CURSOR_VERTICAL:
-                pushReorderCursorFragment();
-                break;
-
             case HEADER_LIST:
                 pushHeaderListFragment();
                 break;
@@ -78,16 +68,6 @@ public class SingleFragmentActivity extends AppCompatActivity {
 
     private void pushGridFragment() {
         Fragment fragment = GridFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
-    }
-
-    private void pushCursorFragment() {
-        Fragment fragment = CursorFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
-    }
-
-    private void pushReorderCursorFragment() {
-        Fragment fragment = ReorderCursorFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 

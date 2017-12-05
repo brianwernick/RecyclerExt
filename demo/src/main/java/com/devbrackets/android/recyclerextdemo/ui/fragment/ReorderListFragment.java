@@ -32,7 +32,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
 
-        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
+        recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler);
         setupRecyclerExt();
 
         return view;

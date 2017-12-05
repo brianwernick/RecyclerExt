@@ -11,9 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
+import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderListAdapter;
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
+import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
@@ -38,8 +39,8 @@ public class HeaderListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
-        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
-        fastScroll = (FastScroll)view.findViewById(R.id.recyclerext_fast_scroll);
+        recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler);
+        fastScroll = view.findViewById(R.id.recyclerext_fast_scroll);
         return view;
     }
 
@@ -72,11 +73,12 @@ public class HeaderListFragment extends Fragment {
      * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderAdapter<SimpleTextViewHolder, SimpleTextViewHolder> implements FastScroll.PopupCallbacks {
+    private class HeaderAdapter extends RecyclerHeaderListAdapter<SimpleTextViewHolder, SimpleTextViewHolder, ItemDAO> implements FastScroll.PopupCallbacks {
         private LayoutInflater inflater;
-        private List<ItemDAO> items;
 
         public HeaderAdapter(Context context, List<ItemDAO> items) {
+            super();
+
             this.items = items;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
@@ -102,11 +104,6 @@ public class HeaderListFragment extends Fragment {
         @Override
         public void onBindChildViewHolder(@NonNull SimpleTextViewHolder holder, int childPosition) {
             holder.setText(items.get(childPosition).getText());
-        }
-
-        @Override
-        public int getChildCount() {
-            return items.size();
         }
 
         /**

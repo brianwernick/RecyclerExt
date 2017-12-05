@@ -1,20 +1,21 @@
 package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
-import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter;
+import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
 import com.devbrackets.android.recyclerext.layoutmanager.AutoColumnGridLayoutManager;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.GridViewHolder;
+
+import java.util.List;
 
 /**
  * An example of the {@link AutoColumnGridLayoutManager}
@@ -30,7 +31,7 @@ public class GridFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
-        recyclerView = (RecyclerView)view.findViewById(R.id.recyclerext_fragment_recycler);
+        recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler);
         return view;
     }
 
@@ -48,7 +49,7 @@ public class GridFragment extends Fragment {
      * on the RecyclerView.
      */
     private void setupRecyclerExt() {
-        CursorAdapter cursorAdapter = new CursorAdapter(ItemDAO.findCursorAll(dbHelper.getWritableDatabase()));
+        ListAdapter adapter = new ListAdapter(ItemDAO.findAll(dbHelper.getWritableDatabase()));
 
         //Sets up the AutoColumnGridLayoutManager
         int width = getActivity().getResources().getDimensionPixelSize(R.dimen.grid_item_width);
@@ -59,16 +60,17 @@ public class GridFragment extends Fragment {
         layoutManager.setSpacingMethod(AutoColumnGridLayoutManager.SpacingMethod.ALL);
 
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(cursorAdapter);
+        recyclerView.setAdapter(adapter);
     }
 
     /**
-     * The adapter that extends the {@link RecyclerCursorAdapter} to provide the
+     * The adapter that extends the {@link RecyclerListAdapter} to provide the
      * minimum number of methods to function
      */
-    private class CursorAdapter extends RecyclerCursorAdapter<GridViewHolder> {
-        public CursorAdapter(Cursor cursor) {
-            super(cursor);
+    private class ListAdapter extends RecyclerListAdapter<GridViewHolder, ItemDAO> {
+
+        public ListAdapter(@Nullable List<ItemDAO> itemList) {
+            super(itemList);
         }
 
         @Override
@@ -77,8 +79,8 @@ public class GridFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull GridViewHolder holder, @NonNull Cursor cursor, int position) {
-            ItemDAO item = new ItemDAO(cursor);
+        public void onBindViewHolder(GridViewHolder holder, int position) {
+            ItemDAO item = items.get(position);
             holder.setText(item.getText() != null ? item.getText() : "");
         }
     }

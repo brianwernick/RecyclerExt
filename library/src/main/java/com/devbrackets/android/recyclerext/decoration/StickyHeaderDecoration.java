@@ -27,8 +27,6 @@ import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
-import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderCursorAdapter;
-import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderListAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 
 /**
@@ -69,12 +67,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * @param parent The RecyclerView to couple the ItemDecoration to
      */
     public StickyHeaderDecoration(@NonNull RecyclerView parent) {
-        boolean headerAdapter = parent.getAdapter() instanceof RecyclerHeaderAdapter ||
-                parent.getAdapter() instanceof RecyclerHeaderCursorAdapter ||
-                parent.getAdapter() instanceof RecyclerHeaderListAdapter;
-
-        if (parent.getAdapter() == null || !headerAdapter) {
-            throw new ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter, RecyclerHeaderListAdapter or RecyclerHeaderCursorAdapter");
+        if (parent.getAdapter() == null || !(parent.getAdapter() instanceof HeaderApi)) {
+            throw new ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter, RecyclerHeaderListAdapter or implement HeaderApi");
         }
 
         this.parent = parent;
@@ -147,8 +141,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      */
     private Bitmap createStickyViewBitmap(View view) {
         //Makes sure the location opposite the scroll orientation is persisted
-         stickyHeaderLeft = orientation == LayoutOrientation.HORIZONTAL ? 0 : view.getLeft();
-         stickyHeaderTop = orientation == LayoutOrientation.VERTICAL ? 0 : view.getTop();
+        stickyHeaderLeft = orientation == LayoutOrientation.HORIZONTAL ? 0 : view.getLeft();
+        stickyHeaderTop = orientation == LayoutOrientation.VERTICAL ? 0 : view.getTop();
 
         Rect stickyViewBounds = new Rect(0, 0, view.getRight() - view.getLeft(), view.getBottom() - view.getTop());
 
@@ -297,10 +291,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @return The id for the header or {@link RecyclerView#NO_ID}
          */
         private long getHeaderId(RecyclerView.Adapter headerAdapter, int childPosition) {
-            if (headerAdapter instanceof RecyclerHeaderAdapter) {
-                return ((RecyclerHeaderAdapter)adapter).getHeaderId(childPosition);
-            } else if (headerAdapter instanceof RecyclerHeaderCursorAdapter) {
-                return ((RecyclerHeaderCursorAdapter)adapter).getHeaderId(childPosition);
+            if (headerAdapter instanceof HeaderApi) {
+                return ((HeaderApi) adapter).getHeaderId(childPosition);
             }
 
             return RecyclerView.NO_ID;
@@ -315,33 +307,22 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @return The associated headers position or {@link RecyclerView#NO_POSITION}
          */
         private int getHeaderPosition(RecyclerView.Adapter headerAdapter, long headerId) {
-            if (headerAdapter instanceof RecyclerHeaderAdapter) {
-                return ((RecyclerHeaderAdapter)adapter).getHeaderPosition(headerId);
-            } else if (headerAdapter instanceof RecyclerHeaderCursorAdapter) {
-                return ((RecyclerHeaderCursorAdapter)adapter).getHeaderPosition(headerId);
+            if (headerAdapter instanceof HeaderApi) {
+                return ((HeaderApi) adapter).getHeaderPosition(headerId);
             }
 
             return RecyclerView.NO_POSITION;
         }
 
         private int getHeaderViewType(int headerPosition) {
-            int rawType;
-            if (adapter instanceof RecyclerHeaderAdapter) {
-                rawType = ((RecyclerHeaderAdapter)adapter).getHeaderViewType(headerPosition);
-            } else {
-                rawType = ((RecyclerHeaderCursorAdapter) adapter).getHeaderViewType(headerPosition);
-            }
+            int rawType = ((HeaderApi) adapter).getHeaderViewType(headerPosition);
 
             //Make sure that this is treated as a header type
             return rawType | HeaderApi.HEADER_VIEW_TYPE_MASK;
         }
 
         private int getCustomStickyViewId() {
-            if (adapter instanceof RecyclerHeaderAdapter) {
-                return ((RecyclerHeaderAdapter)adapter).getCustomStickyHeaderViewId();
-            }
-
-            return ((RecyclerHeaderCursorAdapter) adapter).getCustomStickyHeaderViewId();
+            return ((HeaderApi) adapter).getCustomStickyHeaderViewId();
         }
 
         /**
@@ -381,7 +362,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @return True if the <code>holder</code> was correctly sized
          */
         private boolean measureViewHolder(RecyclerView.ViewHolder holder) {
-            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams)holder.itemView.getLayoutParams();
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
 
 
             //If the parent ViewGroup wasn't specified when inflating the view (holder.itemView) then the LayoutParams will be null and

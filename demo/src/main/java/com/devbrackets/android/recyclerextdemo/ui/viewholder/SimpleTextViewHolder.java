@@ -24,7 +24,7 @@ public class SimpleTextViewHolder extends RecyclerView.ViewHolder {
     public SimpleTextViewHolder(View itemView) {
         super(itemView);
 
-        textView = (TextView)itemView.findViewById(R.id.simple_text_text_view);
+        textView = itemView.findViewById(R.id.simple_text_text_view);
         spacing = itemView.findViewById(R.id.simple_text_spacing);
     }
 
