@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
@@ -48,6 +49,9 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private RecyclerView.Adapter adapter;
     private AdapterDataObserver dataObserver;
     private StickyViewScrollListener scrollListener;
+
+    @Nullable
+    private StickyViewTouchInterceptor touchInterceptor;
 
     private long currentStickyId = Long.MIN_VALUE;
     private LayoutOrientation orientation = LayoutOrientation.VERTICAL;
@@ -100,6 +104,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
         adapter.unregisterAdapterDataObserver(dataObserver);
         parent.removeOnScrollListener(scrollListener);
+        setAllowStickyHeaderTouches(false);
 
         adapter = null;
         dataObserver = null;
@@ -133,6 +138,33 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     }
 
     /**
+     * Retrieves if the decoration currently allows touch events to be passed to the
+     * Sticky headers.
+     *
+     * @return <code>true</code> if sticky header touching is allowed
+     */
+    public boolean getAllowStickyHeaderTouches() {
+        return touchInterceptor != null;
+    }
+
+    /**
+     * Enables or disables touches from being passed to the sticky headers.
+     * When enabled the touch events will be passed through to the view (ViewHolder) that
+     * represents the header currently stickied.
+     *
+     * @param allowTouches <code>true</code> to enable sticky header touches
+     */
+    public void setAllowStickyHeaderTouches(boolean allowTouches) {
+        if (allowTouches && touchInterceptor == null) {
+            touchInterceptor = new StickyViewTouchInterceptor();
+            parent.addOnItemTouchListener(touchInterceptor);
+        } else if (!allowTouches && touchInterceptor != null) {
+            parent.removeOnItemTouchListener(touchInterceptor);
+            touchInterceptor = null;
+        }
+    }
+
+    /**
      * An observer to watch the adapter for changes so that we can update the
      * current sticky header
      */
@@ -141,6 +173,109 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         public void onChanged() {
             //For now we just clear the stick header
             clearStickyHeader();
+        }
+    }
+
+    /**
+     * Handles intercepting touch events in the RecyclerView to handle interaction in the
+     * sticky header.
+     */
+    private class StickyViewTouchInterceptor implements RecyclerView.OnItemTouchListener {
+        private boolean allowInterception = true;
+        private boolean capturedTouchDown = false;
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
+            // Ignores touch events we don't want to intercept
+            if (event.getAction() != MotionEvent.ACTION_DOWN && !capturedTouchDown) {
+                return false;
+            }
+
+            View stickyView = getStickyView();
+            if (stickyView == null) {
+                capturedTouchDown = false;
+                return false;
+            }
+
+            // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                capturedTouchDown = false;
+            }
+
+            // Determine if the event is boxed by the view and pass the event through
+            boolean bounded = (event.getX() >= stickyView.getX() && event.getX() <= stickyView.getX() + stickyView.getMeasuredWidth()) &&
+                    (event.getY() >= stickyView.getY() && event.getY() <= stickyView.getY() + stickyView.getMeasuredHeight());
+
+            if (!bounded) {
+                return false;
+            }
+
+            // Updates the filter
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                capturedTouchDown = true;
+            }
+
+            return dispatchChildTouchEvent(stickyView, event);
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent event) {
+            // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                capturedTouchDown = false;
+            }
+
+            View stickyView = getStickyView();
+            if (stickyView == null) {
+                return;
+            }
+
+            dispatchChildTouchEvent(stickyView, event);
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            allowInterception = !disallowIntercept;
+        }
+
+        @Nullable
+        private View getStickyView() {
+            if (!allowInterception) {
+                return null;
+            }
+
+            // No sticky ViewHolder to intercept for
+            RecyclerView.ViewHolder holder = stickyViewHolder;
+            if (holder == null) {
+                return null;
+            }
+
+            // If we have a ViewHolder we should have a view, but just to be safe we check
+            int stickyViewId = ((HeaderApi) adapter).getCustomStickyHeaderViewId();
+            return stickyViewId != 0 ? holder.itemView.findViewById(stickyViewId) : holder.itemView;
+        }
+
+        private boolean dispatchChildTouchEvent(@NonNull View child, @NonNull MotionEvent event) {
+            //TODO: this doesn't work because the sticky ViewHolder hasn't been attached to a parent
+            // And because the RecyclerView requires children to have a layoutPosition and we would have other issues
+            // So we can attach it to the parent.getParent() however that depends on what layout the
+            // RecyclerView is contained in (a relative layout or constraint layout would be fine, but a linear
+            // layout, etc. wouldn't).
+            // Other sticky header libraries allow just a single touch target for the entire header
+            // so we have 2 options that I can see:
+            // 1. Have a single touch target for the sticky header
+            // 2. When sticky header touch is enabled we need to (includes animations, etc.)
+            //      a. require the RV is inside a RelativeLayout
+            //      b. require the user to pass in a view that can contain the sticky header
+            // NOTE: if we do #2 then we don't need to perform an onDrawOver custom draw
+
+            // Pass the event through
+            boolean handledEvent = child.dispatchTouchEvent(event);
+            if (handledEvent) {
+                parent.postInvalidate();
+            }
+
+            return handledEvent;
         }
     }
 
@@ -278,10 +413,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
             //Make sure that this is treated as a header type
             return rawType | HeaderApi.HEADER_VIEW_TYPE_MASK;
-        }
-
-        private int getCustomStickyViewId() {
-            return ((HeaderApi) adapter).getCustomStickyHeaderViewId();
         }
 
         /**

@@ -3,14 +3,15 @@ package com.devbrackets.android.recyclerextdemo.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
+import com.devbrackets.android.recyclerext.adapter.viewholder.ClickableViewHolder;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.Example;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A simple {@link RecyclerListAdapter} to display the options for the examples
      */
-    private class ListAdapter extends RecyclerListAdapter<SimpleTextViewHolder, Example> implements View.OnClickListener {
+    private class ListAdapter extends RecyclerListAdapter<SimpleTextViewHolder, Example> implements ClickableViewHolder.OnClickListener {
         private LayoutInflater inflater;
 
         public ListAdapter(Context context) {
@@ -72,14 +73,12 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(SimpleTextViewHolder holder, int position) {
             //noinspection ConstantConditions - getItem won't be null when called from the onBindViewHolder when using 'position'
             holder.setText(getItem(position).getTitle());
-            holder.setPosition(position);
             holder.setOnClickListener(this);
         }
 
         @Override
-        public void onClick(View view) {
-            int position = (Integer)view.getTag();
-            startFragmentActivity(getItem(position));
+        public void onClick(@NonNull ClickableViewHolder holder) {
+            startFragmentActivity(getItem(holder.getAdapterPosition()));
         }
     }
 }
