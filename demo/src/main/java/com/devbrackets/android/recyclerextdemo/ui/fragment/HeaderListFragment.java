@@ -66,7 +66,9 @@ public class HeaderListFragment extends Fragment {
         fastScroll.attach(recyclerView);
 
         //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
-        recyclerView.addItemDecoration(new StickyHeaderDecoration(recyclerView));
+        StickyHeaderDecoration decoration = new StickyHeaderDecoration(recyclerView);
+        decoration.setAllowStickyHeaderTouches(true);
+        recyclerView.addItemDecoration(decoration);
     }
 
     /**
@@ -86,7 +88,9 @@ public class HeaderListFragment extends Fragment {
         @NonNull
         @Override
         public SimpleTextViewHolder onCreateHeaderViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return SimpleTextViewHolder.newInstance(inflater, parent);
+            SimpleTextViewHolder holder = SimpleTextViewHolder.newInstance(inflater, parent);
+            holder.setOnClickListener(viewHolder -> viewHolder.itemView.setBackgroundColor(0xff44aacc));
+            return holder;
         }
 
         @NonNull
