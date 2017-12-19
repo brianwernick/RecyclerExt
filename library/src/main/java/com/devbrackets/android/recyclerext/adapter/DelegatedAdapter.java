@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2017 Brian Wernick
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.support.annotation.NonNull;
@@ -5,21 +20,15 @@ import android.support.v4.util.SparseArrayCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
+
 /**
  * A {@link RecyclerView.Adapter} that handles delegating the creation and binding of
  * {@link android.support.v7.widget.RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
  * to allow for dynamic lists
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class DelegatedAdapter<VH extends RecyclerView.ViewHolder, T> extends RecyclerView.Adapter<VH> {
-    /**
-     * A delegated handler for the {@link android.support.v7.widget.RecyclerView.ViewHolder}s
-     * that the {@link DelegatedAdapter} uses to create and bind each view type
-     */
-    public interface ViewHolderBinder<VH extends RecyclerView.ViewHolder, T> {
-        VH onCreateViewHolder(ViewGroup parent, int viewType);
-        void onBindViewHolder(@NonNull VH holder, @NonNull T item, int position);
-    }
+public abstract class DelegatedAdapter<VH extends RecyclerView.ViewHolder, T> extends ActionableAdapter<VH> {
 
     protected SparseArrayCompat<ViewHolderBinder<VH, T>> binders = new SparseArrayCompat<>();
 

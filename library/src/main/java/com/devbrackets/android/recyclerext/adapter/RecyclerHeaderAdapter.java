@@ -32,7 +32,7 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <H> The Header {@link RecyclerView.ViewHolder}
  * @param <C> The Child or content {@link RecyclerView.ViewHolder}
  */
-public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends RecyclerView.Adapter<ViewHolder> implements HeaderApi<H, C> {
+public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends ActionableAdapter<ViewHolder> implements HeaderApi<H, C> {
 
     /**
      * Contains the base processing for the header adapters

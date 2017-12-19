@@ -32,7 +32,7 @@ import java.util.List;
  * @param <T>  The object type for the list
  */
 @SuppressWarnings("unused")
-public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T> extends RecyclerView.Adapter<VH> {
+public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T> extends ActionableAdapter<VH> {
     @NonNull
     protected final Object lock = new Object();
     @Nullable
