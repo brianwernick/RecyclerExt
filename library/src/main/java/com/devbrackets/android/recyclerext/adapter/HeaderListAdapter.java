@@ -29,10 +29,10 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
 /**
  * A RecyclerView adapter that adds support for dynamically placing headers in the view.
  *
- * @param <H> The Header {@link RecyclerView.ViewHolder}
- * @param <C> The Child or content {@link RecyclerView.ViewHolder}
+ * @param <H> The Header {@link ViewHolder}
+ * @param <C> The Child or content {@link ViewHolder}
  */
-public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends ViewHolder> extends ActionableAdapter<ViewHolder> implements HeaderApi<H, C> {
+public abstract class HeaderListAdapter<H extends ViewHolder, C extends ViewHolder, T> extends ListAdapter<ViewHolder, T> implements HeaderApi<H, C> {
 
     /**
      * Contains the base processing for the header adapters
@@ -59,7 +59,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      */
     public abstract void onBindChildViewHolder(@NonNull C holder, int childPosition);
 
-    public RecyclerHeaderAdapter() {
+    public HeaderListAdapter() {
         init();
     }
 
@@ -73,6 +73,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
      * @return The correct ViewHolder for the specified viewType
      */
     @Override
+    @NonNull
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return core.onCreateViewHolder(parent, viewType);
     }
@@ -102,7 +103,7 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     }
 
     /**
-     * Retrieves the view type for the specified adapterPosition.
+     * Retrieves the view type for the specified position.
      *
      * @param adapterPosition The position to determine the view type for
      * @return The type of ViewHolder for the <code>adapterPosition</code>
@@ -161,6 +162,11 @@ public abstract class RecyclerHeaderAdapter<H extends ViewHolder, C extends View
     @Override
     public int getChildCount(long headerId) {
         return core.getChildCount(headerId);
+    }
+
+    @Override
+    public int getChildCount() {
+        return super.getItemCount();
     }
 
     @Override

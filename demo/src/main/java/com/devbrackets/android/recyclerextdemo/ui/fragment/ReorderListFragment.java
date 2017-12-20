@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleDragItemViewHolder;
@@ -81,11 +80,11 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
     }
 
     /**
-     * The adapter that extends the {@link RecyclerListAdapter} to provide the
+     * The adapter that extends the {@link com.devbrackets.android.recyclerext.adapter.ListAdapter} to provide the
      * minimum number of methods to function.  Any adapter could be used here, but for simplicity the
      * List adapter was used
      */
-    private class ListAdapter extends RecyclerListAdapter<SimpleDragItemViewHolder, String> {
+    private class ListAdapter extends com.devbrackets.android.recyclerext.adapter.ListAdapter<SimpleDragItemViewHolder, String> {
         private LayoutInflater inflater;
 
         public ListAdapter(Context context) {

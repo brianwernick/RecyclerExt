@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
+import com.devbrackets.android.recyclerext.adapter.ListAdapter;
 import com.devbrackets.android.recyclerext.layoutmanager.AutoColumnGridLayoutManager;
 import com.devbrackets.android.recyclerextdemo.R;
 import com.devbrackets.android.recyclerextdemo.data.database.DBHelper;
@@ -49,7 +49,7 @@ public class GridFragment extends Fragment {
      * on the RecyclerView.
      */
     private void setupRecyclerExt() {
-        ListAdapter adapter = new ListAdapter(ItemDAO.findAll(dbHelper.getWritableDatabase()));
+        GridAdapter adapter = new GridAdapter(ItemDAO.findAll(dbHelper.getWritableDatabase()));
 
         //Sets up the AutoColumnGridLayoutManager
         int width = getActivity().getResources().getDimensionPixelSize(R.dimen.grid_item_width);
@@ -64,12 +64,12 @@ public class GridFragment extends Fragment {
     }
 
     /**
-     * The adapter that extends the {@link RecyclerListAdapter} to provide the
+     * The adapter that extends the {@link com.devbrackets.android.recyclerext.adapter.ListAdapter} to provide the
      * minimum number of methods to function
      */
-    private class ListAdapter extends RecyclerListAdapter<GridViewHolder, ItemDAO> {
+    private class GridAdapter extends ListAdapter<GridViewHolder, ItemDAO> {
 
-        public ListAdapter(@Nullable List<ItemDAO> itemList) {
+        public GridAdapter(@Nullable List<ItemDAO> itemList) {
             super(itemList);
         }
 

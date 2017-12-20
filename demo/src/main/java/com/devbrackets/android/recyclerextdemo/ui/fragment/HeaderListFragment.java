@@ -11,8 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
-import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderListAdapter;
+import com.devbrackets.android.recyclerext.adapter.HeaderListAdapter;
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration;
 import com.devbrackets.android.recyclerext.widget.FastScroll;
 import com.devbrackets.android.recyclerextdemo.R;
@@ -24,7 +23,7 @@ import java.util.List;
 
 
 /**
- * An example of the {@link HeaderListFragment.HeaderAdapter}
+ * An example of the {@link HeaderAdapter}
  * and using the {@link StickyHeaderDecoration} to keep the header at the top of the screen when reached.
  */
 public class HeaderListFragment extends Fragment {
@@ -72,10 +71,10 @@ public class HeaderListFragment extends Fragment {
     }
 
     /**
-     * The adapter that extends the {@link RecyclerHeaderAdapter} to provide the
+     * The adapter that extends the {@link com.devbrackets.android.recyclerext.adapter.HeaderAdapter} to provide the
      * minimum number of methods to function
      */
-    private class HeaderAdapter extends RecyclerHeaderListAdapter<SimpleTextViewHolder, SimpleTextViewHolder, ItemDAO> implements FastScroll.PopupCallbacks {
+    private class HeaderAdapter extends HeaderListAdapter<SimpleTextViewHolder, SimpleTextViewHolder, ItemDAO> implements FastScroll.PopupCallbacks {
         private LayoutInflater inflater;
 
         public HeaderAdapter(Context context, List<ItemDAO> items) {

@@ -26,6 +26,8 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
  * A {@link RecyclerView.Adapter} that handles delegating the creation and binding of
  * {@link android.support.v7.widget.RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
  * to allow for dynamic lists
+ *
+ * TODO: how do we handle the unregister when the RV goes away?
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class DelegatedAdapter<VH extends RecyclerView.ViewHolder, T> extends ActionableAdapter<VH> {
@@ -59,7 +61,17 @@ public abstract class DelegatedAdapter<VH extends RecyclerView.ViewHolder, T> ex
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
     public void registerViewHolderBinder(int viewType, ViewHolderBinder<VH, T> binder) {
+        ViewHolderBinder<VH, T> oldBinder = binders.get(viewType);
+        if (oldBinder != null && oldBinder == binder) {
+            return;
+        }
+
+        if (oldBinder != null) {
+            oldBinder.onDetachedFromAdapter(this);
+        }
+
         binders.put(viewType, binder);
+        binder.onAttachedToAdapter(this);
     }
 
     /**

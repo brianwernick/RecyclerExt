@@ -10,7 +10,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.adapter.RecyclerListAdapter;
 import com.devbrackets.android.recyclerext.adapter.viewholder.ClickableViewHolder;
 import com.devbrackets.android.recyclerext.decoration.ReorderDecoration;
 import com.devbrackets.android.recyclerextdemo.R;
@@ -50,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * A simple {@link RecyclerListAdapter} to display the options for the examples
+     * A simple {@link com.devbrackets.android.recyclerext.adapter.ListAdapter} to display the options for the examples
      */
-    private class ListAdapter extends RecyclerListAdapter<SimpleTextViewHolder, Example> implements ClickableViewHolder.OnClickListener {
+    private class ListAdapter extends com.devbrackets.android.recyclerext.adapter.ListAdapter<SimpleTextViewHolder, Example> implements ClickableViewHolder.OnClickListener {
         private LayoutInflater inflater;
 
         public ListAdapter(Context context) {

@@ -25,12 +25,12 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.R;
-import com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter;
+import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 
 /**
  * A RecyclerView Decoration that allows for Header views from
- * the {@link RecyclerHeaderAdapter} to be persisted when they
+ * the {@link HeaderAdapter} to be persisted when they
  * reach the start of the RecyclerView's frame.
  */
 @SuppressWarnings("unused")

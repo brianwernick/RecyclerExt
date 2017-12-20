@@ -32,7 +32,7 @@ import java.util.List;
  * @param <T>  The object type for the list
  */
 @SuppressWarnings("unused")
-public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T> extends ActionableAdapter<VH> {
+public abstract class ListAdapter<VH extends RecyclerView.ViewHolder, T> extends ActionableAdapter<VH> {
     @NonNull
     protected final Object lock = new Object();
     @Nullable
@@ -42,7 +42,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
     /**
      * Creates an adapter with no initial items
      */
-    public RecyclerListAdapter() {
+    public ListAdapter() {
         //Purposefully left blank
     }
 
@@ -51,7 +51,7 @@ public abstract class RecyclerListAdapter<VH extends RecyclerView.ViewHolder, T>
      *
      * @param itemList The list of initial items for the adapter
      */
-    public RecyclerListAdapter(@Nullable List<T> itemList) {
+    public ListAdapter(@Nullable List<T> itemList) {
         this.items = itemList;
     }
 

@@ -16,9 +16,11 @@
 
 package com.devbrackets.android.recyclerext.adapter.header;
 
+import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
+
 /**
  * An item that represents a Header item as used in the
- * {@link com.devbrackets.android.recyclerext.adapter.RecyclerHeaderAdapter}
+ * {@link HeaderAdapter}
  */
 public class HeaderItem {
     private long id;

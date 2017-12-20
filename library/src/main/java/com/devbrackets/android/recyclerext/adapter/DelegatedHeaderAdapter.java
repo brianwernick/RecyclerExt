@@ -28,7 +28,7 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
  * {@link android.support.v7.widget.RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
  * to allow for dynamic lists
  */
-public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, C extends RecyclerView.ViewHolder, T> extends RecyclerHeaderAdapter<H, C> {
+public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, C extends RecyclerView.ViewHolder, T> extends HeaderAdapter<H, C> {
     protected SparseArrayCompat<ViewHolderBinder<H, T>> headerBinders = new SparseArrayCompat<>();
     protected SparseArrayCompat<ViewHolderBinder<C, T>> childBinders = new SparseArrayCompat<>();
 
@@ -71,7 +71,17 @@ public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, 
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
     public void registerHeaderViewHolderBinder(int viewType, ViewHolderBinder<H, T> binder) {
+        ViewHolderBinder<H, T> oldBinder = headerBinders.get(viewType);
+        if (oldBinder != null && oldBinder == binder) {
+            return;
+        }
+
+        if (oldBinder != null) {
+            oldBinder.onDetachedFromAdapter((RecyclerView.Adapter<H>) this);
+        }
+
         headerBinders.put(viewType, binder);
+        binder.onAttachedToAdapter((RecyclerView.Adapter<H>) this);
     }
 
     /**
@@ -82,8 +92,18 @@ public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, 
      * @param viewType The type of view the {@link ViewHolderBinder} handles
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
-    public void registerChildViewHolderBinder(int viewType, ViewHolderBinder<H, T> binder) {
-        headerBinders.put(viewType, binder);
+    public void registerChildViewHolderBinder(int viewType, ViewHolderBinder<C, T> binder) {
+        ViewHolderBinder<C, T> oldBinder = childBinders.get(viewType);
+        if (oldBinder != null && oldBinder == binder) {
+            return;
+        }
+
+        if (oldBinder != null) {
+            oldBinder.onDetachedFromAdapter((RecyclerView.Adapter<C>) this);
+        }
+
+        childBinders.put(viewType, binder);
+        binder.onAttachedToAdapter((RecyclerView.Adapter<C>) this);
     }
 
     /**

@@ -26,7 +26,16 @@ import com.devbrackets.android.recyclerext.adapter.DelegatedAdapter;
  * A delegated handler for the {@link android.support.v7.widget.RecyclerView.ViewHolder}s
  * that the {@link DelegatedAdapter} uses to create and bind each view type
  */
-public interface ViewHolderBinder<VH extends RecyclerView.ViewHolder, T> {
-    VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType);
-    void onBindViewHolder(@NonNull VH holder, @NonNull T item, int position);
+public abstract class ViewHolderBinder<VH extends RecyclerView.ViewHolder, T> {
+    @NonNull
+    public abstract VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType);
+    public abstract void onBindViewHolder(@NonNull VH holder, @NonNull T item, int position);
+
+    public void onAttachedToAdapter(@NonNull RecyclerView.Adapter<VH> adapter) {
+        // Purposefully left blank
+    }
+
+    public void onDetachedFromAdapter(@NonNull RecyclerView.Adapter<VH> adapter) {
+        // Purposefully left blank
+    }
 }

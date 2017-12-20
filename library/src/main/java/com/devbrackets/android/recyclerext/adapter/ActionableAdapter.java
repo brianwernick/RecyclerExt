@@ -29,7 +29,7 @@ import android.util.Log;
 public abstract class ActionableAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
     private static final String TAG = "ActionableAdapter";
 
-    interface ActionableView {
+    public interface ActionableView {
         void onActionModeChange(boolean actionModeEnabled);
     }
 
