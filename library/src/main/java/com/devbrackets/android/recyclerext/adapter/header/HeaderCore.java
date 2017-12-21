@@ -19,7 +19,6 @@ package com.devbrackets.android.recyclerext.adapter.header;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -31,40 +30,49 @@ public class HeaderCore {
     @NonNull
     protected HeaderApi headerApi;
     @NonNull
+    protected HeaderDataGenerator.HeaderData headerData = new HeaderDataGenerator.HeaderData();
+
+    @NonNull
     protected HeaderAdapterDataObserver observer;
-
-    protected boolean showHeaderAsChild = false;
-
-    /**
-     * Stores the number of child items associated with each header id.
-     * (Key: HeaderId, Value: childCount)
-     */
-    @NonNull
-    protected LongSparseArray<Integer> headerChildCountMap = new LongSparseArray<>();
-    @NonNull
-    protected List<HeaderItem> headerItems = new ArrayList<>();
+    protected boolean autoUpdateHeaders = true;
 
     public HeaderCore(@NonNull HeaderApi api) {
         this.headerApi = api;
         observer = new HeaderAdapterDataObserver(this, api);
     }
 
+    public void showHeaderAsChild(boolean enabled) {
+        headerData.showHeaderAsChild = enabled;
+
+        if (autoUpdateHeaders) {
+            observer.onChanged();
+        }
+    }
+
     @NonNull
-    public List<HeaderItem> getHeaderItems() {
-        return headerItems;
+    public HeaderDataGenerator.HeaderData getHeaderData() {
+        return headerData;
     }
 
-    public void setHeaderItems(@NonNull List<HeaderItem> items) {
-        headerItems = items;
+    public void setHeaderData(@NonNull HeaderDataGenerator.HeaderData headerData) {
+        this.headerData = headerData;
     }
 
-    @NonNull
-    public LongSparseArray<Integer> getHeaderChildCountMap() {
-        return headerChildCountMap;
+    public boolean getAutoUpdateHeaders() {
+        return autoUpdateHeaders;
     }
 
-    public void setHeaderChildCountMap(@NonNull LongSparseArray<Integer> headerChildCountMap) {
-        this.headerChildCountMap = headerChildCountMap;
+    public void setAutoUpdateHeaders(@NonNull RecyclerView.Adapter adapter, boolean autoUpdateHeaders) {
+        if (autoUpdateHeaders == this.autoUpdateHeaders) {
+            return;
+        }
+
+        this.autoUpdateHeaders = autoUpdateHeaders;
+        if (autoUpdateHeaders) {
+            registerObserver(adapter);
+        } else {
+            unregisterObserver(adapter);
+        }
     }
 
     /**
@@ -75,7 +83,7 @@ public class HeaderCore {
      * @return The number of children views associated with the given <code>headerId</code>
      */
     public int getChildCount(long headerId) {
-        return headerId != RecyclerView.NO_ID ? headerChildCountMap.get(headerId, 0) : 0;
+        return headerId != RecyclerView.NO_ID ? headerData.headerChildCountMap.get(headerId, 0) : 0;
     }
 
     /**
@@ -84,7 +92,7 @@ public class HeaderCore {
      * @return The number of headers for the list
      */
     public int getHeaderCount() {
-        return headerItems.size();
+        return headerData.headerItems.size();
     }
 
     /**
@@ -97,7 +105,7 @@ public class HeaderCore {
     public List<Integer> getHeaderPositions() {
         List<Integer> positions = new ArrayList<>();
 
-        for (HeaderItem item : headerItems) {
+        for (HeaderItem item : headerData.headerItems) {
             positions.add(item.getAdapterPosition());
         }
 
@@ -111,7 +119,7 @@ public class HeaderCore {
      * @return The number of items to display in the adapter
      */
     public int getItemCount() {
-        if (showHeaderAsChild) {
+        if (headerData.showHeaderAsChild) {
             return headerApi.getChildCount();
         }
 
@@ -126,7 +134,7 @@ public class HeaderCore {
      * @return True if the item at <code>adapterPosition</code> is a Header
      */
     public boolean isHeader(int adapterPosition) {
-        for (HeaderItem item : headerItems) {
+        for (HeaderItem item : headerData.headerItems) {
             if (item.getAdapterPosition() == adapterPosition) {
                 return true;
             }
@@ -177,8 +185,10 @@ public class HeaderCore {
      * @param adapter The RecyclerView.Adapter that the observer will be registered for
      */
     public void registerObserver(@NonNull RecyclerView.Adapter adapter) {
-        adapter.registerAdapterDataObserver(observer);
-        observer.onChanged();
+        if (autoUpdateHeaders) {
+            adapter.registerAdapterDataObserver(observer);
+            observer.onChanged();
+        }
     }
 
     /**
@@ -190,7 +200,9 @@ public class HeaderCore {
      */
     public void unregisterObserver(@NonNull RecyclerView.Adapter adapter) {
         adapter.unregisterAdapterDataObserver(observer);
-        headerItems.clear();
+        if (autoUpdateHeaders) {
+            headerData.headerItems.clear();
+        }
     }
 
     /**
@@ -200,12 +212,12 @@ public class HeaderCore {
      * @return The child index
      */
     public int getChildPosition(int adapterPosition) {
-        if (showHeaderAsChild) {
+        if (headerData.showHeaderAsChild) {
             return adapterPosition;
         }
 
         int headerCount = 0;
-        for (HeaderItem item : headerItems) {
+        for (HeaderItem item : headerData.headerItems) {
             if (item.getAdapterPosition() < adapterPosition) {
                 headerCount++;
             } else {
@@ -224,11 +236,11 @@ public class HeaderCore {
      * @return The adapter position
      */
     public int getAdapterPositionForChild(int childPosition) {
-        if (showHeaderAsChild) {
+        if (headerData.showHeaderAsChild) {
             return childPosition;
         }
 
-        for (HeaderItem item : headerItems) {
+        for (HeaderItem item : headerData.headerItems) {
             if (item.getAdapterPosition() <= childPosition) {
                 childPosition++;
             } else {
@@ -251,18 +263,13 @@ public class HeaderCore {
             return RecyclerView.NO_POSITION;
         }
 
-        for (HeaderItem item : headerItems) {
+        for (HeaderItem item : headerData.headerItems) {
             if (item.getId() == headerId) {
                 return item.getAdapterPosition();
             }
         }
 
         return RecyclerView.NO_POSITION;
-    }
-
-    public void showHeaderAsChild(boolean enabled) {
-        showHeaderAsChild = enabled;
-        observer.onChanged();
     }
 
     @Nullable
@@ -272,7 +279,7 @@ public class HeaderCore {
         }
 
         HeaderItem itemHeader = null;
-        for (HeaderItem item : headerItems) {
+        for (HeaderItem item : headerData.headerItems) {
             if (item.getAdapterPosition() <= adapterPosition) {
                 itemHeader = item;
             } else {

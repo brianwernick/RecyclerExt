@@ -17,20 +17,20 @@
 package com.devbrackets.android.recyclerext.adapter.header;
 
 import android.support.annotation.NonNull;
-import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 
-import java.util.List;
-
 /**
- * Used to monitor data set changes to update the {@link HeaderCore#headerItems} so that we can correctly
+ * Used to monitor data set changes to update the {@link HeaderCore#headerData} so that we can correctly
  * calculate the list item count and header indexes.
  */
 public class HeaderAdapterDataObserver extends RecyclerView.AdapterDataObserver {
     @NonNull
-    protected HeaderCore headerCore;    
+    protected HeaderCore headerCore;
     @NonNull
     protected HeaderApi headerApi;
+
+    @NonNull
+    protected HeaderDataGenerator generator = new HeaderDataGenerator();
 
     public HeaderAdapterDataObserver(@NonNull HeaderCore headerCore, @NonNull HeaderApi headerApi) {
         this.headerCore = headerCore;
@@ -39,7 +39,7 @@ public class HeaderAdapterDataObserver extends RecyclerView.AdapterDataObserver 
 
     @Override
     public void onChanged() {
-        calculateHeaderIndices();
+        generator.calculate(headerApi.getHeaderData(), headerApi);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class HeaderAdapterDataObserver extends RecyclerView.AdapterDataObserver 
             long newHeaderId = headerApi.getHeaderId(headerApi.getChildPosition(i));
 
             if (headerItem != null && headerItem.getId() != newHeaderId) {
-                calculateHeaderIndices();
+                generator.calculate(headerApi.getHeaderData(), headerApi);
                 break;
             }
         }
@@ -66,7 +66,7 @@ public class HeaderAdapterDataObserver extends RecyclerView.AdapterDataObserver 
         // of an existing region (header children). Due to this we will just recalculate the
         // headers on insertions for now
 
-        calculateHeaderIndices();
+        generator.calculate(headerApi.getHeaderData(), headerApi);
     }
 
     @Override
@@ -78,42 +78,11 @@ public class HeaderAdapterDataObserver extends RecyclerView.AdapterDataObserver 
         // of an existing region (header children). Due to this we will just recalculate the
         // headers on deletions for now
 
-        calculateHeaderIndices();
+        generator.calculate(headerApi.getHeaderData(), headerApi);
     }
 
     @Override
     public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-        calculateHeaderIndices();
-    }
-
-    /**
-     * Performs a full calculation for the header indices
-     */
-    protected void calculateHeaderIndices() {
-        List<HeaderItem> items = headerCore.getHeaderItems();
-        LongSparseArray<Integer> counts = headerCore.getHeaderChildCountMap();
-        
-        items.clear();
-        counts.clear();
-        HeaderItem currentItem = null;
-
-        for (int i = 0; i < headerApi.getChildCount(); i++) {
-            long id = headerApi.getHeaderId(i);
-            if (id == RecyclerView.NO_ID) {
-                continue;
-            }
-
-            //Updates the child count for the headerId
-            Integer childCount = counts.get(id);
-            childCount = (childCount == null) ? 1 : childCount +1;
-            counts.put(id, childCount);
-
-            //Adds new headers to the list when detected
-            if (currentItem == null || currentItem.getId() != id) {
-                int position = i + (headerCore.showHeaderAsChild ? 0 : items.size());
-                currentItem = new HeaderItem(id, position);
-                items.add(currentItem);
-            }
-        }
+        generator.calculate(headerApi.getHeaderData(), headerApi);
     }
 }

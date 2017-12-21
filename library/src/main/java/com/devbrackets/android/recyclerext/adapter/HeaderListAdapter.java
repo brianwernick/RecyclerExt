@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderCore;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator;
 
 import static android.support.v7.widget.RecyclerView.ViewHolder;
 
@@ -100,6 +101,27 @@ public abstract class HeaderListAdapter<H extends ViewHolder, C extends ViewHold
 
         onBindChildViewHolder((C) holder, childPosition);
         holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
+    }
+
+    @NonNull
+    @Override
+    public HeaderDataGenerator.HeaderData getHeaderData() {
+        return core.getHeaderData();
+    }
+
+    @Override
+    public void setHeaderData(@NonNull HeaderDataGenerator.HeaderData headerData) {
+        core.setHeaderData(headerData);
+    }
+
+    @Override
+    public boolean getAutoUpdateHeaders() {
+        return core.getAutoUpdateHeaders();
+    }
+
+    @Override
+    public void setAutoUpdateHeaders(boolean autoUpdateHeaders) {
+        core.setAutoUpdateHeaders(this, autoUpdateHeaders);
     }
 
     /**

@@ -23,7 +23,7 @@ import android.view.ViewGroup;
 /**
  * The standardized API for the Header Adapters
  */
-public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends RecyclerView.ViewHolder> {
+public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends RecyclerView.ViewHolder> extends HeaderDataGenerator.DataSource {
     int HEADER_VIEW_TYPE_MASK = 0x80000000;
 
     /**
@@ -47,6 +47,43 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
     C onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType);
 
     /**
+     * Retrieves the header data that is currently in use. This can be used
+     *
+     * @return The {@link HeaderDataGenerator.HeaderData}
+     */
+    @NonNull
+    HeaderDataGenerator.HeaderData getHeaderData();
+
+    /**
+     * Sets the {@link HeaderDataGenerator.HeaderData} without informing any
+     * listeners (data observers, etc.) of the change. Normally this should only
+     * be used in conjunction with {@link #setAutoUpdateHeaders(boolean)} to
+     * handle asynchronously updating the headers in cases such as using the
+     * {@link android.support.v7.util.DiffUtil}
+     *
+     * @param headerData The {@link HeaderDataGenerator.HeaderData}
+     */
+    void setHeaderData(@NonNull HeaderDataGenerator.HeaderData headerData);
+
+    /**
+     * Retrieves if the headers should automatically be calculated on any
+     * adapter change (notified by the {@link android.support.v7.widget.RecyclerView.AdapterDataObservable}
+     * {@link HeaderAdapterDataObserver}. By default this returns <code>true</code>
+     *
+     * @return <code>true</code> if the headers are automatically updated
+     */
+    boolean getAutoUpdateHeaders();
+
+    /**
+     * Sets if the headers should automatically be calculated on any
+     * adapter change (notified by the {@link android.support.v7.widget.RecyclerView.AdapterDataObservable}
+     * {@link HeaderAdapterDataObserver}.
+     *
+     * @param autoUpdateHeaders <code>true</code> if the headers should auto update
+     */
+    void setAutoUpdateHeaders(boolean autoUpdateHeaders);
+
+    /**
      * Retrieves the view type for the header whos first child view
      * has the <code>childPosition</code>.  This value will be |'d with
      * the {@link #HEADER_VIEW_TYPE_MASK} to make sure the header and child
@@ -67,22 +104,6 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
      * @return The view type for the child view
      */
     int getChildViewType(int childPosition);
-
-    /**
-     * Return the stable ID for the header at <code>childPosition</code>. The default implementation
-     * of this method returns {@link RecyclerView#NO_ID}
-     *
-     * @param childPosition The Adapters child position
-     * @return the stable ID of the header at childPosition
-     */
-    long getHeaderId(int childPosition);
-
-    /**
-     * Returns the total number of children in the data set held by the adapter.
-     *
-     * @return The total number of children in this adapter.
-     */
-    int getChildCount();
 
     /**
      * Returns the total number of views that are associated with the specified
