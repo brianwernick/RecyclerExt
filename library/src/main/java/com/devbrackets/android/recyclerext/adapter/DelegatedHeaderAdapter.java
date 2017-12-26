@@ -17,10 +17,12 @@
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.support.annotation.NonNull;
-import android.support.v4.util.SparseArrayCompat;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi;
+import com.devbrackets.android.recyclerext.adapter.delegate.DelegateCore;
 import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
 
 /**
@@ -28,39 +30,39 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
  * {@link android.support.v7.widget.RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
  * to allow for dynamic lists
  */
-public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, C extends RecyclerView.ViewHolder, T> extends HeaderAdapter<H, C> {
-    protected SparseArrayCompat<ViewHolderBinder<H, T>> headerBinders = new SparseArrayCompat<>();
-    protected SparseArrayCompat<ViewHolderBinder<C, T>> childBinders = new SparseArrayCompat<>();
+public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerView.ViewHolder, RecyclerView.ViewHolder> implements DelegateApi<T> {
+
+    @NonNull
+    protected DelegateCore<RecyclerView.ViewHolder, T> headerDelegateCore;
+    @NonNull
+    protected DelegateCore<RecyclerView.ViewHolder, T> childDelegateCore;
+
+    public DelegatedHeaderAdapter() {
+        headerDelegateCore = new DelegateCore<>(this, this);
+        childDelegateCore = new DelegateCore<>(this, this);
+    }
 
     @NonNull
     @Override
-    public H onCreateHeaderViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return getHeaderBinderOrThrow(viewType).onCreateViewHolder(parent, viewType);
+    public RecyclerView.ViewHolder onCreateHeaderViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return headerDelegateCore.onCreateViewHolder(parent, viewType);
     }
 
     @NonNull
     @Override
-    public C onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return getChildBinderOrThrow(viewType).onCreateViewHolder(parent, viewType);
+    public RecyclerView.ViewHolder onCreateChildViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return childDelegateCore.onCreateViewHolder(parent, viewType);
     }
 
     @Override
-    public void onBindHeaderViewHolder(@NonNull H holder, int firstChildPosition) {
-        getHeaderBinderOrThrow(getHeaderViewType(firstChildPosition)).onBindViewHolder(holder, getItem(firstChildPosition), firstChildPosition);
+    public void onBindHeaderViewHolder(@NonNull RecyclerView.ViewHolder holder, int firstChildPosition) {
+        headerDelegateCore.onBindViewHolder(holder, firstChildPosition);
     }
 
     @Override
-    public void onBindChildViewHolder(@NonNull C holder, int childPosition) {
-        getChildBinderOrThrow(getChildViewType(childPosition)).onBindViewHolder(holder, getItem(childPosition), childPosition);
+    public void onBindChildViewHolder(@NonNull RecyclerView.ViewHolder holder, int childPosition) {
+        childDelegateCore.onBindViewHolder(holder, childPosition);
     }
-
-    /**
-     * Retrieves the item associated with the <code>position</code>
-     *
-     * @param position The position to get the item for
-     * @return The item in the <code>position</code>
-     */
-    public abstract T getItem(int position);
 
     /**
      * Registers the <code>binder</code> to handle creating and binding the headers of type
@@ -70,18 +72,8 @@ public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, 
      * @param viewType The type of view the {@link ViewHolderBinder} handles
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
-    public void registerHeaderViewHolderBinder(int viewType, ViewHolderBinder<H, T> binder) {
-        ViewHolderBinder<H, T> oldBinder = headerBinders.get(viewType);
-        if (oldBinder != null && oldBinder == binder) {
-            return;
-        }
-
-        if (oldBinder != null) {
-            oldBinder.onDetachedFromAdapter((RecyclerView.Adapter<H>) this);
-        }
-
-        headerBinders.put(viewType, binder);
-        binder.onAttachedToAdapter((RecyclerView.Adapter<H>) this);
+    public void registerHeaderViewHolderBinder(int viewType, ViewHolderBinder binder) {
+        headerDelegateCore.registerViewHolderBinder(viewType, binder);
     }
 
     /**
@@ -92,53 +84,31 @@ public abstract class DelegatedHeaderAdapter<H extends RecyclerView.ViewHolder, 
      * @param viewType The type of view the {@link ViewHolderBinder} handles
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
-    public void registerChildViewHolderBinder(int viewType, ViewHolderBinder<C, T> binder) {
-        ViewHolderBinder<C, T> oldBinder = childBinders.get(viewType);
-        if (oldBinder != null && oldBinder == binder) {
-            return;
-        }
-
-        if (oldBinder != null) {
-            oldBinder.onDetachedFromAdapter((RecyclerView.Adapter<C>) this);
-        }
-
-        childBinders.put(viewType, binder);
-        binder.onAttachedToAdapter((RecyclerView.Adapter<C>) this);
+    public void registerChildViewHolderBinder(int viewType, ViewHolderBinder binder) {
+        childDelegateCore.registerViewHolderBinder(viewType, binder);
     }
 
     /**
-     * Retrieves the {@link ViewHolderBinder} associated with the <code>viewType</code> or
-     * throws an {@link IllegalStateException} informing the user that they forgot to register
-     * a {@link ViewHolderBinder} that handles <code>viewType</code>
+     * Registers the <code>binder</code> to handle creating and binding the views that aren't
+     * handled by any binders registered with {@link #registerHeaderViewHolderBinder(int, ViewHolderBinder)}.
+     * If a {@link ViewHolderBinder} has already been specified as the default then the value will be
+     * overwritten with <code>binder</code>
      *
-     * @param viewType The type of the view to retrieve the {@link ViewHolderBinder} for
-     * @return The {@link ViewHolderBinder} that handles the <code>viewType</code>
+     * @param binder The {@link ViewHolderBinder} to handle creating and binding default views
      */
-    @NonNull
-    protected ViewHolderBinder<H, T> getHeaderBinderOrThrow(int viewType) {
-        ViewHolderBinder<H, T> binder = headerBinders.get(viewType);
-        if (binder == null) {
-            throw new IllegalStateException("Unable to create or bind ViewHolders of viewType " + viewType + " because no ViewHolderBinder has been registered for that viewType");
-        }
-
-        return binder;
+    public void registerDefaultHeaderViewHolderBinder(@Nullable ViewHolderBinder binder) {
+        headerDelegateCore.registerDefaultViewHolderBinder(binder);
     }
 
     /**
-     * Retrieves the {@link ViewHolderBinder} associated with the <code>viewType</code> or
-     * throws an {@link IllegalStateException} informing the user that they forgot to register
-     * a {@link ViewHolderBinder} that handles <code>viewType</code>
+     * Registers the <code>binder</code> to handle creating and binding the views that aren't
+     * handled by any binders registered with {@link #registerChildViewHolderBinder(int, ViewHolderBinder)}.
+     * If a {@link ViewHolderBinder} has already been specified as the default then the value will be
+     * overwritten with <code>binder</code>
      *
-     * @param viewType The type of the view to retrieve the {@link ViewHolderBinder} for
-     * @return The {@link ViewHolderBinder} that handles the <code>viewType</code>
+     * @param binder The {@link ViewHolderBinder} to handle creating and binding default views
      */
-    @NonNull
-    protected ViewHolderBinder<C, T> getChildBinderOrThrow(int viewType) {
-        ViewHolderBinder<C, T> binder = childBinders.get(viewType);
-        if (binder == null) {
-            throw new IllegalStateException("Unable to create or bind ViewHolders of viewType " + viewType + " because no ViewHolderBinder has been registered for that viewType");
-        }
-
-        return binder;
+    public void registerDefaultViewHolderBinder(@Nullable ViewHolderBinder binder) {
+        childDelegateCore.registerDefaultViewHolderBinder(binder);
     }
 }

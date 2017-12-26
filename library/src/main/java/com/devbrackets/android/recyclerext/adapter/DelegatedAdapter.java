@@ -16,10 +16,12 @@
 package com.devbrackets.android.recyclerext.adapter;
 
 import android.support.annotation.NonNull;
-import android.support.v4.util.SparseArrayCompat;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi;
+import com.devbrackets.android.recyclerext.adapter.delegate.DelegateCore;
 import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
 
 /**
@@ -30,27 +32,24 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
  * TODO: how do we handle the unregister when the RV goes away?
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class DelegatedAdapter<VH extends RecyclerView.ViewHolder, T> extends ActionableAdapter<VH> {
+public abstract class DelegatedAdapter<T> extends ActionableAdapter<RecyclerView.ViewHolder> implements DelegateApi<T> {
 
-    protected SparseArrayCompat<ViewHolderBinder<VH, T>> binders = new SparseArrayCompat<>();
+    @NonNull
+    protected DelegateCore<RecyclerView.ViewHolder, T> delegateCore;
 
-    @Override
-    public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return getBinderOrThrow(viewType).onCreateViewHolder(parent, viewType);
+    public DelegatedAdapter() {
+        delegateCore = new DelegateCore<>(this, this);
     }
 
     @Override
-    public void onBindViewHolder(VH holder, int position) {
-        getBinderOrThrow(getItemViewType(position)).onBindViewHolder(holder, getItem(position), position);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return delegateCore.onCreateViewHolder(parent, viewType);
     }
 
-    /**
-     * Retrieves the item associated with the <code>position</code>
-     *
-     * @param position The position to get the item for
-     * @return The item in the <code>position</code>
-     */
-    public abstract T getItem(int position);
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        delegateCore.onBindViewHolder(holder, position);
+    }
 
     /**
      * Registers the <code>binder</code> to handle creating and binding the views of type
@@ -60,35 +59,19 @@ public abstract class DelegatedAdapter<VH extends RecyclerView.ViewHolder, T> ex
      * @param viewType The type of view the {@link ViewHolderBinder} handles
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
-    public void registerViewHolderBinder(int viewType, ViewHolderBinder<VH, T> binder) {
-        ViewHolderBinder<VH, T> oldBinder = binders.get(viewType);
-        if (oldBinder != null && oldBinder == binder) {
-            return;
-        }
-
-        if (oldBinder != null) {
-            oldBinder.onDetachedFromAdapter(this);
-        }
-
-        binders.put(viewType, binder);
-        binder.onAttachedToAdapter(this);
+    public void registerViewHolderBinder(int viewType, ViewHolderBinder binder) {
+        delegateCore.registerViewHolderBinder(viewType, binder);
     }
 
     /**
-     * Retrieves the {@link ViewHolderBinder} associated with the <code>viewType</code> or
-     * throws an {@link IllegalStateException} informing the user that they forgot to register
-     * a {@link ViewHolderBinder} that handles <code>viewType</code>
+     * Registers the <code>binder</code> to handle creating and binding the views that aren't
+     * handled by any binders registered with {@link #registerViewHolderBinder(int, ViewHolderBinder)}.
+     * If a {@link ViewHolderBinder} has already been specified as the default then the value will be
+     * overwritten with <code>binder</code>
      *
-     * @param viewType The type of the view to retrieve the {@link ViewHolderBinder} for
-     * @return The {@link ViewHolderBinder} that handles the <code>viewType</code>
+     * @param binder The {@link ViewHolderBinder} to handle creating and binding default views
      */
-    @NonNull
-    protected ViewHolderBinder<VH, T> getBinderOrThrow(int viewType) {
-        ViewHolderBinder<VH, T> binder = binders.get(viewType);
-        if (binder == null) {
-            throw new IllegalStateException("Unable to create or bind ViewHolders of viewType " + viewType + " because no ViewHolderBinder has been registered for that viewType");
-        }
-
-        return binder;
+    public void registerDefaultViewHolderBinder(@Nullable ViewHolderBinder binder) {
+        delegateCore.registerDefaultViewHolderBinder(binder);
     }
 }
