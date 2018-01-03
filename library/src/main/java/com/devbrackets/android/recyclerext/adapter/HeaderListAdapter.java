@@ -143,6 +143,7 @@ public abstract class HeaderListAdapter<H extends ViewHolder, C extends ViewHold
      */
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
         core.registerObserver(this);
     }
 
@@ -155,6 +156,7 @@ public abstract class HeaderListAdapter<H extends ViewHolder, C extends ViewHold
      */
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
         core.unregisterObserver(this);
     }
 

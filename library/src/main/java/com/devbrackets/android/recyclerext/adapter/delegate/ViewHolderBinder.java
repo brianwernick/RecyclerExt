@@ -38,4 +38,20 @@ public abstract class ViewHolderBinder<VH extends RecyclerView.ViewHolder, T> {
     public void onDetachedFromAdapter(@NonNull RecyclerView.Adapter<VH> adapter) {
         // Purposefully left blank
     }
+
+    public void onViewRecycled(VH holder) {
+        // Purposefully left blank
+    }
+
+    public boolean onFailedToRecycleView(VH holder) {
+        return false;
+    }
+
+    public void onViewAttachedToWindow(VH holder) {
+        // Purposefully left blank
+    }
+
+    public void onViewDetachedFromWindow(VH holder) {
+        // Purposefully left blank
+    }
 }

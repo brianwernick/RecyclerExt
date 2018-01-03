@@ -83,7 +83,7 @@ public abstract class ActionableAdapter<VH extends RecyclerView.ViewHolder> exte
             Log.e(TAG, "updateVisibleViewHolders() currently only supports LinearLayoutManager and it's subclasses");
         }
 
-        int i = startPosition + 1;
+        int i = startPosition;
         RecyclerView.ViewHolder holder = recyclerView.findViewHolderForAdapterPosition(startPosition);
 
         while (holder != null && i < getItemCount()) {

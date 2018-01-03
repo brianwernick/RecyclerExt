@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi;
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateCore;
 import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 
 /**
  * A {@link RecyclerView.Adapter} that handles delegating the creation and binding of
@@ -38,8 +39,29 @@ public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerVi
     protected DelegateCore<RecyclerView.ViewHolder, T> childDelegateCore;
 
     public DelegatedHeaderAdapter() {
-        headerDelegateCore = new DelegateCore<>(this, this);
-        childDelegateCore = new DelegateCore<>(this, this);
+        headerDelegateCore = new DelegateCore<>(new DelegateApi<T>() {
+            @Override
+            public T getItem(int position) {
+                return DelegatedHeaderAdapter.this.getItem(position);
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                return getHeaderViewType(getChildPosition(position));
+            }
+        }, this);
+
+        childDelegateCore = new DelegateCore<>(new DelegateApi<T>() {
+            @Override
+            public T getItem(int position) {
+                return DelegatedHeaderAdapter.this.getItem(position);
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                return getChildViewType(getChildPosition(position));
+            }
+        }, this);
     }
 
     @NonNull
@@ -64,6 +86,30 @@ public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerVi
         childDelegateCore.onBindViewHolder(holder, childPosition);
     }
 
+    @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
+        DelegateCore<RecyclerView.ViewHolder, T> delegateCore = core.isHeader(holder.getAdapterPosition()) ? headerDelegateCore : childDelegateCore;
+        delegateCore.onViewRecycled(holder);
+    }
+
+    @Override
+    public boolean onFailedToRecycleView(RecyclerView.ViewHolder holder) {
+        DelegateCore<RecyclerView.ViewHolder, T> delegateCore = core.isHeader(holder.getAdapterPosition()) ? headerDelegateCore : childDelegateCore;
+        return delegateCore.onFailedToRecycleView(holder);
+    }
+
+    @Override
+    public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
+        DelegateCore<RecyclerView.ViewHolder, T> delegateCore = core.isHeader(holder.getAdapterPosition()) ? headerDelegateCore : childDelegateCore;
+        delegateCore.onViewAttachedToWindow(holder);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
+        DelegateCore<RecyclerView.ViewHolder, T> delegateCore = core.isHeader(holder.getAdapterPosition()) ? headerDelegateCore : childDelegateCore;
+        delegateCore.onViewDetachedFromWindow(holder);
+    }
+
     /**
      * Registers the <code>binder</code> to handle creating and binding the headers of type
      * <code>viewType</code>. If a {@link ViewHolderBinder} has already been specified
@@ -73,7 +119,8 @@ public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerVi
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
     public void registerHeaderViewHolderBinder(int viewType, ViewHolderBinder binder) {
-        headerDelegateCore.registerViewHolderBinder(viewType, binder);
+        int headerViewType = viewType | HeaderApi.HEADER_VIEW_TYPE_MASK;
+        headerDelegateCore.registerViewHolderBinder(headerViewType, binder);
     }
 
     /**
@@ -85,7 +132,8 @@ public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerVi
      * @param binder The {@link ViewHolderBinder} to handle creating and binding views
      */
     public void registerChildViewHolderBinder(int viewType, ViewHolderBinder binder) {
-        childDelegateCore.registerViewHolderBinder(viewType, binder);
+        int childViewType = viewType & ~HeaderApi.HEADER_VIEW_TYPE_MASK;
+        childDelegateCore.registerViewHolderBinder(childViewType, binder);
     }
 
     /**

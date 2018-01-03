@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Brian Wernick
+ * Copyright (C) 2016 - 2018 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ public class HeaderCore {
 
     @NonNull
     protected HeaderAdapterDataObserver observer;
+    protected boolean registeredObserver = false;
+
     protected boolean autoUpdateHeaders = true;
 
     public HeaderCore(@NonNull HeaderApi api) {
@@ -188,6 +190,7 @@ public class HeaderCore {
         if (autoUpdateHeaders) {
             adapter.registerAdapterDataObserver(observer);
             observer.onChanged();
+            registeredObserver = true;
         }
     }
 
@@ -199,7 +202,11 @@ public class HeaderCore {
      * @param adapter The RecyclerView.Adapter that the observer needs to be unregistered for
      */
     public void unregisterObserver(@NonNull RecyclerView.Adapter adapter) {
-        adapter.unregisterAdapterDataObserver(observer);
+        if (registeredObserver) {
+            adapter.unregisterAdapterDataObserver(observer);
+            registeredObserver = false;
+        }
+
         if (autoUpdateHeaders) {
             headerData.headerItems.clear();
         }

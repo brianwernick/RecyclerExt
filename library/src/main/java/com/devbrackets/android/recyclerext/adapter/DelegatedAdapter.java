@@ -51,6 +51,26 @@ public abstract class DelegatedAdapter<T> extends ActionableAdapter<RecyclerView
         delegateCore.onBindViewHolder(holder, position);
     }
 
+    @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
+        delegateCore.onViewRecycled(holder);
+    }
+
+    @Override
+    public boolean onFailedToRecycleView(RecyclerView.ViewHolder holder) {
+        return delegateCore.onFailedToRecycleView(holder);
+    }
+
+    @Override
+    public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
+        delegateCore.onViewAttachedToWindow(holder);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
+        delegateCore.onViewDetachedFromWindow(holder);
+    }
+
     /**
      * Registers the <code>binder</code> to handle creating and binding the views of type
      * <code>viewType</code>. If a {@link ViewHolderBinder} has already been specified
