@@ -36,6 +36,8 @@
         android:visibility="invisible"
         tools:backgroundTint="@color/recyclerext_fast_scroll_bubble_color_default"
         tools:ignore="RtlHardcoded"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
         tools:text="A"
         tools:visibility="visible"/>
 </RelativeLayout>

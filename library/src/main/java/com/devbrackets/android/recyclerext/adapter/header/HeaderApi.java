@@ -84,7 +84,7 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
     void setAutoUpdateHeaders(boolean autoUpdateHeaders);
 
     /**
-     * Retrieves the view type for the header whos first child view
+     * Retrieves the view type for the header whose first child view
      * has the <code>childPosition</code>.  This value will be |'d with
      * the {@link #HEADER_VIEW_TYPE_MASK} to make sure the header and child
      * view types don't overlap
