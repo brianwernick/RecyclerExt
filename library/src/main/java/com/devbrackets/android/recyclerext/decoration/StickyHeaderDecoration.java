@@ -390,9 +390,21 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             if (stickyView == null || isHeader || !isLastChild) {
                 stickyViewOffset.x = 0;
                 stickyViewOffset.y = 0;
+
+                return;
+            }
+
+            //TODO: This doesn't work correctly if the Header is larger than the children
+            if (orientation == LayoutOrientation.HORIZONTAL) {
+                float firstViewStart = windowLocation[0] - parentStart;
+
+                stickyViewOffset.x = Math.min(0, firstViewStart + firstView.getMeasuredWidth() - stickyView.getMeasuredWidth());
+                stickyViewOffset.y = 0;
             } else {
-                stickyViewOffset.x = orientation == LayoutOrientation.HORIZONTAL ? (windowLocation[0] - parentStart) : 0;
-                stickyViewOffset.y = orientation == LayoutOrientation.VERTICAL ? (windowLocation[1] - parentStart) : 0;
+                float firstViewStart = windowLocation[1] - parentStart;
+
+                stickyViewOffset.x = 0;
+                stickyViewOffset.y = Math.min(0, firstViewStart + firstView.getMeasuredHeight() - stickyView.getMeasuredHeight());
             }
         }
 
@@ -483,14 +495,13 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         @SuppressWarnings("unchecked")
         protected RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
             RecyclerView.ViewHolder holder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
+            adapter.onBindViewHolder(holder, headerPosition);
 
             //Measure it
             if (!measureViewHolder(holder)) {
                 return null;
             }
 
-            //Bind it to get the correct values
-            adapter.onBindViewHolder(holder, headerPosition);
             return holder;
         }
 
