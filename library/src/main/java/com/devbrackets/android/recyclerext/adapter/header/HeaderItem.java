@@ -25,6 +25,7 @@ import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
 public class HeaderItem {
     private long id;
     private int adapterPosition;
+    private int childCount = 0;
 
     public HeaderItem(long id, int adapterPosition) {
         this.id = id;
@@ -37,5 +38,13 @@ public class HeaderItem {
 
     public int getAdapterPosition() {
         return adapterPosition;
+    }
+
+    public int getChildCount() {
+        return childCount;
+    }
+
+    public void setChildCount(int childCount) {
+        this.childCount = childCount;
     }
 }

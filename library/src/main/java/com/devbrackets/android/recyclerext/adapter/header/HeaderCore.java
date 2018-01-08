@@ -85,7 +85,17 @@ public class HeaderCore {
      * @return The number of children views associated with the given <code>headerId</code>
      */
     public int getChildCount(long headerId) {
-        return headerId != RecyclerView.NO_ID ? headerData.headerChildCountMap.get(headerId, 0) : 0;
+        if (headerId == RecyclerView.NO_ID) {
+            return 0;
+        }
+
+        for (HeaderItem item : headerData.headerItems) {
+            if (item.getId() == headerId) {
+                return item.getChildCount();
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -121,11 +131,7 @@ public class HeaderCore {
      * @return The number of items to display in the adapter
      */
     public int getItemCount() {
-        if (headerData.showHeaderAsChild) {
-            return headerApi.getChildCount();
-        }
-
-        return headerApi.getChildCount() + getHeaderCount();
+        return headerData.adapterPositionItemMap.size();
     }
 
     /**
@@ -136,18 +142,8 @@ public class HeaderCore {
      * @return True if the item at <code>adapterPosition</code> is a Header
      */
     public boolean isHeader(int adapterPosition) {
-        for (HeaderItem item : headerData.headerItems) {
-            if (item.getAdapterPosition() == adapterPosition) {
-                return true;
-            }
-
-            //The header items are ordered, so don't go past the adapterPosition
-            if (item.getAdapterPosition() > adapterPosition) {
-                break;
-            }
-        }
-
-        return false;
+        HeaderDataGenerator.AdapterItem item = headerData.adapterPositionItemMap.get(adapterPosition);
+        return item != null && item.headerItem != null;
     }
 
     /**
@@ -171,13 +167,7 @@ public class HeaderCore {
      * @return The type of ViewHolder for the <code>position</code>
      */
     public int getItemViewType(int adapterPosition) {
-        int childPosition = getChildPosition(adapterPosition);
-
-        if (isHeader(adapterPosition)) {
-            return headerApi.getHeaderViewType(childPosition) | HeaderApi.HEADER_VIEW_TYPE_MASK;
-        }
-
-        return headerApi.getChildViewType(childPosition) & ~HeaderApi.HEADER_VIEW_TYPE_MASK;
+        return headerData.adapterPositionItemMap.get(adapterPosition).itemViewType;
     }
 
     /**
@@ -219,20 +209,8 @@ public class HeaderCore {
      * @return The child index
      */
     public int getChildPosition(int adapterPosition) {
-        if (headerData.showHeaderAsChild) {
-            return adapterPosition;
-        }
-
-        int headerCount = 0;
-        for (HeaderItem item : headerData.headerItems) {
-            if (item.getAdapterPosition() < adapterPosition) {
-                headerCount++;
-            } else {
-                break;
-            }
-        }
-
-        return adapterPosition - headerCount;
+        HeaderDataGenerator.AdapterItem item = headerData.adapterPositionItemMap.get(adapterPosition);
+        return item != null ? item.childPosition : adapterPosition;
     }
 
     /**
@@ -246,6 +224,8 @@ public class HeaderCore {
         if (headerData.showHeaderAsChild) {
             return childPosition;
         }
+
+        //todo we can do a binary search in the adapterPositionItemMap instead
 
         for (HeaderItem item : headerData.headerItems) {
             if (item.getAdapterPosition() <= childPosition) {
@@ -270,6 +250,8 @@ public class HeaderCore {
             return RecyclerView.NO_POSITION;
         }
 
+        //todo we can do a binary search in the adapterPositionItemMap instead
+
         for (HeaderItem item : headerData.headerItems) {
             if (item.getId() == headerId) {
                 return item.getAdapterPosition();
@@ -281,19 +263,7 @@ public class HeaderCore {
 
     @Nullable
     public HeaderItem getHeaderForAdapterPosition(@IntRange(from = 0) int adapterPosition) {
-        if (adapterPosition >= getItemCount()) {
-            return null;
-        }
-
-        HeaderItem itemHeader = null;
-        for (HeaderItem item : headerData.headerItems) {
-            if (item.getAdapterPosition() <= adapterPosition) {
-                itemHeader = item;
-            } else {
-                break;
-            }
-        }
-
-        return itemHeader;
+        HeaderDataGenerator.AdapterItem item = headerData.adapterPositionItemMap.get(adapterPosition);
+        return item != null ? item.headerItem : null;
     }
 }

@@ -100,7 +100,7 @@ public class HeaderListFragment extends Fragment {
 
         @Override
         public void onBindHeaderViewHolder(@NonNull SimpleTextViewHolder holder, int childPosition) {
-            holder.setText(getHeaderId(childPosition) + "0s"  + "\r\n hello\r\nGoodbye\r\n`Till Next Time\r\nYet Another Row\r\nPlease");
+            holder.setText(getHeaderId(childPosition) + "0s");
             holder.setBackgroundColor(0xFFCCCCCC);
         }
 

@@ -25,6 +25,7 @@ import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi;
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateCore;
 import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
+import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator;
 
 /**
  * A {@link RecyclerView.Adapter} that handles delegating the creation and binding of
@@ -47,7 +48,16 @@ public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerVi
 
             @Override
             public int getItemViewType(int position) {
-                return getHeaderViewType(getChildPosition(position));
+                if (position < 0 || position >= getHeaderData().adapterPositionItemMap.size()) {
+                    return 0;
+                }
+
+                HeaderDataGenerator.AdapterItem item = getHeaderData().adapterPositionItemMap.get(position);
+                if (item != null) {
+                    return item.itemViewType & ~HeaderApi.HEADER_VIEW_TYPE_MASK;
+                }
+
+                return 0;
             }
         }, this);
 
@@ -59,7 +69,16 @@ public abstract class DelegatedHeaderAdapter<T> extends HeaderAdapter<RecyclerVi
 
             @Override
             public int getItemViewType(int position) {
-                return getChildViewType(getChildPosition(position));
+                if (position < 0 || position >= getHeaderData().adapterPositionItemMap.size()) {
+                    return 0;
+                }
+
+                HeaderDataGenerator.AdapterItem item = getHeaderData().adapterPositionItemMap.get(position);
+                if (item != null) {
+                    return item.itemViewType & ~HeaderApi.HEADER_VIEW_TYPE_MASK;
+                }
+
+                return 0;
             }
         }, this);
     }
