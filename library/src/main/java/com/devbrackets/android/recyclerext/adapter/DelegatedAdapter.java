@@ -28,8 +28,6 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
  * A {@link RecyclerView.Adapter} that handles delegating the creation and binding of
  * {@link android.support.v7.widget.RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
  * to allow for dynamic lists
- *
- * TODO: how do we handle the unregister when the RV goes away?
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class DelegatedAdapter<T> extends ActionableAdapter<RecyclerView.ViewHolder> implements DelegateApi<T> {

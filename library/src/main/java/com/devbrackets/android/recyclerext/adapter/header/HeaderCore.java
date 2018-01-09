@@ -89,13 +89,8 @@ public class HeaderCore {
             return 0;
         }
 
-        for (HeaderItem item : headerData.headerItems) {
-            if (item.getId() == headerId) {
-                return item.getChildCount();
-            }
-        }
-
-        return 0;
+        HeaderItem headerItem = headerData.headerItems.get(headerId);
+        return headerItem != null ? headerItem.getChildCount() : 0;
     }
 
     /**
@@ -117,8 +112,8 @@ public class HeaderCore {
     public List<Integer> getHeaderPositions() {
         List<Integer> positions = new ArrayList<>();
 
-        for (HeaderItem item : headerData.headerItems) {
-            positions.add(item.getAdapterPosition());
+        for (int i = 0; i < headerData.headerItems.size(); i++) {
+            positions.add(headerData.headerItems.get(headerData.headerItems.keyAt(i)).getAdapterPosition());
         }
 
         return positions;
@@ -225,13 +220,10 @@ public class HeaderCore {
             return childPosition;
         }
 
-        //todo we can do a binary search in the adapterPositionItemMap instead
-
-        for (HeaderItem item : headerData.headerItems) {
-            if (item.getAdapterPosition() <= childPosition) {
-                childPosition++;
-            } else {
-                break;
+        for (int i = 0; i < headerData.adapterPositionItemMap.size(); i++) {
+            int adapterPosition = headerData.adapterPositionItemMap.keyAt(i);
+            if (headerData.adapterPositionItemMap.get(adapterPosition).childPosition == childPosition) {
+                return adapterPosition;
             }
         }
 
@@ -250,15 +242,8 @@ public class HeaderCore {
             return RecyclerView.NO_POSITION;
         }
 
-        //todo we can do a binary search in the adapterPositionItemMap instead
-
-        for (HeaderItem item : headerData.headerItems) {
-            if (item.getId() == headerId) {
-                return item.getAdapterPosition();
-            }
-        }
-
-        return RecyclerView.NO_POSITION;
+        HeaderItem headerItem = headerData.headerItems.get(headerId);
+        return headerItem != null ? headerItem.getAdapterPosition() : RecyclerView.NO_POSITION;
     }
 
     @Nullable

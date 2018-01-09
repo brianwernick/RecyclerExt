@@ -18,11 +18,9 @@ package com.devbrackets.android.recyclerext.adapter.header;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.LongSparseArray;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v7.widget.RecyclerView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Handles calculating the headers and offsets within an adapter
@@ -95,7 +93,7 @@ public class HeaderDataGenerator {
             //Adds new headers to the list when detected
             if (currentHeader == null || currentHeader.getId() != headerId) {
                 currentHeader = new HeaderItem(headerId, adapterPosition);
-                reuseData.headerItems.add(currentHeader);
+                reuseData.headerItems.put(headerId, currentHeader);
 
                 reuseData.adapterPositionItemMap.put(adapterPosition, new AdapterItem(currentHeader, i, headerApi.getHeaderViewType(i) | HeaderApi.HEADER_VIEW_TYPE_MASK));
                 if (reuseData.showHeaderAsChild) {
@@ -115,7 +113,7 @@ public class HeaderDataGenerator {
 
     public static class HeaderData {
         @NonNull
-        public List<HeaderItem> headerItems = new ArrayList<>();
+        public LongSparseArray<HeaderItem> headerItems = new LongSparseArray<>();
         @NonNull
         public SparseArrayCompat<AdapterItem> adapterPositionItemMap = new SparseArrayCompat<>();
 
