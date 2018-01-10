@@ -79,8 +79,8 @@ public abstract class ActionableAdapter<VH extends RecyclerView.ViewHolder> exte
         if (layoutManager instanceof LinearLayoutManager) {
             startPosition = ((LinearLayoutManager)layoutManager).findFirstVisibleItemPosition();
         } else {
-            //todo fallback to something different
             Log.e(TAG, "updateVisibleViewHolders() currently only supports LinearLayoutManager and it's subclasses");
+            return;
         }
 
         int i = startPosition;

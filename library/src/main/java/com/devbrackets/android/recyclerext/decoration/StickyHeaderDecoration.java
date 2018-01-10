@@ -34,7 +34,7 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
  * the {@link HeaderAdapter} to be persisted when they
  * reach the start of the RecyclerView's frame.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
 public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private static final String TAG = "StickyHeaderDecoration";
 
@@ -42,9 +42,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         VERTICAL,
         HORIZONTAL
     }
-
-    @Nullable
-    protected RecyclerView.ViewHolder stickyViewHolder;
 
     protected RecyclerView parent;
     protected RecyclerView.Adapter adapter;
@@ -55,8 +52,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     protected StickyViewTouchInterceptor touchInterceptor;
 
     @NonNull
-    protected PointF stickyViewOffset = new PointF(0, 0);
-    protected long currentStickyId = Long.MIN_VALUE;
+    protected StickyHeader stickyHeader = new StickyHeader();
 
     @NonNull
     protected LayoutOrientation orientation = LayoutOrientation.VERTICAL;
@@ -88,15 +84,10 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        RecyclerView.ViewHolder holder = stickyViewHolder;
-        if (holder == null) {
-            return;
-        }
-
-        View stickyView = getStickyView();
+        View stickyView = stickyHeader.getStickyView((HeaderApi) adapter);
         if (stickyView != null) {
             c.save();
-            c.translate(stickyViewOffset.x, stickyViewOffset.y);
+            c.translate(stickyHeader.stickyViewOffset.x, stickyHeader.stickyViewOffset.y);
             stickyView.draw(c);
             c.restore();
         }
@@ -122,11 +113,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      * Clears the current sticky header from the view.
      */
     public void clearStickyHeader() {
-        stickyViewHolder = null;
-        currentStickyId = RecyclerView.NO_ID;
-
-        stickyViewOffset.x = 0;
-        stickyViewOffset.y = 0;
+        stickyHeader.reset();
     }
 
     /**
@@ -140,8 +127,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
 
         this.orientation = orientation;
-        stickyViewOffset.x = 0;
-        stickyViewOffset.y = 0;
+        stickyHeader.stickyViewOffset.x = 0;
+        stickyHeader.stickyViewOffset.y = 0;
     }
 
     /**
@@ -180,17 +167,44 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
     }
 
-    @Nullable
-    protected View getStickyView() {
-        RecyclerView.ViewHolder holder = stickyViewHolder;
-        if (holder == null) {
-            return null;
+    protected static class StickyHeader {
+        @Nullable
+        protected RecyclerView.ViewHolder stickyViewHolder;
+        @Nullable
+        protected View cachedStickyView;
+        @NonNull
+        public PointF stickyViewOffset = new PointF(0, 0);
+        public long currentStickyId = RecyclerView.NO_ID;
+
+        public void reset() {
+            update(RecyclerView.NO_ID, null);
+
+            stickyViewOffset.x = 0;
+            stickyViewOffset.y = 0;
         }
 
-        //todo cache the findViewById lookup
-        // If we have a ViewHolder we should have a view, but just to be safe we check
-        int stickyViewId = ((HeaderApi) adapter).getCustomStickyHeaderViewId();
-        return stickyViewId != 0 ? holder.itemView.findViewById(stickyViewId) : holder.itemView;
+        public void update(long stickyId, @Nullable RecyclerView.ViewHolder holder) {
+            stickyViewHolder = holder;
+            cachedStickyView = null;
+            currentStickyId = stickyId;
+        }
+
+        @Nullable
+        public View getStickyView(@NonNull HeaderApi headerApi) {
+            if (cachedStickyView != null) {
+                return cachedStickyView;
+            }
+
+            RecyclerView.ViewHolder holder = stickyViewHolder;
+            if (holder == null) {
+                return null;
+            }
+
+            // If we have a ViewHolder we should have a view, but just to be safe we check
+            int stickyViewId = headerApi.getCustomStickyHeaderViewId();
+            cachedStickyView = stickyViewId != 0 ? holder.itemView.findViewById(stickyViewId) : holder.itemView;
+            return cachedStickyView;
+        }
     }
 
     /**
@@ -273,7 +287,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 return null;
             }
 
-            return getStickyView();
+            return stickyHeader.getStickyView((HeaderApi) adapter);
         }
 
         protected boolean dispatchChildTouchEvent(@NonNull View child, @NonNull MotionEvent event) {
@@ -328,7 +342,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
             //If the next header is different than the current one, perform the swap
             long headerId = getHeaderId(adapter, childPosition);
-            if (headerId != currentStickyId) {
+            if (headerId != stickyHeader.currentStickyId) {
                 performHeaderSwap(headerId);
             }
 
@@ -365,8 +379,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @param headerPosition The position in the RecyclerView for the header
          */
         protected void updateHeader(long headerId, int headerPosition) {
-            currentStickyId = headerId;
-            stickyViewHolder = getHeaderViewHolder(headerPosition);
+            stickyHeader.update(headerId, getHeaderViewHolder(headerPosition));
         }
 
         /**
@@ -378,18 +391,14 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * @param headerId The header id associated with the <code>firstView</code>
          */
         protected void updateHeaderPosition(@NonNull View firstView, int childPosition, long headerId) {
-            if (stickyViewHolder == null) {
-                return;
-            }
-
             // Updates the header offset so that we smoothly transition between headers
             boolean isHeader = getHeaderPosition(adapter, headerId) == parent.getChildAdapterPosition(firstView);
             boolean isLastChild = getHeaderId(adapter, childPosition + 1) != headerId;
 
-            View stickyView = getStickyView();
+            View stickyView = stickyHeader.getStickyView((HeaderApi) adapter);
             if (stickyView == null || isHeader || !isLastChild) {
-                stickyViewOffset.x = 0;
-                stickyViewOffset.y = 0;
+                stickyHeader.stickyViewOffset.x = 0;
+                stickyHeader.stickyViewOffset.y = 0;
 
                 return;
             }
@@ -398,13 +407,13 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             if (orientation == LayoutOrientation.HORIZONTAL) {
                 float firstViewStart = windowLocation[0] - parentStart;
 
-                stickyViewOffset.x = Math.min(0, firstViewStart + firstView.getMeasuredWidth() - stickyView.getMeasuredWidth());
-                stickyViewOffset.y = 0;
+                stickyHeader.stickyViewOffset.x = Math.min(0, firstViewStart + firstView.getMeasuredWidth() - stickyView.getMeasuredWidth());
+                stickyHeader.stickyViewOffset.y = 0;
             } else {
                 float firstViewStart = windowLocation[1] - parentStart;
 
-                stickyViewOffset.x = 0;
-                stickyViewOffset.y = Math.min(0, firstViewStart + firstView.getMeasuredHeight() - stickyView.getMeasuredHeight());
+                stickyHeader.stickyViewOffset.x = 0;
+                stickyHeader.stickyViewOffset.y = Math.min(0, firstViewStart + firstView.getMeasuredHeight() - stickyView.getMeasuredHeight());
             }
         }
 
