@@ -17,7 +17,6 @@
 package com.devbrackets.android.recyclerext.decoration;
 
 import android.graphics.Canvas;
-import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -25,16 +24,16 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
+import com.devbrackets.android.recyclerext.decoration.header.StickyHeader;
 
 /**
  * A RecyclerView Decoration that allows for Header views from
  * the {@link HeaderAdapter} to be persisted when they
  * reach the start of the RecyclerView's frame.
  */
-@SuppressWarnings("ALL")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     private static final String TAG = "StickyHeaderDecoration";
 
@@ -45,6 +44,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
     protected RecyclerView parent;
     protected RecyclerView.Adapter adapter;
+    protected HeaderApi headerApi;
     protected AdapterDataObserver dataObserver;
     protected StickyViewScrollListener scrollListener;
 
@@ -75,6 +75,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
         this.parent = parent;
         adapter = parent.getAdapter();
+        headerApi = (HeaderApi) adapter;
         dataObserver = new AdapterDataObserver();
         scrollListener = new StickyViewScrollListener();
 
@@ -84,7 +85,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        View stickyView = stickyHeader.getStickyView((HeaderApi) adapter);
+        View stickyView = stickyHeader.getStickyView(headerApi);
         if (stickyView != null) {
             c.save();
             c.translate(stickyHeader.stickyViewOffset.x, stickyHeader.stickyViewOffset.y);
@@ -105,6 +106,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         setAllowStickyHeaderTouches(false);
 
         adapter = null;
+        headerApi = null;
         dataObserver = null;
         parent = null;
     }
@@ -121,7 +123,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      *
      * @param orientation The layouts orientation
      */
-    public void setOrientation(LayoutOrientation orientation) {
+    public void setOrientation(@NonNull LayoutOrientation orientation) {
         if (orientation == this.orientation) {
             return;
         }
@@ -136,6 +138,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      *
      * @return The current orientation [default: {@link LayoutOrientation#VERTICAL}]
      */
+    @NonNull
     public LayoutOrientation getOrientation() {
         return orientation;
     }
@@ -167,46 +170,6 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         }
     }
 
-    protected static class StickyHeader {
-        @Nullable
-        protected RecyclerView.ViewHolder stickyViewHolder;
-        @Nullable
-        protected View cachedStickyView;
-        @NonNull
-        public PointF stickyViewOffset = new PointF(0, 0);
-        public long currentStickyId = RecyclerView.NO_ID;
-
-        public void reset() {
-            update(RecyclerView.NO_ID, null);
-
-            stickyViewOffset.x = 0;
-            stickyViewOffset.y = 0;
-        }
-
-        public void update(long stickyId, @Nullable RecyclerView.ViewHolder holder) {
-            stickyViewHolder = holder;
-            cachedStickyView = null;
-            currentStickyId = stickyId;
-        }
-
-        @Nullable
-        public View getStickyView(@NonNull HeaderApi headerApi) {
-            if (cachedStickyView != null) {
-                return cachedStickyView;
-            }
-
-            RecyclerView.ViewHolder holder = stickyViewHolder;
-            if (holder == null) {
-                return null;
-            }
-
-            // If we have a ViewHolder we should have a view, but just to be safe we check
-            int stickyViewId = headerApi.getCustomStickyHeaderViewId();
-            cachedStickyView = stickyViewId != 0 ? holder.itemView.findViewById(stickyViewId) : holder.itemView;
-            return cachedStickyView;
-        }
-    }
-
     /**
      * An observer to watch the adapter for changes so that we can update the
      * current sticky header
@@ -214,8 +177,23 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     protected class AdapterDataObserver extends RecyclerView.AdapterDataObserver {
         @Override
         public void onChanged() {
-            //For now we just clear the stick header
-            clearStickyHeader();
+            scrollListener.updateStickyHeader(parent);
+        }
+
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            scrollListener.updateStickyHeader(parent);
+        }
+
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            scrollListener.updateStickyHeader(parent);
+        }
+
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            scrollListener.updateStickyHeader(parent);
+        }
+
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+            scrollListener.updateStickyHeader(parent);
         }
     }
 
@@ -287,7 +265,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
                 return null;
             }
 
-            return stickyHeader.getStickyView((HeaderApi) adapter);
+            return stickyHeader.getStickyView(headerApi);
         }
 
         protected boolean dispatchChildTouchEvent(@NonNull View child, @NonNull MotionEvent event) {
@@ -327,6 +305,10 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            updateStickyHeader(recyclerView);
+        }
+
+        protected void updateStickyHeader(@NonNull RecyclerView recyclerView) {
             View firstView = findStartView(recyclerView);
             if (firstView == null) {
                 clearStickyHeader();
@@ -334,14 +316,14 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             //Retrieve the child position for the view
-            Integer childPosition = (Integer) firstView.getTag(R.id.recyclerext_view_child_position);
-            if (childPosition == null) {
+            int childPosition = headerApi.getChildPosition(recyclerView.getChildAdapterPosition(firstView));
+            if (childPosition < 0) {
                 clearStickyHeader();
                 return;
             }
 
             //If the next header is different than the current one, perform the swap
-            long headerId = getHeaderId(adapter, childPosition);
+            long headerId = getHeaderId(childPosition);
             if (headerId != stickyHeader.currentStickyId) {
                 performHeaderSwap(headerId);
             }
@@ -363,7 +345,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             }
 
             //Get the position of the associated header
-            int headerPosition = getHeaderPosition(adapter, headerId);
+            int headerPosition = getHeaderPosition(headerId);
             if (headerPosition == RecyclerView.NO_POSITION) {
                 return;
             }
@@ -392,10 +374,10 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          */
         protected void updateHeaderPosition(@NonNull View firstView, int childPosition, long headerId) {
             // Updates the header offset so that we smoothly transition between headers
-            boolean isHeader = getHeaderPosition(adapter, headerId) == parent.getChildAdapterPosition(firstView);
-            boolean isLastChild = getHeaderId(adapter, childPosition + 1) != headerId;
+            boolean isHeader = getHeaderPosition(headerId) == parent.getChildAdapterPosition(firstView);
+            boolean isLastChild = getHeaderId(childPosition + 1) != headerId;
 
-            View stickyView = stickyHeader.getStickyView((HeaderApi) adapter);
+            View stickyView = stickyHeader.getStickyView(headerApi);
             if (stickyView == null || isHeader || !isLastChild) {
                 stickyHeader.stickyViewOffset.x = 0;
                 stickyHeader.stickyViewOffset.y = 0;
@@ -452,16 +434,10 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * Retrieves the id for the header associated with the <code>childPosition</code> from
          * the specified <code>headerAdapter</code>
          *
-         * @param headerAdapter The adapter to use when finding the header id
          * @param childPosition The child position associated with the header
          * @return The id for the header or {@link RecyclerView#NO_ID}
          */
-        protected long getHeaderId(RecyclerView.Adapter headerAdapter, int childPosition) {
-            if (!(headerAdapter instanceof HeaderApi)) {
-                return RecyclerView.NO_ID;
-            }
-
-            HeaderApi headerApi = (HeaderApi) headerAdapter;
+        protected long getHeaderId(int childPosition) {
             if (childPosition < 0 || childPosition >= headerApi.getChildCount()) {
                 return RecyclerView.NO_ID;
             }
@@ -473,23 +449,16 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
          * Determines the position for the header associated with
          * the <code>headerId</code>
          *
-         * @param headerAdapter The adapter to use when finding the header position
          * @param headerId The id to find the header for
          * @return The associated headers position or {@link RecyclerView#NO_POSITION}
          */
-        protected int getHeaderPosition(RecyclerView.Adapter headerAdapter, long headerId) {
-            if (headerAdapter instanceof HeaderApi) {
-                return ((HeaderApi) adapter).getHeaderPosition(headerId);
-            }
-
-            return RecyclerView.NO_POSITION;
+        protected int getHeaderPosition(long headerId) {
+            return headerApi.getHeaderPosition(headerId);
         }
 
         protected int getHeaderViewType(int headerPosition) {
-            int rawType = ((HeaderApi) adapter).getHeaderViewType(headerPosition);
-
             //Make sure that this is treated as a header type
-            return rawType | HeaderApi.HEADER_VIEW_TYPE_MASK;
+            return headerApi.getHeaderViewType(headerPosition) | HeaderApi.HEADER_VIEW_TYPE_MASK;
         }
 
         /**

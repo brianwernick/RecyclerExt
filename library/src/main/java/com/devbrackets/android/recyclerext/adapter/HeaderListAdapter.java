@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderCore;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator;
@@ -95,12 +94,10 @@ public abstract class HeaderListAdapter<H extends ViewHolder, C extends ViewHold
 
         if ((viewType & HEADER_VIEW_TYPE_MASK) != 0) {
             onBindHeaderViewHolder((H) holder, childPosition);
-            holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
             return;
         }
 
         onBindChildViewHolder((C) holder, childPosition);
-        holder.itemView.setTag(R.id.recyclerext_view_child_position, childPosition);
     }
 
     @NonNull

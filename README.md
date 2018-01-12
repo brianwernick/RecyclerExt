@@ -4,8 +4,8 @@ An Android RecyclerView enhancement library focused on simplifying
 common use cases and filling in gaps between the ListView and the
 RecyclerView.
 
- * Item Reordering
  * Header Adapters (Sticky and non)
+ * Delegated Adapters
  * Enhanced LayoutManagers
  * Expanded ViewHolders
  * Quick Scrolling (FastScroll)
@@ -39,7 +39,7 @@ dependencies {
 License
 -------
 
-    Copyright 2015-2017 Brian Wernick
+    Copyright 2015-2018 Brian Wernick
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
