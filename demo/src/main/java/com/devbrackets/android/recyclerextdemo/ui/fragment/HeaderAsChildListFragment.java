@@ -101,7 +101,7 @@ public class HeaderAsChildListFragment extends Fragment {
             ItemDAO item = items.get(childPosition);
 
             holder.setText(item.getText());
-            holder.setRegionText(childPosition / 10 + "");
+            holder.setRegionText(getHeaderId(childPosition) + "");
         }
 
         @Override
@@ -116,7 +116,7 @@ public class HeaderAsChildListFragment extends Fragment {
          */
         @Override
         public long getHeaderId(int childPosition) {
-            return items.get(childPosition).getOrder() / 10;
+            return (items.get(childPosition).getOrder() + 1) / 10;
         }
 
         /**

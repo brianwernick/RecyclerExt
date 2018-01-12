@@ -55,8 +55,8 @@ public class GridFragment extends Fragment {
         int width = getActivity().getResources().getDimensionPixelSize(R.dimen.grid_item_width);
         AutoColumnGridLayoutManager layoutManager = new AutoColumnGridLayoutManager(getActivity(), width);
         layoutManager.setMatchRowAndColumnSpacing(true);
-        layoutManager.setMinEdgeSpacing(140); //This is a pixel value, normally you would retrieve the size similar to the width above
-        layoutManager.setMinColumnSpacing(80); //This is a pixel value, normally you would retrieve the size similar to the width above
+        layoutManager.setMinEdgeSpacing(120); //This is a pixel value, normally you would retrieve the size similar to the width above
+        layoutManager.setMinColumnSpacing(60); //This is a pixel value, normally you would retrieve the size similar to the width above
         layoutManager.setSpacingMethod(AutoColumnGridLayoutManager.SpacingMethod.ALL);
 
         recyclerView.setLayoutManager(layoutManager);

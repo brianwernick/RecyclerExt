@@ -36,7 +36,7 @@ public class HeaderListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler);
         fastScroll = view.findViewById(R.id.recyclerext_fast_scroll);
@@ -115,12 +115,12 @@ public class HeaderListFragment extends Fragment {
          */
         @Override
         public long getHeaderId(int childPosition) {
-            return items.get(childPosition).getOrder() / 10;
+            return (items.get(childPosition).getOrder() + 1) / 10;
         }
 
         @Override
         public long getSectionId(@IntRange(from = 0) int position) {
-            return (long)(getChildPosition(position) / 10);
+            return (long) ((getChildPosition(position) + 1) / 10);
         }
 
         @NonNull
