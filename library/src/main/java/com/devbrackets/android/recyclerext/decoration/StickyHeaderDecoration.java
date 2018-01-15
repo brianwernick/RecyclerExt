@@ -21,12 +21,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 import com.devbrackets.android.recyclerext.decoration.header.StickyHeader;
+import com.devbrackets.android.recyclerext.decoration.header.StickyHeaderDataObserver;
+import com.devbrackets.android.recyclerext.decoration.header.StickyHeaderScrollListener;
+import com.devbrackets.android.recyclerext.decoration.header.StickyHeaderTouchInterceptor;
+import com.devbrackets.android.recyclerext.decoration.header.UpdateListener;
 
 /**
  * A RecyclerView Decoration that allows for Header views from
@@ -34,7 +37,7 @@ import com.devbrackets.android.recyclerext.decoration.header.StickyHeader;
  * reach the start of the RecyclerView's frame.
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
-public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
+public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implements UpdateListener, StickyHeaderTouchInterceptor.StickyHeaderCallback {
     private static final String TAG = "StickyHeaderDecoration";
 
     public enum LayoutOrientation {
@@ -45,17 +48,20 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     protected RecyclerView parent;
     protected RecyclerView.Adapter adapter;
     protected HeaderApi headerApi;
-    protected AdapterDataObserver dataObserver;
-    protected StickyViewScrollListener scrollListener;
+    protected StickyHeaderDataObserver dataObserver;
+    protected StickyHeaderScrollListener scrollListener;
 
     @Nullable
-    protected StickyViewTouchInterceptor touchInterceptor;
+    protected StickyHeaderTouchInterceptor touchInterceptor;
 
     @NonNull
     protected StickyHeader stickyHeader = new StickyHeader();
 
     @NonNull
     protected LayoutOrientation orientation = LayoutOrientation.VERTICAL;
+
+    protected int[] windowLocation = new int[2];
+    protected int parentStart = Integer.MIN_VALUE;
 
     /**
      * Creates the ItemDecoration that performs the functionality to
@@ -76,8 +82,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
         this.parent = parent;
         adapter = parent.getAdapter();
         headerApi = (HeaderApi) adapter;
-        dataObserver = new AdapterDataObserver();
-        scrollListener = new StickyViewScrollListener();
+        dataObserver = new StickyHeaderDataObserver(this);
+        scrollListener = new StickyHeaderScrollListener(this);
 
         adapter.registerAdapterDataObserver(dataObserver);
         parent.addOnScrollListener(scrollListener);
@@ -92,6 +98,36 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
             stickyView.draw(c);
             c.restore();
         }
+    }
+
+    @Nullable
+    @Override
+    public View getStickyView() {
+        return stickyHeader.getStickyView(headerApi);
+    }
+
+    @Override
+    public void onUpdateStickyHeader() {
+        View firstView = findStartView(parent);
+        if (firstView == null) {
+            clearStickyHeader();
+            return;
+        }
+
+        //Retrieve the child position for the view
+        int childPosition = headerApi.getChildPosition(parent.getChildAdapterPosition(firstView));
+        if (childPosition < 0) {
+            clearStickyHeader();
+            return;
+        }
+
+        //If the next header is different than the current one, perform the swap
+        long headerId = getHeaderId(childPosition);
+        if (headerId != stickyHeader.currentStickyId) {
+            performHeaderSwap(headerId);
+        }
+
+        updateHeaderPosition(firstView, childPosition, headerId);
     }
 
     /**
@@ -162,7 +198,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
      */
     public void setAllowStickyHeaderTouches(boolean allowTouches) {
         if (allowTouches && touchInterceptor == null) {
-            touchInterceptor = new StickyViewTouchInterceptor();
+            touchInterceptor = new StickyHeaderTouchInterceptor(this);
             parent.addOnItemTouchListener(touchInterceptor);
         } else if (!allowTouches && touchInterceptor != null) {
             parent.removeOnItemTouchListener(touchInterceptor);
@@ -171,345 +207,183 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration {
     }
 
     /**
-     * An observer to watch the adapter for changes so that we can update the
-     * current sticky header
+     * Replaces the <code>stickyHeader</code> with the header associated with
+     * the <code>headerId</code>.
+     *
+     * @param headerId The id for the header view
      */
-    protected class AdapterDataObserver extends RecyclerView.AdapterDataObserver {
-        @Override
-        public void onChanged() {
-            scrollListener.updateStickyHeader(parent);
+    protected void performHeaderSwap(long headerId) {
+        //If we don't have a valid headerId then clear the current header
+        if (headerId == RecyclerView.NO_ID) {
+            clearStickyHeader();
+            return;
         }
 
-        public void onItemRangeChanged(int positionStart, int itemCount) {
-            scrollListener.updateStickyHeader(parent);
+        //Get the position of the associated header
+        int headerPosition = getHeaderPosition(headerId);
+        if (headerPosition == RecyclerView.NO_POSITION) {
+            return;
         }
 
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            scrollListener.updateStickyHeader(parent);
+        updateHeader(headerId, headerPosition);
+    }
+
+    /**
+     * Updates the current sticky header to the one with the
+     * <code>headerId</code>.
+     *
+     * @param headerId The id for the new sticky header
+     * @param headerPosition The position in the RecyclerView for the header
+     */
+    protected void updateHeader(long headerId, int headerPosition) {
+        stickyHeader.update(headerId, getHeaderViewHolder(headerPosition));
+    }
+
+    /**
+     * Updates the position of the sticky header to handle smoothly transitioning
+     * between headers.
+     *
+     * @param firstView The first visible view in the <code>parent</code> {@link RecyclerView}
+     * @param childPosition The child position (not adapter position) for the <code>firstView</code>
+     * @param headerId The header id associated with the <code>firstView</code>
+     */
+    protected void updateHeaderPosition(@NonNull View firstView, int childPosition, long headerId) {
+        // Updates the header offset so that we smoothly transition between headers
+        boolean isHeader = getHeaderPosition(headerId) == parent.getChildAdapterPosition(firstView);
+        boolean isLastChild = getHeaderId(childPosition + 1) != headerId;
+
+        View stickyView = stickyHeader.getStickyView(headerApi);
+        if (stickyView == null || isHeader || !isLastChild) {
+            stickyHeader.stickyViewOffset.x = 0;
+            stickyHeader.stickyViewOffset.y = 0;
+
+            return;
         }
 
-        public void onItemRangeRemoved(int positionStart, int itemCount) {
-            scrollListener.updateStickyHeader(parent);
-        }
+        //TODO: This doesn't work correctly if the Header is larger than the children
+        if (orientation == LayoutOrientation.HORIZONTAL) {
+            float firstViewStart = windowLocation[0] - parentStart;
 
-        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-            scrollListener.updateStickyHeader(parent);
+            stickyHeader.stickyViewOffset.x = Math.min(0, firstViewStart + firstView.getMeasuredWidth() - stickyView.getMeasuredWidth());
+            stickyHeader.stickyViewOffset.y = 0;
+        } else {
+            float firstViewStart = windowLocation[1] - parentStart;
+
+            stickyHeader.stickyViewOffset.x = 0;
+            stickyHeader.stickyViewOffset.y = Math.min(0, firstViewStart + firstView.getMeasuredHeight() - stickyView.getMeasuredHeight());
         }
     }
 
     /**
-     * Handles intercepting touch events in the RecyclerView to handle interaction in the
-     * sticky header.
+     * Finds the view that is at the start of the list.  This will either be the
+     * Left or Top most visible positions.
+     *
+     * @return The view at the start of the <code>recyclerView</code>
      */
-    protected class StickyViewTouchInterceptor implements RecyclerView.OnItemTouchListener {
-        protected boolean allowInterception = true;
-        protected boolean capturedTouchDown = false;
+    @Nullable
+    protected View findStartView(@NonNull RecyclerView recyclerView) {
+        int attachedViewCount = recyclerView.getLayoutManager().getChildCount();
 
-        @Override
-        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
-            // Ignores touch events we don't want to intercept
-            if (event.getAction() != MotionEvent.ACTION_DOWN && !capturedTouchDown) {
-                return false;
-            }
-
-            View stickyView = getInterceptView();
-            if (stickyView == null) {
-                capturedTouchDown = false;
-                return false;
-            }
-
-            // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                capturedTouchDown = false;
-            }
-
-            // Determine if the event is boxed by the view and pass the event through
-            boolean bounded = (event.getX() >= stickyView.getX() && event.getX() <= stickyView.getX() + stickyView.getMeasuredWidth()) &&
-                    (event.getY() >= stickyView.getY() && event.getY() <= stickyView.getY() + stickyView.getMeasuredHeight());
-
-            if (!bounded) {
-                return false;
-            }
-
-            // Updates the filter
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                capturedTouchDown = true;
-            }
-
-            return dispatchChildTouchEvent(stickyView, event);
+        //Make sure we have the start of the RecyclerView stored
+        if (parentStart == Integer.MIN_VALUE) {
+            recyclerView.getLocationInWindow(windowLocation);
+            parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
         }
 
-        @Override
-        public void onTouchEvent(RecyclerView rv, MotionEvent event) {
-            // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                capturedTouchDown = false;
-            }
+        //Finds the first visible view
+        for (int viewIndex = 0; viewIndex < attachedViewCount; viewIndex++) {
+            View view = recyclerView.getLayoutManager().getChildAt(viewIndex);
+            view.getLocationInWindow(windowLocation);
 
-            View stickyView = getInterceptView();
-            if (stickyView == null) {
-                return;
+            int startLoc = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
+            if (startLoc <= parentStart) {
+                return view;
             }
-
-            dispatchChildTouchEvent(stickyView, event);
         }
 
-        @Override
-        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            allowInterception = !disallowIntercept;
-        }
-
-        @Nullable
-        protected View getInterceptView() {
-            if (!allowInterception) {
-                return null;
-            }
-
-            return stickyHeader.getStickyView(headerApi);
-        }
-
-        protected boolean dispatchChildTouchEvent(@NonNull View child, @NonNull MotionEvent event) {
-            //TODO: this doesn't work because the sticky ViewHolder hasn't been attached to a parent
-            // And because the RecyclerView requires children to have a layoutPosition and we would have other issues
-            // So we can attach it to the parent.getParent() however that depends on what layout the
-            // RecyclerView is contained in (a relative layout or constraint layout would be fine, but a linear
-            // layout, etc. wouldn't).
-            // Other sticky header libraries allow just a single touch target for the entire header
-            // so we have 2 options that I can see:
-            // 1. Have a single touch target for the sticky header
-            // 2. When sticky header touch is enabled we need to (includes animations, etc.)
-            //      a. require the RV is inside a RelativeLayout
-            //      b. require the user to pass in a view that can contain the sticky header
-            // NOTE: if we do #2 then we don't need to perform an onDrawOver custom draw
-
-            // Pass the event through
-            boolean handledEvent = child.dispatchTouchEvent(event);
-            if (handledEvent) {
-                parent.postInvalidate();
-            }
-
-            return handledEvent;
-        }
+        //Under normal circumstances we should never reach this return
+        return null;
     }
 
     /**
-     * Listens to the scroll events for the RecyclerView that will have
-     * sticky headers.  When a new header reaches the start it will be
-     * transformed in to a sticky view and attached to the start of the
-     * RecyclerView.  Additionally, when a new header is reaching the
-     * start, the headers will be transitioned smoothly
+     * Retrieves the id for the header associated with the <code>childPosition</code> from
+     * the specified <code>headerAdapter</code>
+     *
+     * @param childPosition The child position associated with the header
+     * @return The id for the header or {@link RecyclerView#NO_ID}
      */
-    protected class StickyViewScrollListener extends RecyclerView.OnScrollListener {
-        protected int[] windowLocation = new int[2];
-        protected int parentStart = Integer.MIN_VALUE;
-
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            updateStickyHeader(recyclerView);
+    protected long getHeaderId(int childPosition) {
+        if (childPosition < 0 || childPosition >= headerApi.getChildCount()) {
+            return RecyclerView.NO_ID;
         }
 
-        protected void updateStickyHeader(@NonNull RecyclerView recyclerView) {
-            View firstView = findStartView(recyclerView);
-            if (firstView == null) {
-                clearStickyHeader();
-                return;
-            }
+        return headerApi.getHeaderId(childPosition);
+    }
 
-            //Retrieve the child position for the view
-            int childPosition = headerApi.getChildPosition(recyclerView.getChildAdapterPosition(firstView));
-            if (childPosition < 0) {
-                clearStickyHeader();
-                return;
-            }
+    /**
+     * Determines the position for the header associated with
+     * the <code>headerId</code>
+     *
+     * @param headerId The id to find the header for
+     * @return The associated headers position or {@link RecyclerView#NO_POSITION}
+     */
+    protected int getHeaderPosition(long headerId) {
+        return headerApi.getHeaderPosition(headerId);
+    }
 
-            //If the next header is different than the current one, perform the swap
-            long headerId = getHeaderId(childPosition);
-            if (headerId != stickyHeader.currentStickyId) {
-                performHeaderSwap(headerId);
-            }
+    protected int getHeaderViewType(int headerPosition) {
+        //Make sure that this is treated as a header type
+        return headerApi.getHeaderViewType(headerPosition) | HeaderApi.HEADER_VIEW_TYPE_MASK;
+    }
 
-            updateHeaderPosition(firstView, childPosition, headerId);
-        }
+    /**
+     * Retrieves the ViewHolder associated with the header at <code>headerPosition</code>.
+     * If the ViewHolder returned from <code>parent</code> is null then a temporary ViewHolder
+     * will be generated to represent the header.
+     *
+     * @param headerPosition The position to find the ViewHolder for
+     * @return The ViewHolder representing the header at <code>headerPosition</code>
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    protected RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
+        RecyclerView.ViewHolder holder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
+        adapter.onBindViewHolder(holder, headerPosition);
 
-        /**
-         * Replaces the <code>stickyHeader</code> with the header associated with
-         * the <code>headerId</code>.
-         *
-         * @param headerId The id for the header view
-         */
-        protected void performHeaderSwap(long headerId) {
-            //If we don't have a valid headerId then clear the current header
-            if (headerId == RecyclerView.NO_ID) {
-                clearStickyHeader();
-                return;
-            }
-
-            //Get the position of the associated header
-            int headerPosition = getHeaderPosition(headerId);
-            if (headerPosition == RecyclerView.NO_POSITION) {
-                return;
-            }
-
-            updateHeader(headerId, headerPosition);
-        }
-
-        /**
-         * Updates the current sticky header to the one with the
-         * <code>headerId</code>.
-         *
-         * @param headerId The id for the new sticky header
-         * @param headerPosition The position in the RecyclerView for the header
-         */
-        protected void updateHeader(long headerId, int headerPosition) {
-            stickyHeader.update(headerId, getHeaderViewHolder(headerPosition));
-        }
-
-        /**
-         * Updates the position of the sticky header to handle smoothly transitioning
-         * between headers.
-         *
-         * @param firstView The first visible view in the <code>parent</code> {@link RecyclerView}
-         * @param childPosition The child position (not adapter position) for the <code>firstView</code>
-         * @param headerId The header id associated with the <code>firstView</code>
-         */
-        protected void updateHeaderPosition(@NonNull View firstView, int childPosition, long headerId) {
-            // Updates the header offset so that we smoothly transition between headers
-            boolean isHeader = getHeaderPosition(headerId) == parent.getChildAdapterPosition(firstView);
-            boolean isLastChild = getHeaderId(childPosition + 1) != headerId;
-
-            View stickyView = stickyHeader.getStickyView(headerApi);
-            if (stickyView == null || isHeader || !isLastChild) {
-                stickyHeader.stickyViewOffset.x = 0;
-                stickyHeader.stickyViewOffset.y = 0;
-
-                return;
-            }
-
-            //TODO: This doesn't work correctly if the Header is larger than the children
-            if (orientation == LayoutOrientation.HORIZONTAL) {
-                float firstViewStart = windowLocation[0] - parentStart;
-
-                stickyHeader.stickyViewOffset.x = Math.min(0, firstViewStart + firstView.getMeasuredWidth() - stickyView.getMeasuredWidth());
-                stickyHeader.stickyViewOffset.y = 0;
-            } else {
-                float firstViewStart = windowLocation[1] - parentStart;
-
-                stickyHeader.stickyViewOffset.x = 0;
-                stickyHeader.stickyViewOffset.y = Math.min(0, firstViewStart + firstView.getMeasuredHeight() - stickyView.getMeasuredHeight());
-            }
-        }
-
-        /**
-         * Finds the view that is at the start of the list.  This will either be the
-         * Left or Top most visible positions.
-         *
-         * @return The view at the start of the <code>recyclerView</code>
-         */
-        @Nullable
-        protected View findStartView(RecyclerView recyclerView) {
-            int attachedViewCount = recyclerView.getLayoutManager().getChildCount();
-
-            //Make sure we have the start of the RecyclerView stored
-            if (parentStart == Integer.MIN_VALUE) {
-                recyclerView.getLocationInWindow(windowLocation);
-                parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
-            }
-
-            //Finds the first visible view
-            for (int viewIndex = 0; viewIndex < attachedViewCount; viewIndex++) {
-                View view = recyclerView.getLayoutManager().getChildAt(viewIndex);
-                view.getLocationInWindow(windowLocation);
-
-                int startLoc = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
-                if (startLoc <= parentStart) {
-                    return view;
-                }
-            }
-
-            //Under normal circumstances we should never reach this return
+        //Measure it
+        if (!measureViewHolder(holder)) {
             return null;
         }
 
-        /**
-         * Retrieves the id for the header associated with the <code>childPosition</code> from
-         * the specified <code>headerAdapter</code>
-         *
-         * @param childPosition The child position associated with the header
-         * @return The id for the header or {@link RecyclerView#NO_ID}
-         */
-        protected long getHeaderId(int childPosition) {
-            if (childPosition < 0 || childPosition >= headerApi.getChildCount()) {
-                return RecyclerView.NO_ID;
-            }
+        return holder;
+    }
 
-            return headerApi.getHeaderId(childPosition);
+    /**
+     * Measures the specified <code>holder</code>
+     *
+     * @param holder The {@link RecyclerView.ViewHolder} to measure
+     * @return True if the <code>holder</code> was correctly sized
+     */
+    protected boolean measureViewHolder(@NonNull RecyclerView.ViewHolder holder) {
+        RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
+
+
+        //If the parent ViewGroup wasn't specified when inflating the view (holder.itemView) then the LayoutParams will be null and
+        // We may not be able to size the sticky header correctly.
+        if (params != null) {
+            RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
+            int widthSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getWidth(), parent.getPaddingLeft() + parent.getPaddingRight(), params.width, layoutManager.canScrollHorizontally());
+            int heightSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getHeight(), parent.getPaddingTop() + parent.getPaddingBottom(), params.height, layoutManager.canScrollVertically());
+            holder.itemView.measure(widthSpec, heightSpec);
+        } else {
+            int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
+            int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getHeight(), View.MeasureSpec.AT_MOST);
+            holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
+            Log.e(TAG, "The parent ViewGroup wasn't specified when inflating the view.  This may cause the StickyHeader to be sized incorrectly.");
         }
 
-        /**
-         * Determines the position for the header associated with
-         * the <code>headerId</code>
-         *
-         * @param headerId The id to find the header for
-         * @return The associated headers position or {@link RecyclerView#NO_POSITION}
-         */
-        protected int getHeaderPosition(long headerId) {
-            return headerApi.getHeaderPosition(headerId);
-        }
-
-        protected int getHeaderViewType(int headerPosition) {
-            //Make sure that this is treated as a header type
-            return headerApi.getHeaderViewType(headerPosition) | HeaderApi.HEADER_VIEW_TYPE_MASK;
-        }
-
-        /**
-         * Retrieves the ViewHolder associated with the header at <code>headerPosition</code>.
-         * If the ViewHolder returned from <code>parent</code> is null then a temporary ViewHolder
-         * will be generated to represent the header.
-         *
-         * @param headerPosition The position to find the ViewHolder for
-         * @return The ViewHolder representing the header at <code>headerPosition</code>
-         */
-        @Nullable
-        @SuppressWarnings("unchecked")
-        protected RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
-            RecyclerView.ViewHolder holder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
-            adapter.onBindViewHolder(holder, headerPosition);
-
-            //Measure it
-            if (!measureViewHolder(holder)) {
-                return null;
-            }
-
-            return holder;
-        }
-
-        /**
-         * Measures the specified <code>holder</code>
-         *
-         * @param holder The {@link RecyclerView.ViewHolder} to measure
-         * @return True if the <code>holder</code> was correctly sized
-         */
-        protected boolean measureViewHolder(RecyclerView.ViewHolder holder) {
-            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
-
-
-            //If the parent ViewGroup wasn't specified when inflating the view (holder.itemView) then the LayoutParams will be null and
-            // We may not be able to size the sticky header correctly.
-            if (params != null) {
-                RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
-                int widthSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getWidth(), parent.getPaddingLeft() + parent.getPaddingRight(), params.width, layoutManager.canScrollHorizontally());
-                int heightSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getHeight(), parent.getPaddingTop() + parent.getPaddingBottom(), params.height, layoutManager.canScrollVertically());
-                holder.itemView.measure(widthSpec, heightSpec);
-            } else {
-                int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);
-                int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getHeight(), View.MeasureSpec.AT_MOST);
-                holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
-                Log.e(TAG, "The parent ViewGroup wasn't specified when inflating the view.  This may cause the StickyHeader to be sized incorrectly.");
-            }
-
-            //Perform a layout to update the width and height properties of the view
-            holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(), holder.itemView.getMeasuredHeight());
-            return holder.itemView.getWidth() > 0 && holder.itemView.getHeight() > 0;
-        }
+        //Perform a layout to update the width and height properties of the view
+        holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(), holder.itemView.getMeasuredHeight());
+        return holder.itemView.getWidth() > 0 && holder.itemView.getHeight() > 0;
     }
 }
