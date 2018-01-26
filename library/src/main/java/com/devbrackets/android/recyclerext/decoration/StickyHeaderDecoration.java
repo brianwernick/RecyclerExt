@@ -285,10 +285,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
         int attachedViewCount = recyclerView.getLayoutManager().getChildCount();
 
         //Make sure we have the start of the RecyclerView stored
-        if (parentStart == Integer.MIN_VALUE) {
-            recyclerView.getLocationInWindow(windowLocation);
-            parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
-        }
+        recyclerView.getLocationInWindow(windowLocation);
+        parentStart = orientation == LayoutOrientation.HORIZONTAL ? windowLocation[0] : windowLocation[1];
 
         //Finds the first visible view
         for (int viewIndex = 0; viewIndex < attachedViewCount; viewIndex++) {
