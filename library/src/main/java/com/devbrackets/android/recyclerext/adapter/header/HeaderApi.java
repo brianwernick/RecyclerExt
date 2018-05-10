@@ -67,8 +67,8 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
 
     /**
      * Retrieves if the headers should automatically be calculated on any
-     * adapter change (notified by the {@link android.support.v7.widget.RecyclerView.AdapterDataObservable}
-     * {@link HeaderAdapterDataObserver}. By default this returns <code>true</code>
+     * adapter change (notified by the {@link HeaderAdapterDataObserver}).
+     * By default this returns <code>true</code>
      *
      * @return <code>true</code> if the headers are automatically updated
      */
@@ -76,8 +76,7 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
 
     /**
      * Sets if the headers should automatically be calculated on any
-     * adapter change (notified by the {@link android.support.v7.widget.RecyclerView.AdapterDataObservable}
-     * {@link HeaderAdapterDataObserver}.
+     * adapter change (notified by the {@link HeaderAdapterDataObserver}).
      *
      * @param autoUpdateHeaders <code>true</code> if the headers should auto update
      */

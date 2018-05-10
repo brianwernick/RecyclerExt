@@ -64,7 +64,7 @@ public class ReorderDecoration extends RecyclerView.ItemDecoration implements Re
 
         /**
          * Called when the animation for the view position has finished.  This should be used for
-         * actually updating the backing data structure (e.g. calling swap on a {@link com.devbrackets.android.recyclerext.adapter.RecyclerCursorAdapter})
+         * actually updating the backing data structure
          *
          * @param originalPosition The position the dragged view started at
          * @param newPosition The position the dragged view should be saved as
