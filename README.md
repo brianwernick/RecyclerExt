@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     //...
-    implementation 'com.devbrackets.android:recyclerext:3.0.0'
+    implementation 'com.devbrackets.android:recyclerext:3.0.1'
 }
 ```
 

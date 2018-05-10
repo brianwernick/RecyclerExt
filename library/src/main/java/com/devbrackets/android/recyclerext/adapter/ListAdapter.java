@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Brian Wernick
+ * Copyright (C) 2016 - 2018 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public abstract class ListAdapter<VH extends RecyclerView.ViewHolder, T> extends
      */
     @Nullable
     public T getItem(int position) {
-        if (items == null || position < 0 || position >= getItemCount()) {
+        if (items == null || position < 0 || position >= items.size()) {
             return null;
         }
 
@@ -229,7 +229,7 @@ public abstract class ListAdapter<VH extends RecyclerView.ViewHolder, T> extends
      */
     public void remove(int position) {
         synchronized (lock) {
-            if (items == null || position < 0 || position > getItemCount()) {
+            if (items == null || position < 0 || position > items.size()) {
                 return;
             }
 
@@ -251,8 +251,8 @@ public abstract class ListAdapter<VH extends RecyclerView.ViewHolder, T> extends
     public void swap(int positionOne, int positionTwo) {
         synchronized (lock) {
             if (items == null || positionOne == positionTwo ||
-                    positionOne < 0 || positionOne >= getItemCount() ||
-                    positionTwo < 0 || positionTwo >= getItemCount()) {
+                    positionOne < 0 || positionOne >= items.size() ||
+                    positionTwo < 0 || positionTwo >= items.size()) {
                 return;
             }
 
@@ -276,12 +276,12 @@ public abstract class ListAdapter<VH extends RecyclerView.ViewHolder, T> extends
      */
     public void move(int originalPosition, int endPosition) {
         synchronized (lock) {
-            if (items == null || originalPosition < 0 || endPosition < 0 || originalPosition >= getItemCount()) {
+            if (items == null || originalPosition < 0 || endPosition < 0 || originalPosition >= items.size()) {
                 return;
             }
 
-            if (endPosition >= getItemCount()) {
-                endPosition = getItemCount();
+            if (endPosition >= items.size()) {
+                endPosition = items.size();
             }
 
             if (originalPosition == endPosition) {
