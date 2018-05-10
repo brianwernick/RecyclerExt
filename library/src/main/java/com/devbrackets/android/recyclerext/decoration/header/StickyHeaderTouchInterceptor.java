@@ -107,19 +107,6 @@ public class StickyHeaderTouchInterceptor implements RecyclerView.OnItemTouchLis
     }
 
     protected boolean dispatchChildTouchEvent(@NonNull RecyclerView recyclerView, @NonNull View child, @NonNull MotionEvent event) {
-        //TODO: this doesn't work because the sticky ViewHolder hasn't been attached to a parent
-        // And because the RecyclerView requires children to have a layoutPosition and we would have other issues
-        // So we can attach it to the parent.getParent() however that depends on what layout the
-        // RecyclerView is contained in (a relative layout or constraint layout would be fine, but a linear
-        // layout, etc. wouldn't).
-        // Other sticky header libraries allow just a single touch target for the entire header
-        // so we have 2 options that I can see:
-        // 1. Have a single touch target for the sticky header
-        // 2. When sticky header touch is enabled we need to (includes animations, etc.)
-        //      a. require the RV is inside a RelativeLayout
-        //      b. require the user to pass in a view that can contain the sticky header
-        // NOTE: if we do #2 then we don't need to perform an onDrawOver custom draw
-
         // Pass the event through
         boolean handledEvent = child.dispatchTouchEvent(event);
         if (handledEvent) {

@@ -11,12 +11,12 @@ def libraryBaseName = 'recyclerext'
 def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
 
 ext {
-    supportLibVersion = "27.0.2"
+    supportLibVersion = "27.1.1"
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
+    api "com.android.support:appcompat-v7:${supportLibVersion}"
+    api "com.android.support:recyclerview-v7:${supportLibVersion}"
 }
 
 android {
@@ -61,10 +61,12 @@ uploadArchives {
 
 // ======= BINTRAY DEPLOY (command: $ ./gradlew clean build bintrayUpload -PbintrayUser=BINTRAY_USERNAME -PbintrayKey=BINTRAY_KEY -PdryRun=false) ====
 publish {
+    userOrg = ""
     groupId = libraryGroupId
     artifactId = libraryBaseName
     uploadName = 'RecyclerExt'
-    version = libraryVersion
+    publishVersion = libraryVersion
+    desc = ""
     autoPublish = false
     dryRun = false
 }
