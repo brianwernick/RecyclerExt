@@ -29,6 +29,7 @@ import java.util.List;
 public class HeaderListFragment extends Fragment {
     private DBHelper dbHelper;
     private RecyclerView recyclerView;
+    private ViewGroup parent;
     private FastScroll fastScroll;
 
     public static HeaderListFragment newInstance() {
@@ -38,6 +39,7 @@ public class HeaderListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
+        parent = view.findViewById(R.id.parent);
         recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler);
         fastScroll = view.findViewById(R.id.recyclerext_fast_scroll);
         return view;
@@ -66,7 +68,7 @@ public class HeaderListFragment extends Fragment {
 
         //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
         StickyHeaderDecoration decoration = new StickyHeaderDecoration(recyclerView);
-        decoration.setAllowStickyHeaderTouches(true);
+        decoration.enableStickyHeaderTouches(parent);
         recyclerView.addItemDecoration(decoration);
     }
 

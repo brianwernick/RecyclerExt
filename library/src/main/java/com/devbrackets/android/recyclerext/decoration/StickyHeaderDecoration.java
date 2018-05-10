@@ -22,6 +22,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
@@ -56,6 +57,18 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
 
     @NonNull
     protected StickyHeader stickyHeader = new StickyHeader();
+
+    /**
+     * Because of limitations around passing touch events to a view that isn't attached
+     * to a parent, and the limitations the RecyclerView has around adding children we
+     * require a {@link ViewGroup} to act as the host for the sticky header when the
+     * user has specified that they want the header to be clickable. Having the sticky header
+     * in a {@link ViewGroup} is advantageous anyways because it allows us to get standard
+     * animations (e.g. touch animations) whereas without the {@link ViewGroup} we would have
+     * to attempt to perform a manual draw at 60/30 fps.
+     */
+    @Nullable
+    protected ViewGroup touchHeaderContainer;
 
     @NonNull
     protected LayoutOrientation orientation = LayoutOrientation.VERTICAL;
@@ -92,12 +105,22 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
     @Override
     public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
         View stickyView = stickyHeader.getStickyView(headerApi);
-        if (stickyView != null) {
-            c.save();
-            c.translate(stickyHeader.stickyViewOffset.x, stickyHeader.stickyViewOffset.y);
-            stickyView.draw(c);
-            c.restore();
+        if (stickyView == null) {
+            return;
         }
+
+        // If the sticky header is a child of the container we don't need to use onDrawOver to actually draw,
+        // just to update the position
+        if (touchHeaderContainer != null) {
+            stickyView.setTranslationX(stickyHeader.stickyViewOffset.x);
+            stickyView.setTranslationY(stickyHeader.stickyViewOffset.y);
+            return;
+        }
+
+        c.save();
+        c.translate(stickyHeader.stickyViewOffset.x, stickyHeader.stickyViewOffset.y);
+        stickyView.draw(c);
+        c.restore();
     }
 
     @Nullable
@@ -139,7 +162,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
 
         adapter.unregisterAdapterDataObserver(dataObserver);
         parent.removeOnScrollListener(scrollListener);
-        setAllowStickyHeaderTouches(false);
+        disableStickyHeaderTouches();
 
         adapter = null;
         headerApi = null;
@@ -151,6 +174,11 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
      * Clears the current sticky header from the view.
      */
     public void clearStickyHeader() {
+        if (touchHeaderContainer != null) {
+            View view = getStickyView();
+            touchHeaderContainer.removeView(view);
+        }
+
         stickyHeader.reset();
     }
 
@@ -190,19 +218,47 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
     }
 
     /**
-     * Enables or disables touches from being passed to the sticky headers.
-     * When enabled the touch events will be passed through to the view (ViewHolder) that
-     * represents the header currently stickied.
+     * Allows touch events to be passed through to the view (ViewHolder) that
+     * represents the header currently stickied. A {@link ViewGroup} is
+     * required to correctly handle the click functionality due to pre-pressed state
+     * handling in scrollable containers (i.e. the {@link RecyclerView}).
      *
-     * @param allowTouches <code>true</code> to enable sticky header touches
+     * It is expected that the <code>stickyHeaderContainer</code> should match the
+     * size of the {@link RecyclerView} or at the very least match the width and have
+     * the top match that of the {@link RecyclerView} in vertical lists, or have a matching
+     * height and the left (or right in rtl) match that of the {@link RecyclerView}
+     *
+     * @param stickyHeaderContainer The {@link ViewGroup} to place the sticky header in
      */
-    public void setAllowStickyHeaderTouches(boolean allowTouches) {
-        if (allowTouches && touchInterceptor == null) {
-            touchInterceptor = new StickyHeaderTouchInterceptor(this);
-            parent.addOnItemTouchListener(touchInterceptor);
-        } else if (!allowTouches && touchInterceptor != null) {
+    public void enableStickyHeaderTouches(@NonNull ViewGroup stickyHeaderContainer) {
+        if (this.touchHeaderContainer == null || this.touchHeaderContainer != stickyHeaderContainer) {
+            if (touchInterceptor == null) {
+                touchInterceptor = new StickyHeaderTouchInterceptor(this);
+                parent.addOnItemTouchListener(touchInterceptor);
+            }
+
+            this.touchHeaderContainer = stickyHeaderContainer;
+            onUpdateStickyHeader();
+        }
+    }
+
+    /**
+     * Disables touch events from being passed through to the view (ViewHolder) that
+     * represents the headers.
+     */
+    public void disableStickyHeaderTouches() {
+        if (touchInterceptor != null) {
             parent.removeOnItemTouchListener(touchInterceptor);
             touchInterceptor = null;
+        }
+
+        if (touchHeaderContainer != null) {
+            View stickyView = getStickyView();
+            if (stickyView != null) {
+                touchHeaderContainer.removeView(stickyView);
+            }
+
+            touchHeaderContainer = null;
         }
     }
 
@@ -236,7 +292,16 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
      * @param headerPosition The position in the RecyclerView for the header
      */
     protected void updateHeader(long headerId, int headerPosition) {
+        View oldStickyView = getStickyView();
         stickyHeader.update(headerId, getHeaderViewHolder(headerPosition));
+
+        if (touchHeaderContainer != null) {
+            View view = getStickyView();
+            if (view != null && view != oldStickyView) {
+                touchHeaderContainer.removeView(oldStickyView);
+                touchHeaderContainer.addView(view);
+            }
+        }
     }
 
     /**
