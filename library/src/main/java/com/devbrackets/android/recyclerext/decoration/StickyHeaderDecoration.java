@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.devbrackets.android.recyclerext.R;
 import com.devbrackets.android.recyclerext.adapter.HeaderAdapter;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 import com.devbrackets.android.recyclerext.decoration.header.StickyHeader;
@@ -411,6 +412,7 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
     @SuppressWarnings("unchecked")
     protected RecyclerView.ViewHolder getHeaderViewHolder(int headerPosition) {
         RecyclerView.ViewHolder holder = adapter.onCreateViewHolder(parent, getHeaderViewType(headerPosition));
+        holder.itemView.setTag(R.id.recyclerext_sticky_header_position_tag_key, headerPosition);
         adapter.onBindViewHolder(holder, headerPosition);
 
         //Measure it
