@@ -17,9 +17,9 @@
 package com.devbrackets.android.recyclerext.decoration;
 
 import android.graphics.Canvas;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -437,8 +437,8 @@ public class StickyHeaderDecoration extends RecyclerView.ItemDecoration implemen
         // We may not be able to size the sticky header correctly.
         if (params != null) {
             RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
-            int widthSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getWidth(), parent.getPaddingLeft() + parent.getPaddingRight(), params.width, layoutManager.canScrollHorizontally());
-            int heightSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getHeight(), parent.getPaddingTop() + parent.getPaddingBottom(), params.height, layoutManager.canScrollVertically());
+            int widthSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getWidth(), layoutManager.getWidthMode(),parent.getPaddingLeft() + parent.getPaddingRight(), params.width, layoutManager.canScrollHorizontally());
+            int heightSpec = RecyclerView.LayoutManager.getChildMeasureSpec(parent.getHeight(), layoutManager.getHeightMode(),  parent.getPaddingTop() + parent.getPaddingBottom(), params.height, layoutManager.canScrollVertically());
             holder.itemView.measure(widthSpec, heightSpec);
         } else {
             int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.AT_MOST);

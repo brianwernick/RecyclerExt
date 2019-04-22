@@ -1,19 +1,15 @@
 apply plugin: 'com.android.application'
 
-ext {
-    supportLibVersion = "27.1.1"
-}
-
 dependencies {
     implementation project(':library')
 
-    implementation "com.android.support:design:${supportLibVersion}"
-    implementation "com.android.support:cardview-v7:${supportLibVersion}"
-    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     lintOptions {
         abortOnError false
@@ -27,7 +23,7 @@ android {
     defaultConfig {
         applicationId "com.devbrackets.android.recyclerextdemo"
         minSdkVersion 14
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }

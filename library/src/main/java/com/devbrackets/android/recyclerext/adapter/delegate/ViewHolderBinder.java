@@ -16,14 +16,14 @@
 
 package com.devbrackets.android.recyclerext.adapter.delegate;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.DelegatedAdapter;
 
 /**
- * A delegated handler for the {@link android.support.v7.widget.RecyclerView.ViewHolder}s
+ * A delegated handler for the {@link RecyclerView.ViewHolder}s
  * that the {@link DelegatedAdapter} uses to create and bind each view type
  */
 public abstract class ViewHolderBinder<VH extends RecyclerView.ViewHolder, T> {

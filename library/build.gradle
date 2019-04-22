@@ -2,29 +2,25 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'com.novoda.bintray-release'
 
-def versionMajor = 3
+def versionMajor = 4
 def versionMinor = 0
-def versionPatch = 1
+def versionPatch = 0
 
 def libraryGroupId = 'com.devbrackets.android'
 def libraryBaseName = 'recyclerext'
 def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
 
-ext {
-    supportLibVersion = "27.1.1"
-}
-
 dependencies {
-    api "com.android.support:appcompat-v7:${supportLibVersion}"
-    api "com.android.support:recyclerview-v7:${supportLibVersion}"
+    api 'androidx.appcompat:appcompat:1.0.2'
+    api 'androidx.recyclerview:recyclerview:1.0.0'
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 27
+        targetSdkVersion 28
 
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -54,7 +50,6 @@ uploadArchives {
             pom.artifactId = libraryBaseName
             pom.version = libraryVersion
             pom.packaging = 'aar'
-            uniqueVersion = false
         }
     }
 }

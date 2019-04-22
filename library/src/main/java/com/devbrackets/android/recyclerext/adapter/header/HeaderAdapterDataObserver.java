@@ -16,8 +16,8 @@
 
 package com.devbrackets.android.recyclerext.adapter.header;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Used to monitor data set changes to update the {@link HeaderCore#headerData} so that we can correctly

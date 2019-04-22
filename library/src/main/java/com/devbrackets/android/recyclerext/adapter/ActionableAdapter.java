@@ -16,14 +16,14 @@
 
 package com.devbrackets.android.recyclerext.adapter;
 
-import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 
 /**
  * A {@link RecyclerView.Adapter} that handles the process of notifying
- * {@link android.support.v7.widget.RecyclerView.ViewHolder}s of action mode
+ * {@link RecyclerView.ViewHolder}s of action mode
  * changes (enter, exit) so they can perform the appropriate animations.
  */
 public abstract class ActionableAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {

@@ -16,17 +16,17 @@
 
 package com.devbrackets.android.recyclerext.adapter.header;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.util.LongSparseArray;
-import android.support.v4.util.SparseArrayCompat;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.collection.LongSparseArray;
+import androidx.collection.SparseArrayCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Handles calculating the headers and offsets within an adapter
  * and generates the related {@link HeaderItem}s. This can be used
  * to asynchronously calculate the information necessary for the
- * Header adapters that can be used with the {@link android.support.v7.util.DiffUtil}
+ * Header adapters that can be used with the {@link androidx.recyclerview.widget.DiffUtil}
  */
 public class HeaderDataGenerator {
     public interface DataSource {

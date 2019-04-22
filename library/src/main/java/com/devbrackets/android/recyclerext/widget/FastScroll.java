@@ -25,16 +25,16 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DimenRes;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.AppCompatDrawableManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.annotation.DimenRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.appcompat.widget.AppCompatDrawableManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -51,7 +51,7 @@ import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityA
 
 /**
  * A class that provides the functionality of a fast scroll
- * for the attached {@link android.support.v7.widget.RecyclerView}
+ * for the attached {@link RecyclerView}
  */
 @SuppressWarnings("unused")
 public class FastScroll extends FrameLayout {
