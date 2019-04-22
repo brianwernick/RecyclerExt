@@ -15,9 +15,9 @@
  */
 package com.devbrackets.android.recyclerext.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi;
@@ -26,7 +26,7 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder;
 
 /**
  * A {@link RecyclerView.Adapter} that handles delegating the creation and binding of
- * {@link android.support.v7.widget.RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
+ * {@link RecyclerView.ViewHolder}s with {@link ViewHolderBinder}s
  * to allow for dynamic lists
  */
 @SuppressWarnings("WeakerAccess")

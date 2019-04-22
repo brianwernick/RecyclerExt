@@ -16,8 +16,8 @@
 
 package com.devbrackets.android.recyclerext.adapter.header;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 
 /**
@@ -59,7 +59,7 @@ public interface HeaderApi<H extends RecyclerView.ViewHolder, C extends Recycler
      * listeners (data observers, etc.) of the change. Normally this should only
      * be used in conjunction with {@link #setAutoUpdateHeaders(boolean)} to
      * handle asynchronously updating the headers in cases such as using the
-     * {@link android.support.v7.util.DiffUtil}
+     * {@link androidx.recyclerview.widget.DiffUtil}
      *
      * @param headerData The {@link HeaderDataGenerator.HeaderData}
      */

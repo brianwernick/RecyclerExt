@@ -16,15 +16,15 @@
 
 package com.devbrackets.android.recyclerext.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderCore;
 import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator;
 
-import static android.support.v7.widget.RecyclerView.ViewHolder;
+import static androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 /**
  * A RecyclerView adapter that adds support for dynamically placing headers in the view.

@@ -16,8 +16,8 @@
 
 package com.devbrackets.android.recyclerext.decoration.header;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * An observer to watch the adapter for changes so that we can update the

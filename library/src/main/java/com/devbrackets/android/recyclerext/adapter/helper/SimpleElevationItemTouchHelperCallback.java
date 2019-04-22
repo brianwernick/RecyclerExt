@@ -18,14 +18,14 @@ package com.devbrackets.android.recyclerext.adapter.helper;
 
 import android.graphics.Canvas;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import android.view.View;
 
 /**
- * Extends the {@link android.support.v7.widget.helper.ItemTouchHelper.SimpleCallback} to provide
+ * Extends the {@link androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback} to provide
  * support for specifying the elevation to use when an item is active (being dragged or swiped)
  */
 @SuppressWarnings("unused")

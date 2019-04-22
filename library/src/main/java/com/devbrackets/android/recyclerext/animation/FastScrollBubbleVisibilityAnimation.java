@@ -16,7 +16,7 @@
 
 package com.devbrackets.android.recyclerext.animation;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
