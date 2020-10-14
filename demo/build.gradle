@@ -3,13 +3,13 @@ apply plugin: 'com.android.application'
 dependencies {
     implementation project(':library')
 
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     lintOptions {
         abortOnError false
@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId "com.devbrackets.android.recyclerextdemo"
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
