@@ -22,7 +22,7 @@ public class ReorderListFragment extends Fragment implements ReorderDecoration.R
     private RecyclerView recyclerView;
     private ListAdapter listAdapter;
 
-    protected int orientation = LinearLayoutManager.VERTICAL;
+    protected int orientation = RecyclerView.VERTICAL;
 
     public static ReorderListFragment newInstance() {
         return new ReorderListFragment();

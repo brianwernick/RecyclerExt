@@ -17,6 +17,7 @@ package com.devbrackets.android.recyclerext.adapter
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi
 import com.devbrackets.android.recyclerext.adapter.header.HeaderCore
 import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator.HeaderData
@@ -26,12 +27,23 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator.He
  *
  * @param <H> The Header [RecyclerView.ViewHolder]
  * @param <C> The Child or content [RecyclerView.ViewHolder]
-</C></H> */
-abstract class HeaderAdapter<H : RecyclerView.ViewHolder?, C : RecyclerView.ViewHolder?> : ActionableAdapter<RecyclerView.ViewHolder?>(), HeaderApi<H, C> {
+ */
+abstract class HeaderAdapter<H : ViewHolder, C : ViewHolder> : ActionableAdapter<ViewHolder>(), HeaderApi<H, C> {
     /**
      * Contains the base processing for the header adapters
      */
-    protected var core: HeaderCore = null
+    protected lateinit var core: HeaderCore
+
+    /**
+     * Initializes the non-super components for the Adapter
+     */
+    protected fun init() {
+        core = HeaderCore(this)
+    }
+
+    init {
+        init()
+    }
 
     /**
      * Called to display the header information with the `firstChildPosition` being the
@@ -60,7 +72,7 @@ abstract class HeaderAdapter<H : RecyclerView.ViewHolder?, C : RecyclerView.View
      * @param viewType The type for the ViewHolder
      * @return The correct ViewHolder for the specified viewType
      */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return core.onCreateViewHolder(parent, viewType)
     }
 
@@ -73,13 +85,15 @@ abstract class HeaderAdapter<H : RecyclerView.ViewHolder?, C : RecyclerView.View
      * @param position The position to update the `holder` with
      */
     //Unchecked cast
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val viewType = getItemViewType(position)
         val childPosition = getChildPosition(position)
-        if (viewType and HeaderApi.Companion.HEADER_VIEW_TYPE_MASK != 0) {
+
+        if (viewType and HeaderApi.HEADER_VIEW_TYPE_MASK != 0) {
             onBindHeaderViewHolder(holder as H, childPosition)
             return
         }
+
         onBindChildViewHolder(holder as C, childPosition)
     }
 
@@ -88,6 +102,7 @@ abstract class HeaderAdapter<H : RecyclerView.ViewHolder?, C : RecyclerView.View
         set(headerData) {
             core.headerData = headerData
         }
+
     override var autoUpdateHeaders: Boolean
         get() = core.autoUpdateHeaders
         set(autoUpdateHeaders) {
@@ -141,7 +156,7 @@ abstract class HeaderAdapter<H : RecyclerView.ViewHolder?, C : RecyclerView.View
     }
 
     override fun getHeaderViewType(childPosition: Int): Int {
-        return HeaderApi.Companion.HEADER_VIEW_TYPE_MASK
+        return HeaderApi.HEADER_VIEW_TYPE_MASK
     }
 
     override fun getChildViewType(childPosition: Int): Int {
@@ -174,15 +189,4 @@ abstract class HeaderAdapter<H : RecyclerView.ViewHolder?, C : RecyclerView.View
 
     override val customStickyHeaderViewId: Int
         get() = 0
-
-    /**
-     * Initializes the non-super components for the Adapter
-     */
-    protected fun init() {
-        core = HeaderCore(this)
-    }
-
-    init {
-        init()
-    }
 }

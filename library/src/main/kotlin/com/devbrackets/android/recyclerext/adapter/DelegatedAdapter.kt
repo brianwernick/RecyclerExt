@@ -17,6 +17,7 @@ package com.devbrackets.android.recyclerext.adapter
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateCore
 import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder
@@ -26,29 +27,30 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder
  * [RecyclerView.ViewHolder]s with [ViewHolderBinder]s
  * to allow for dynamic lists
  */
-abstract class DelegatedAdapter<T> : ActionableAdapter<RecyclerView.ViewHolder?>(), DelegateApi<T> {
-    protected var delegateCore: DelegateCore<RecyclerView.ViewHolder, T>
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+abstract class DelegatedAdapter<T> : ActionableAdapter<ViewHolder>(), DelegateApi<T> {
+    protected var delegateCore: DelegateCore<ViewHolder, T> = DelegateCore(this, this)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return delegateCore.onCreateViewHolder(parent, viewType)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         delegateCore.onBindViewHolder(holder, position)
     }
 
-    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+    override fun onViewRecycled(holder: ViewHolder) {
         delegateCore.onViewRecycled(holder)
     }
 
-    override fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
+    override fun onFailedToRecycleView(holder: ViewHolder): Boolean {
         return delegateCore.onFailedToRecycleView(holder)
     }
 
-    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
         delegateCore.onViewAttachedToWindow(holder)
     }
 
-    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
         delegateCore.onViewDetachedFromWindow(holder)
     }
 
@@ -60,23 +62,20 @@ abstract class DelegatedAdapter<T> : ActionableAdapter<RecyclerView.ViewHolder?>
      * @param viewType The type of view the [ViewHolderBinder] handles
      * @param binder The [ViewHolderBinder] to handle creating and binding views
      */
-    fun registerViewHolderBinder(viewType: Int, binder: ViewHolderBinder<*, *>?) {
+    fun registerViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
         delegateCore.registerViewHolderBinder(viewType, binder)
     }
 
     /**
      * Registers the `binder` to handle creating and binding the views that aren't
-     * handled by any binders registered with [.registerViewHolderBinder].
+     * handled by any binders registered with [registerViewHolderBinder].
      * If a [ViewHolderBinder] has already been specified as the default then the value will be
      * overwritten with `binder`
      *
      * @param binder The [ViewHolderBinder] to handle creating and binding default views
      */
-    fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<*, *>?) {
+    fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
         delegateCore.registerDefaultViewHolderBinder(binder)
     }
 
-    init {
-        delegateCore = DelegateCore(this, this)
-    }
 }

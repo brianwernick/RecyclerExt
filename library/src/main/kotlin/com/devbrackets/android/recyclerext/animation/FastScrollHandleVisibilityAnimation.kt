@@ -21,11 +21,20 @@ import android.view.animation.AnimationSet
 import android.view.animation.TranslateAnimation
 
 class FastScrollHandleVisibilityAnimation(handle: View, protected val toVisible: Boolean) : AnimationSet(false) {
+    companion object {
+        protected const val DURATION = 250 //milliseconds
+    }
+
+    init {
+        setup(handle)
+    }
+
     protected fun setup(handle: View) {
         val xDelta = handle.width.toFloat()
         val startPos = if (toVisible) xDelta else 0f
         val endPos = if (toVisible) 0f else xDelta
         val translateAnimation = TranslateAnimation(startPos, endPos, 0f, 0f)
+
         translateAnimation.duration = DURATION.toLong()
         addAnimation(translateAnimation)
         setAnimationListener(HandleAnimationListener(handle, toVisible))
@@ -52,13 +61,5 @@ class FastScrollHandleVisibilityAnimation(handle: View, protected val toVisible:
         override fun onAnimationRepeat(animation: Animation) {
             //Purposefully left blank
         }
-    }
-
-    companion object {
-        protected const val DURATION = 250 //milliseconds
-    }
-
-    init {
-        setup(handle)
     }
 }

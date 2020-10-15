@@ -35,6 +35,14 @@ import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
  * list items without any space between items.
  */
 class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration(), OnItemTouchListener {
+    companion object {
+        const val NO_POSITION = -1
+        const val INVALID_RESOURCE_ID = 0
+        private const val MAX_EDGE_DETECTION_THRESHOLD = 0.5f
+        private const val DEFAULT_EDGE_SCROLL_SPEED = 0.5f
+        private const val DEFAULT_EDGE_DETECTION_THRESHOLD = 0.01f
+    }
+
     private enum class DragState {
         DRAGGING, ENDED
     }
@@ -63,11 +71,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
     }
 
     private var dragState = DragState.ENDED
-    /**
-     * Retrieves the current orientation to use for edgeScrolling and position calculations.
-     *
-     * @return The current orientation [default: [LayoutOrientation.VERTICAL]]
-     */
+
     /**
      * Sets the orientation of the current layout.  This will aid in the calculations for
      * edgeScrolling [.setEdgeScrollingEnabled] and determining the new position
@@ -76,6 +80,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
      * @param orientation The layouts orientation
      */
     var orientation = LayoutOrientation.VERTICAL
+
     /**
      * Retrieves whether the items should start scrolling once the view being reordered
      * hits the edge of the containing view.
@@ -98,15 +103,14 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
     private var floatingItemStartingBounds: Rect? = null
     private var floatingItemBounds: Rect? = null
     private var newViewStart = 0
-    private val eventPosition = PointF(0, 0)
-    private val floatingItemCenter = PointF(0, 0)
+    private val eventPosition = PointF(0F, 0F)
+    private val floatingItemCenter = PointF(0F, 0F)
     private var dragHandleId = INVALID_RESOURCE_ID
     private var reorderListener: ReorderListener? = null
     private var smoothFinishAnimationListener: SmoothFinishAnimationListener? = null
+
     override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
-        if (dragItem != null) {
-            dragItem!!.draw(c)
-        }
+        dragItem?.draw(c)
     }
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
@@ -115,6 +119,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
             finishReorder(view)
             return
         }
+
         val itemPosition = recyclerView.getChildAdapterPosition(view)
         if (itemPosition == selectedDragItemPosition) {
             view.visibility = View.INVISIBLE
@@ -139,23 +144,30 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (dragState == DragState.DRAGGING) {
             return true
         }
+
         if (dragHandleId == INVALID_RESOURCE_ID) {
             return false
         }
+
         val itemView = recyclerView.findChildViewUnder(event.x, event.y) ?: return false
         val handleView = itemView.findViewById<View>(dragHandleId)
         if (handleView == null || handleView.visibility != View.VISIBLE) {
             return false
         }
+
         val handlePosition = IntArray(2)
         handleView.getLocationOnScreen(handlePosition)
 
         //Determine if the MotionEvent is inside the handle
-        if (event.rawX >= handlePosition[0] && event.rawX <= handlePosition[0] + handleView.width &&
-                event.rawY >= handlePosition[1] && event.rawY <= handlePosition[1] + handleView.height) {
+        if (event.rawX >= handlePosition[0] &&
+                event.rawX <= handlePosition[0] + handleView.width &&
+                event.rawY >= handlePosition[1] &&
+                event.rawY <= handlePosition[1] + handleView.height
+        ) {
             startReorder(itemView, event)
             return true
         }
+
         return false
     }
 
@@ -163,12 +175,13 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (dragState != DragState.DRAGGING) {
             return
         }
+
         when (event.action) {
             MotionEvent.ACTION_UP -> {
                 if (selectedDragItemPosition != NO_POSITION) {
-                    if (reorderListener != null) {
+                    reorderListener?.let {
                         selectedDragItemNewPosition = calculateNewPosition()
-                        reorderListener!!.onItemReordered(selectedDragItemPosition, selectedDragItemNewPosition)
+                        it.onItemReordered(selectedDragItemPosition, selectedDragItemNewPosition)
                     }
                 }
                 endReorder()
@@ -185,13 +198,13 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         eventPosition.y = event.y
 
         //Updates the floating views bounds
-        if (dragItem != null) {
+        dragItem?.let {
             updateFloatingItemCenter()
 
             //Make sure the dragItem bounds are correct
             updateVerticalBounds(eventPosition, floatingItemCenter)
             updateHorizontalBounds(eventPosition, floatingItemCenter)
-            dragItem!!.bounds = floatingItemBounds!!
+            it.bounds = floatingItemBounds!!
         }
 
         //Perform the edge scrolling if necessary
@@ -235,6 +248,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (edgeScrollSpeed < 0 || edgeScrollSpeed > 1) {
             return
         }
+
         edgeScrollSpeed = speed
     }
 
@@ -246,6 +260,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
     fun getEdgeScrollSpeed(): Float {
         return edgeScrollSpeed
     }
+
     /**
      * Retrieves the edge threshold for the edge scrolling.
      *
@@ -264,6 +279,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
             if (threshold < 0 || threshold > MAX_EDGE_DETECTION_THRESHOLD) {
                 return
             }
+
             edgeDetectionThreshold = threshold
         }
 
@@ -278,13 +294,18 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (dragState == DragState.DRAGGING) {
             return
         }
+
         if (startMotionEvent != null) {
-            fingerOffset = PointF(startMotionEvent.rawX, startMotionEvent.rawY)
-            val rawViewLoc = IntArray(2)
-            view.getLocationOnScreen(rawViewLoc)
-            fingerOffset!!.x = rawViewLoc[0] - fingerOffset!!.x
-            fingerOffset!!.y = rawViewLoc[1] - fingerOffset!!.y
+            fingerOffset = PointF(startMotionEvent.rawX, startMotionEvent.rawY).apply {
+                val rawViewLoc = IntArray(2)
+                view.getLocationOnScreen(rawViewLoc)
+
+                x = rawViewLoc[0] - x
+                y = rawViewLoc[1] - y
+            }
+
         }
+
         dragState = DragState.DRAGGING
         dragItem = createDragBitmap(view)
         selectedDragItemPosition = recyclerView.getChildAdapterPosition(view)
@@ -298,6 +319,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (dragState != DragState.DRAGGING) {
             return
         }
+
         dragState = DragState.ENDED
         fingerOffset = null
         dragItem = null
@@ -313,6 +335,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
     fun calculateNewPosition(): Int {
         val itemsOnScreen = recyclerView.layoutManager!!.childCount
         updateFloatingItemCenter()
+
         var before = 0
         var pos = 0
         var after = Int.MAX_VALUE
@@ -354,6 +377,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
                 }
             }
         }
+
         val newPosition: Int
         if (after != Int.MAX_VALUE) {
             if (after < selectedDragItemPosition) {
@@ -368,9 +392,11 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
                 before++
                 pos++
             }
+
             newPosition = before
             updateNewViewStart(pos, false)
         }
+
         return newPosition
     }
 
@@ -385,6 +411,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         val view = recyclerView.layoutManager!!.getChildAt(childPosition) ?: return
         val start = if (orientation == LayoutOrientation.VERTICAL) view.top else view.left
         var viewDimen = if (orientation == LayoutOrientation.VERTICAL) view.height else view.width
+
         viewDimen *= if (draggedUp) -1 else 1
         newViewStart = start + if (view.visibility == View.VISIBLE) viewDimen else 0
     }
@@ -411,11 +438,13 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (orientation == LayoutOrientation.HORIZONTAL) {
             return
         }
+
         if (itemPosition > selectedDragItemPosition && view.top < middle.y) {
             var amountUp = (middle.y - view.top) / view.height.toFloat()
             if (amountUp > 1) {
                 amountUp = 1f
             }
+
             outRect.top = (-(floatingItemBounds!!.height() * amountUp)).toInt()
             outRect.bottom = (floatingItemBounds!!.height() * amountUp).toInt()
         } else if (itemPosition < selectedDragItemPosition && view.bottom > middle.y) {
@@ -423,6 +452,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
             if (amountDown > 1) {
                 amountDown = 1f
             }
+
             outRect.top = (floatingItemBounds!!.height() * amountDown).toInt()
             outRect.bottom = (-(floatingItemBounds!!.height() * amountDown)).toInt()
         }
@@ -442,11 +472,13 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (orientation == LayoutOrientation.VERTICAL) {
             return
         }
+
         if (itemPosition > selectedDragItemPosition && view.left < middle.x) {
             var amountRight = (middle.x - view.left) / view.width.toFloat()
             if (amountRight > 1) {
                 amountRight = 1f
             }
+
             outRect.left = (-(floatingItemBounds!!.width() * amountRight)).toInt()
             outRect.right = (floatingItemBounds!!.width() * amountRight).toInt()
         } else if (itemPosition < selectedDragItemPosition && view.right > middle.x) {
@@ -454,6 +486,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
             if (amountLeft > 1) {
                 amountLeft = 1f
             }
+
             outRect.left = (floatingItemBounds!!.width() * amountLeft).toInt()
             outRect.right = (-(floatingItemBounds!!.width() * amountLeft)).toInt()
         }
@@ -470,12 +503,14 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (!isEdgeScrollingEnabled || orientation == LayoutOrientation.HORIZONTAL) {
             return
         }
+
         var scrollAmount = 0f
         if (fingerPosition.y > recyclerView.height * (1 - edgeDetectionThreshold)) {
             scrollAmount = fingerPosition.y - recyclerView.height * (1 - edgeDetectionThreshold)
         } else if (fingerPosition.y < recyclerView.height * edgeDetectionThreshold) {
             scrollAmount = fingerPosition.y - recyclerView.height * edgeDetectionThreshold
         }
+
         scrollAmount *= edgeScrollSpeed
         recyclerView.scrollBy(0, scrollAmount.toInt())
     }
@@ -491,12 +526,14 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (!isEdgeScrollingEnabled || orientation == LayoutOrientation.VERTICAL) {
             return
         }
+
         var scrollAmount = 0f
         if (fingerPosition.x > recyclerView.width * (1 - edgeDetectionThreshold)) {
             scrollAmount = fingerPosition.x - recyclerView.width * (1 - edgeDetectionThreshold)
         } else if (fingerPosition.x < recyclerView.width * edgeDetectionThreshold) {
             scrollAmount = fingerPosition.x - recyclerView.width * edgeDetectionThreshold
         }
+
         scrollAmount *= edgeScrollSpeed
         recyclerView.scrollBy(scrollAmount.toInt(), 0)
     }
@@ -512,13 +549,16 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (orientation == LayoutOrientation.HORIZONTAL) {
             return
         }
+
         floatingItemBounds!!.top = fingerPosition.y.toInt()
-        if (fingerOffset != null) {
-            floatingItemBounds!!.top += fingerOffset!!.y.toInt()
+        fingerOffset?.let {
+            floatingItemBounds!!.top += it.y.toInt()
         }
+
         if (floatingItemBounds!!.top < -viewMiddle.y) {
             floatingItemBounds!!.top = (-viewMiddle.y).toInt()
         }
+
         floatingItemBounds!!.bottom = floatingItemBounds!!.top + floatingItemStartingBounds!!.height()
     }
 
@@ -533,13 +573,16 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         if (orientation == LayoutOrientation.VERTICAL) {
             return
         }
+
         floatingItemBounds!!.left = fingerPosition.x.toInt()
-        if (fingerOffset != null) {
-            floatingItemBounds!!.left += fingerOffset!!.x.toInt()
+        fingerOffset?.let {
+            floatingItemBounds!!.left += it.x.toInt()
         }
+
         if (floatingItemBounds!!.left < -viewMiddle.x) {
             floatingItemBounds!!.left = (-viewMiddle.x).toInt()
         }
+
         floatingItemBounds!!.right = floatingItemBounds!!.left + floatingItemStartingBounds!!.width()
     }
 
@@ -552,6 +595,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
     private fun createDragBitmap(view: View): BitmapDrawable {
         floatingItemStartingBounds = Rect(view.left, view.top, view.right, view.bottom)
         floatingItemBounds = Rect(floatingItemStartingBounds)
+
         val bitmap = Bitmap.createBitmap(floatingItemStartingBounds!!.width(), floatingItemStartingBounds!!.height(), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         view.draw(canvas)
@@ -566,9 +610,7 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
      * @param view The view to animate
      */
     private fun finishReorder(view: View) {
-        if (smoothFinishAnimationListener != null) {
-            smoothFinishAnimationListener!!.setPositions(selectedDragItemPosition, selectedDragItemNewPosition)
-        }
+        smoothFinishAnimationListener?.setPositions(selectedDragItemPosition, selectedDragItemNewPosition)
         selectedDragItemPosition = NO_POSITION
         view.visibility = View.VISIBLE
 
@@ -625,13 +667,5 @@ class ReorderDecoration(private val recyclerView: RecyclerView) : ItemDecoration
         override fun onAnimationRepeat(animation: Animation) {
             //Purposefully left blank
         }
-    }
-
-    companion object {
-        const val NO_POSITION = -1
-        const val INVALID_RESOURCE_ID = 0
-        private const val MAX_EDGE_DETECTION_THRESHOLD = 0.5f
-        private const val DEFAULT_EDGE_SCROLL_SPEED = 0.5f
-        private const val DEFAULT_EDGE_DETECTION_THRESHOLD = 0.01f
     }
 }

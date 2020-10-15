@@ -25,16 +25,36 @@ import androidx.recyclerview.widget.RecyclerView
  * Extends the [androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback] to provide
  * support for specifying the elevation to use when an item is active (being dragged or swiped)
  */
-abstract class SimpleElevationItemTouchHelperCallback @JvmOverloads constructor(dragDirs: Int, swipeDirs: Int, activeElevationChange: Float = DEFAULT_ACTIVE_ELEVATION_CHANGE) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
-    protected var isElevated = false
-    protected var originalElevation = 0f
-    protected var activeElevationChange = DEFAULT_ACTIVE_ELEVATION_CHANGE
-    override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-            return
-        }
+abstract class SimpleElevationItemTouchHelperCallback @JvmOverloads
+/**
+ * Creates a Callback for the given drag and swipe allowance. These values serve as
+ * defaults and if you want to customize behavior per ViewHolder, you can override
+ * [.getSwipeDirs]
+ * and / or [.getDragDirs].
+ *
+ * @param dragDirs  Binary OR of direction flags in which the Views can be dragged. Must be composed of
+ * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],
+ * [ItemTouchHelper.START], [ItemTouchHelper.END],
+ * [ItemTouchHelper.UP] and [ItemTouchHelper.DOWN]
+ * @param swipeDirs Binary OR of direction flags in which the Views can be swiped. Must be composed of
+ * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],
+ * [ItemTouchHelper.START], [ItemTouchHelper.END],
+ * [ItemTouchHelper.UP] and [ItemTouchHelper.DOWN]
+ * @param activeElevationChange The elevation change to use when an item becomes active
+ */
+constructor(
+        dragDirs: Int,
+        swipeDirs: Int,
+        protected var activeElevationChange: Float = DEFAULT_ACTIVE_ELEVATION_CHANGE
+) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
+    companion object {
+        const val DEFAULT_ACTIVE_ELEVATION_CHANGE = 1F //NOTE: the support library implementation uses 1F as the default
+    }
 
+    protected var isElevated = false
+    protected var originalElevation = 0F
+
+    override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
         //To avoid elevation conflicts with the Lollipop+ implementation, we will always inform the super that we aren't active
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, false)
         if (isCurrentlyActive && !isElevated) {
@@ -85,43 +105,5 @@ abstract class SimpleElevationItemTouchHelperCallback @JvmOverloads constructor(
             }
         }
         return maxChildElevation
-    }
-
-    companion object {
-        const val DEFAULT_ACTIVE_ELEVATION_CHANGE = 1f //NOTE: the support library implementation uses 1f as the default
-    }
-    /**
-     * Creates a Callback for the given drag and swipe allowance. These values serve as
-     * defaults and if you want to customize behavior per ViewHolder, you can override
-     * [.getSwipeDirs]
-     * and / or [.getDragDirs].
-     *
-     * @param dragDirs  Binary OR of direction flags in which the Views can be dragged. Must be composed of
-     * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],
-     * [ItemTouchHelper.START], [ItemTouchHelper.END],
-     * [ItemTouchHelper.UP] and [ItemTouchHelper.DOWN]
-     * @param swipeDirs Binary OR of direction flags in which the Views can be swiped. Must be composed of
-     * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],
-     * [ItemTouchHelper.START], [ItemTouchHelper.END],
-     * [ItemTouchHelper.UP] and [ItemTouchHelper.DOWN]
-     * @param activeElevationChange The elevation change to use when an item becomes active
-     */
-    /**
-     * Creates a Callback for the given drag and swipe allowance. These values serve as
-     * defaults and if you want to customize behavior per ViewHolder, you can override
-     * [.getSwipeDirs]
-     * and / or [.getDragDirs].
-     *
-     * @param dragDirs  Binary OR of direction flags in which the Views can be dragged. Must be composed of
-     * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],
-     * [ItemTouchHelper.START], [ItemTouchHelper.END],
-     * [ItemTouchHelper.UP] and [ItemTouchHelper.DOWN]
-     * @param swipeDirs Binary OR of direction flags in which the Views can be swiped. Must be composed of
-     * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],
-     * [ItemTouchHelper.START], [ItemTouchHelper.END],
-     * [ItemTouchHelper.UP] and [ItemTouchHelper.DOWN]
-     */
-    init {
-        this.activeElevationChange = activeElevationChange
     }
 }

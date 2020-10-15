@@ -17,10 +17,12 @@ package com.devbrackets.android.recyclerext.annotation
 
 import androidx.annotation.IntDef
 import com.devbrackets.android.recyclerext.decoration.SpacerDecoration
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 
-@IntDef(flag = true, value = [SpacerDecoration.Companion.EDGE_SPACING_TOP, SpacerDecoration.Companion.EDGE_SPACING_RIGHT, SpacerDecoration.Companion.EDGE_SPACING_BOTTOM, SpacerDecoration.Companion.EDGE_SPACING_LEFT])
-@Retention(RetentionPolicy.SOURCE)
-annotation class EdgeSpacing { //Purposefully left blank
-}
+@IntDef(flag = true, value = [
+    SpacerDecoration.EDGE_SPACING_TOP,
+    SpacerDecoration.EDGE_SPACING_RIGHT,
+    SpacerDecoration.EDGE_SPACING_BOTTOM,
+    SpacerDecoration.EDGE_SPACING_LEFT
+])
+@kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+annotation class EdgeSpacing

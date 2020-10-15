@@ -22,7 +22,8 @@ import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
  * calculate the list item count and header indexes.
  */
 class HeaderAdapterDataObserver(protected var headerCore: HeaderCore, protected var headerApi: HeaderApi<*, *>) : AdapterDataObserver() {
-    protected var generator: HeaderDataGenerator
+    protected var generator = HeaderDataGenerator(headerApi)
+
     override fun onChanged() {
         generator.calculate(headerApi.headerData, headerApi)
     }
@@ -40,7 +41,7 @@ class HeaderAdapterDataObserver(protected var headerCore: HeaderCore, protected 
     }
 
     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-        // Unlike the onItemRangeChanged insertions cause a few things that need to be handled
+        // Unlike the onItemRangeChanged, insertions cause a few things that need to be handled
         //     1. HeaderItem indexes below the insertion point need to be updated
         //     2. If added to an existing header, the item count needs to be updated
         //     3. If creating a new header, the HeaderItem(s) need to be created and inserted
@@ -51,7 +52,7 @@ class HeaderAdapterDataObserver(protected var headerCore: HeaderCore, protected 
     }
 
     override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
-        // Unlike the onItemRangeChanged deletions cause a few things that need to be handled
+        // Unlike the onItemRangeChanged, deletions cause a few things that need to be handled
         //     1. HeaderItem indexes below the deletion point need to be updated
         //     2. If removed from an existing header, the item count needs to be updated or the header removed
         // This is made more complex because deletions can occur at the start, middle, or end
@@ -62,9 +63,5 @@ class HeaderAdapterDataObserver(protected var headerCore: HeaderCore, protected 
 
     override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
         generator.calculate(headerApi.headerData, headerApi)
-    }
-
-    init {
-        generator = HeaderDataGenerator(headerApi)
     }
 }

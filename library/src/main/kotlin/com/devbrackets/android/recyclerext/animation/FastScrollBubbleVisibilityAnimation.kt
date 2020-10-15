@@ -21,10 +21,19 @@ import android.view.animation.Animation
 import android.view.animation.AnimationSet
 
 class FastScrollBubbleVisibilityAnimation(bubble: View, private val toVisible: Boolean) : AnimationSet(false) {
+    companion object {
+        private const val DURATION = 100 //milliseconds
+    }
+
+    init {
+        setup(bubble)
+    }
+
     private fun setup(bubble: View) {
-        val startAlpha: Float = if (toVisible) 0 else 1.toFloat()
-        val endAlpha: Float = if (toVisible) 1 else 0.toFloat()
+        val startAlpha: Float = if (toVisible) 0F else 1F
+        val endAlpha: Float = if (toVisible) 1F else 0F
         val alphaAnimation = AlphaAnimation(startAlpha, endAlpha)
+
         alphaAnimation.duration = DURATION.toLong()
         addAnimation(alphaAnimation)
         setAnimationListener(BubbleVisibilityAnimationListener(bubble, toVisible))
@@ -51,13 +60,5 @@ class FastScrollBubbleVisibilityAnimation(bubble: View, private val toVisible: B
         override fun onAnimationRepeat(animation: Animation) {
             //Purposefully left blank
         }
-    }
-
-    companion object {
-        private const val DURATION = 100 //milliseconds
-    }
-
-    init {
-        setup(bubble)
     }
 }

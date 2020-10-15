@@ -8,5 +8,5 @@ interface DelegateApi<T> {
      * @return The item in the `position`
      */
     fun getItem(position: Int): T
-    fun getItemViewType(position: Int): Int
+    fun getItemViewType(adapterPosition: Int): Int
 }

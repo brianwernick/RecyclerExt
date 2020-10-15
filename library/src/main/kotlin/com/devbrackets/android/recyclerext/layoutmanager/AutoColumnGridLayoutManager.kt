@@ -16,10 +16,8 @@
 package com.devbrackets.android.recyclerext.layoutmanager
 
 import android.content.Context
-import android.os.Build
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import androidx.annotation.IntRange
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
@@ -37,26 +35,59 @@ import java.lang.ref.WeakReference
  * for the grid items should have a width of "match_parent", otherwise the items
  * won't be correctly centered
  */
-class AutoColumnGridLayoutManager
-/**
- * Constructs the layout manager that will correctly determine the number
- * of possible columns based on the `gridItemWidth` specified.
- *
- * @param context The context to use for the layout manager
- * @param gridItemWidth The width for the items in each column
- */(context: Context, protected var requestedColumnWidth: Int) : GridLayoutManager(context, 1) {
+class AutoColumnGridLayoutManager(context: Context, protected var requestedColumnWidth: Int) : GridLayoutManager(context, 1) {
     enum class SpacingMethod {
         ALL, EDGES, SEPARATOR
     }
 
     protected var spacerDecoration: SpacerDecoration? = null
+    /**
+     * Sets the amount of spacing that should be between rows.  This value
+     * will be overridden when [matchSpacing] is set to true
+     */
     protected var rowSpacing = 0
     protected var edgeSpacing = 0
-    protected var matchSpacing = false
+
+    /**
+     * Enables or disables the ability to match the horizontal and vertical spacing
+     * between the grid items.  If set to true this will override the value set with
+     * [rowSpacing]
+     */
+    var matchSpacing = false
     protected var minColumnSpacingEdge = 0
     protected var minColumnSpacingSeparator = 0
-    protected var spacingMethod = SpacingMethod.ALL
-    protected var maxColumnCount = Int.MAX_VALUE
+
+    /**
+     * The Methodology to use when determining the spacing between columns.
+     *
+     * [SpacingMethod.EDGES] will only increase the size of the left-most and right-most spacing,
+     * leaving the separators with the value specified by [setMinColumnSpacing]
+     *
+     * [SpacingMethod.SEPARATOR] will only increase the size of the spacing in between
+     * columns, leaving the edges with the value specified by [setMinColumnSpacing]
+     *
+     * [SpacingMethod.ALL] will increase the size of the spacing along both the edges and
+     * the separators, adding based on the relative amounts specified by [.setMinColumnSpacing].
+     * (e.g. `setMinColumnSpacing(100, 50)` will result in the edges growing 2px for every 1px the
+     * separators grow)
+     */
+    var spacingMethod = SpacingMethod.ALL
+        set(value) {
+            field = value
+            spanCount = determineColumnCount(requestedColumnWidth)
+        }
+
+    /**
+     * The maximum number of columns allowed when determining
+     * the count based on the width specified in the constructor or
+     * with [setColumnWidth]
+     */
+    var maxColumnCount = Int.MAX_VALUE
+        set(value) {
+            field = value
+            spanCount = determineColumnCount(requestedColumnWidth)
+        }
+
     protected var parent = WeakReference<RecyclerView?>(null)
 
     /**
@@ -87,6 +118,7 @@ class AutoColumnGridLayoutManager
             recyclerView.removeItemDecoration(spacerDecoration!!)
             resetRecyclerPadding(recyclerView)
         }
+
         parent = WeakReference(null)
     }
 
@@ -140,65 +172,6 @@ class AutoColumnGridLayoutManager
     }
 
     /**
-     * Sets the amount of spacing that should be between rows.  This value
-     * will be overridden when [.setMatchRowAndColumnSpacing] is set to true
-     *
-     * @param rowSpacing The amount of spacing that should be between rows [default: 0]
-     */
-    fun setRowSpacing(rowSpacing: Int) {
-        this.rowSpacing = rowSpacing
-    }
-
-    /**
-     * Enables or disables the ability to match the horizontal and vertical spacing
-     * between the grid items.  If set to true this will override the value set with
-     * [.setRowSpacing]
-     *
-     * @param matchSpacing True to keep the horizontal and vertical spacing equal [default: false]
-     */
-    fun setMatchRowAndColumnSpacing(matchSpacing: Boolean) {
-        this.matchSpacing = matchSpacing
-    }
-
-    /**
-     * Sets the maximum number of columns allowed when determining
-     * the count based on the width specified in the constructor or
-     * with [.setColumnWidth]
-     *
-     * @param maxColumns The maximum amount of columns allowed [default: [Integer.MAX_VALUE]]
-     */
-    fun setMaxColumnCount(@IntRange(from = 1, to = Int.MAX_VALUE.toLong()) maxColumns: Int) {
-        maxColumnCount = maxColumns
-        spanCount = determineColumnCount(requestedColumnWidth)
-    }
-
-    /**
-     * Sets the methodology to use when determining the spacing between columns.
-     *
-     *  *
-     * [SpacingMethod.EDGES] will only increase the size of the left-most and right-most spacing,
-     * leaving the separators with the value specified by [.setMinColumnSpacing]
-     *
-     *  *
-     * [SpacingMethod.SEPARATOR] will only increase the size of the spacing in between
-     * columns, leaving the edges with the value specified by [.setMinColumnSpacing]
-     *
-     *  *
-     * [SpacingMethod.ALL] will increase the size of the spacing along both the edges and
-     * the separators, adding based on the relative amounts specified by [.setMinColumnSpacing].
-     * (e.g. `setMinColumnSpacing(100, 50)` will result in the edges growing 2px for every 1px the
-     * separators grow)
-     *
-     *
-     *
-     * @param spacingMethod The method for displaying the spacing
-     */
-    fun setSpacingMethod(spacingMethod: SpacingMethod) {
-        this.spacingMethod = spacingMethod
-        spanCount = determineColumnCount(requestedColumnWidth)
-    }
-
-    /**
      * Determines the maximum number of columns based on the width of the items.
      * If the `recyclerView`'s width hasn't been determined yet, this
      * will register for the layout that will then perform the functionality to
@@ -227,7 +200,7 @@ class AutoColumnGridLayoutManager
     /**
      * Calculates and adds the amount of spacing that needs to be between each
      * column, row, and the edges of the RecyclerView.  This pays attention to
-     * the value from [.setSpacingMethod]
+     * the value from [spacingMethod]
      *
      * @param recyclerView The RecyclerView to use for determining the amount of space that needs to be added
      * @param gridItemWidth The requested width for the items
@@ -236,10 +209,12 @@ class AutoColumnGridLayoutManager
     protected fun updateSpacing(recyclerView: RecyclerView, gridItemWidth: Int, columnCount: Int) {
         //Sets the decoration for the calculated spacing
         if (spacerDecoration == null) {
-            spacerDecoration = SpacerDecoration()
-            spacerDecoration!!.setAllowedEdgeSpacing(SpacerDecoration.Companion.EDGE_SPACING_LEFT or SpacerDecoration.Companion.EDGE_SPACING_RIGHT)
-            recyclerView.addItemDecoration(spacerDecoration!!)
+            spacerDecoration = SpacerDecoration().apply {
+                allowedEdgeSpacing = SpacerDecoration.EDGE_SPACING_LEFT or SpacerDecoration.EDGE_SPACING_RIGHT
+                recyclerView.addItemDecoration(this)
+            }
         }
+
         edgeSpacing = minColumnSpacingEdge
         var separatorSpacing = minColumnSpacingSeparator / 2
 
@@ -279,12 +254,13 @@ class AutoColumnGridLayoutManager
                 recyclerView.paddingRight + edgeSpacing,
                 recyclerView.paddingBottom
         )
-        spacerDecoration!!.update(separatorSpacing, if (matchSpacing) separatorSpacing else rowSpacing / 2)
+
+        spacerDecoration?.update(separatorSpacing, if (matchSpacing) separatorSpacing else rowSpacing / 2)
     }
 
     /**
      * Performs the actual calculation for determining the number of possible
-     * columns by using the [.maxColumnCount], [.minColumnSpacingEdge], and
+     * columns by using the [maxColumnCount], [minColumnSpacingEdge], and
      * [.minColumnSpacingSeparator] in conjunction with the requested width
      * for the items
      *
@@ -336,16 +312,12 @@ class AutoColumnGridLayoutManager
     protected inner class LayoutListener(private val recyclerView: RecyclerView) : OnGlobalLayoutListener {
         override fun onGlobalLayout() {
             removeOnGlobalLayoutListener(recyclerView, this)
-            val gridLayoutManager = recyclerView.layoutManager as GridLayoutManager?
-            gridLayoutManager!!.spanCount = determineColumnCount(requestedColumnWidth)
+            val gridLayoutManager = recyclerView.layoutManager as GridLayoutManager
+            gridLayoutManager.spanCount = determineColumnCount(requestedColumnWidth)
         }
 
         fun removeOnGlobalLayoutListener(view: View, listener: OnGlobalLayoutListener) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                view.viewTreeObserver.removeGlobalOnLayoutListener(listener)
-            } else {
-                view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
-            }
+            view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
         }
     }
 }

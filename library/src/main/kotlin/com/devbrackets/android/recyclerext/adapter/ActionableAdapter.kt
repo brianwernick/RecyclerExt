@@ -24,13 +24,18 @@ import androidx.recyclerview.widget.RecyclerView
  * [RecyclerView.ViewHolder]s of action mode
  * changes (enter, exit) so they can perform the appropriate animations.
  */
-abstract class ActionableAdapter<VH : RecyclerView.ViewHolder?> : RecyclerView.Adapter<VH>() {
+abstract class ActionableAdapter<VH : RecyclerView.ViewHolder> : RecyclerView.Adapter<VH>() {
+    companion object {
+        private const val TAG = "ActionableAdapter"
+    }
+
     interface ActionableView {
         fun onActionModeChange(actionModeEnabled: Boolean)
     }
 
     protected var boundRecyclerView: RecyclerView? = null
     protected var inActionMode = false
+
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         boundRecyclerView = recyclerView
@@ -47,6 +52,7 @@ abstract class ActionableAdapter<VH : RecyclerView.ViewHolder?> : RecyclerView.A
             if (enabled == inActionMode) {
                 return
             }
+
             inActionMode = enabled
             updateVisibleViewHolders()
         }
@@ -57,30 +63,25 @@ abstract class ActionableAdapter<VH : RecyclerView.ViewHolder?> : RecyclerView.A
             Log.d(TAG, "Ignoring updateVisibleViewHolders() when no RecyclerView is bound")
             return
         }
+
         val layoutManager = recyclerView.layoutManager
         if (layoutManager == null) {
             Log.d(TAG, "Ignoring updateVisibleViewHolders() when no LayoutManager is bound")
             return
         }
-        var startPosition = 0
-        startPosition = if (layoutManager is LinearLayoutManager) {
-            layoutManager.findFirstVisibleItemPosition()
-        } else {
+
+        if (layoutManager !is LinearLayoutManager) {
             Log.e(TAG, "updateVisibleViewHolders() currently only supports LinearLayoutManager and it's subclasses")
             return
         }
-        var i = startPosition
-        var holder = recyclerView.findViewHolderForAdapterPosition(startPosition)
+
+        var i = layoutManager.findFirstVisibleItemPosition()
+        var holder = recyclerView.findViewHolderForAdapterPosition(i)
+
         while (holder != null && i < itemCount) {
             holder = recyclerView.findViewHolderForAdapterPosition(i)
-            if (holder != null && holder is ActionableView) {
-                (holder as ActionableView).onActionModeChange(inActionMode)
-            }
+            (holder as? ActionableView)?.onActionModeChange(inActionMode)
             i++
         }
-    }
-
-    companion object {
-        private const val TAG = "ActionableAdapter"
     }
 }

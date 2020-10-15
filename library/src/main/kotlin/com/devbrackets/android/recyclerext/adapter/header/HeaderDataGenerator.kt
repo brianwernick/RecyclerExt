@@ -88,17 +88,19 @@ class HeaderDataGenerator(protected var headerApi: HeaderApi<*, *>) {
                 }
                 adapterPosition++
             }
+
             currentHeader.childCount = currentHeader.childCount + 1
             reuseData.adapterPositionItemMap.put(adapterPosition, AdapterItem(null, i, headerApi.getChildViewType(i) and HeaderApi.Companion.HEADER_VIEW_TYPE_MASK.inv()))
         }
+
         return reuseData
     }
 
-    class HeaderData {
-        var headerItems = LongSparseArray<HeaderItem?>()
-        var adapterPositionItemMap = SparseArrayCompat<AdapterItem?>()
-        var showHeaderAsChild = false
-    }
+    data class HeaderData(
+            var headerItems: LongSparseArray<HeaderItem> = LongSparseArray<HeaderItem>(),
+            var adapterPositionItemMap: SparseArrayCompat<AdapterItem> = SparseArrayCompat<AdapterItem>(),
+            var showHeaderAsChild: Boolean = false
+    )
 
     class AdapterItem(var headerItem: HeaderItem?, var childPosition: Int, var itemViewType: Int)
 }

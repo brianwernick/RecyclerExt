@@ -19,7 +19,8 @@ package com.devbrackets.android.recyclerext.adapter.header
  * An item that represents a Header item as used in the
  * [HeaderAdapter]
  */
-class HeaderItem(val id: Long, val adapterPosition: Int) {
-    var childCount = 0
-
-}
+data class HeaderItem(
+        val id: Long,
+        val adapterPosition: Int,
+        var childCount: Int = 0
+)

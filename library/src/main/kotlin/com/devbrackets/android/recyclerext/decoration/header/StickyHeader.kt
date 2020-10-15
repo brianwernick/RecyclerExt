@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - 2018 Brian Wernick
+ * Copyright (C) 2016 - 2020 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderApi
 class StickyHeader {
     protected var stickyViewHolder: RecyclerView.ViewHolder? = null
     protected var cachedStickyView: View? = null
-    var stickyViewOffset = PointF(0, 0)
+
+    var stickyViewOffset = PointF(0F, 0F)
     var currentStickyId = RecyclerView.NO_ID
+
     fun reset() {
         update(RecyclerView.NO_ID, null)
         stickyViewOffset.x = 0f
@@ -41,6 +43,7 @@ class StickyHeader {
         if (cachedStickyView != null) {
             return cachedStickyView
         }
+
         val holder = stickyViewHolder ?: return null
 
         // If we have a ViewHolder we should have a view, but just to be safe we check

@@ -23,28 +23,18 @@ import java.util.*
  *
  * @param <VH> The ViewHolder to use
  * @param <T>  The object type for the list
-</T></VH> */
-abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter<VH> {
+ */
+abstract class ListAdapter<VH : RecyclerView.ViewHolder, T>(
+        protected var items: MutableList<T> = mutableListOf()
+) : ActionableAdapter<VH>() {
     protected val lock = Any()
-    @kotlin.jvm.JvmField
-    protected var items: MutableList<T>? = null
-    protected var notifyOnChange = true
 
     /**
-     * Creates an adapter with no initial items
+     * Control whether methods that change the list automatically call notifyDataSetChanged().
+     * If set to false, caller must manually call notifyDataSetChanged() to have the changes reflected
+     * in the attached view. The default is true, and calling notifyDataSetChanged() resets the flag to true.
      */
-    constructor() {
-        //Purposefully left blank
-    }
-
-    /**
-     * Creates an adapter with the specified items
-     *
-     * @param itemList The list of initial items for the adapter
-     */
-    constructor(itemList: MutableList<T>?) {
-        items = itemList
-    }
+    var notifyOnChange = true
 
     /**
      * Retrieves the number of items for the adapter.  By default this
@@ -53,7 +43,7 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      * @return The number of items in the adapter
      */
     override fun getItemCount(): Int {
-        return if (items != null) items.size else 0
+        return items.size
     }
 
     /**
@@ -64,9 +54,7 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      * @return The item at the specified position in the list or null
      */
     fun getItem(position: Int): T? {
-        return if (items == null || position < 0 || position >= items.size) {
-            null
-        } else items.get(position)
+        return items.getOrNull(position)
     }
 
     /**
@@ -77,7 +65,7 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      * @return The index of the first occurrence of the object or -1 if the object was not found
      */
     fun getPosition(item: T): Int {
-        return if (items == null || items.isEmpty()) {
+        return if (items.isEmpty()) {
             -1
         } else items.indexOf(item)
     }
@@ -87,11 +75,9 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun clear() {
         synchronized(lock) {
-            if (items == null) {
-                return
-            }
             items.clear()
         }
+
         if (notifyOnChange) {
             notifyDataSetChanged()
         }
@@ -105,13 +91,10 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun set(itemList: List<T>) {
         synchronized(lock) {
-            if (items == null) {
-                items = ArrayList()
-            } else {
-                items.clear()
-            }
+            items.clear()
             items.addAll(itemList)
         }
+
         if (notifyOnChange) {
             notifyDataSetChanged()
         }
@@ -124,13 +107,11 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun add(item: T) {
         synchronized(lock) {
-            if (items == null) {
-                items = ArrayList()
-            }
             items.add(item)
         }
+
         if (notifyOnChange) {
-            notifyItemInserted(items!!.size)
+            notifyItemInserted(items.size)
         }
     }
 
@@ -142,11 +123,9 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun add(position: Int, item: T) {
         synchronized(lock) {
-            if (items == null) {
-                items = ArrayList()
-            }
             items.add(position, item)
         }
+
         if (notifyOnChange) {
             notifyItemInserted(position)
         }
@@ -159,14 +138,12 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun addAll(itemList: List<T>) {
         synchronized(lock) {
-            if (items == null) {
-                items = ArrayList()
-            }
             items.addAll(itemList)
         }
+
         if (notifyOnChange) {
-            if (items!!.size - itemList.size != 0) {
-                notifyItemRangeChanged(items!!.size - itemList.size, itemList.size)
+            if (items.size - itemList.size != 0) {
+                notifyItemRangeChanged(items.size - itemList.size, itemList.size)
             } else {
                 notifyDataSetChanged()
             }
@@ -181,14 +158,12 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
     fun remove(item: T) {
         var removeIndex: Int
         synchronized(lock) {
-            if (items == null) {
-                return
-            }
             removeIndex = items.indexOf(item)
             if (removeIndex != -1) {
                 items.removeAt(removeIndex)
             }
         }
+
         if (notifyOnChange && removeIndex != -1) {
             notifyItemRemoved(removeIndex)
         }
@@ -201,11 +176,13 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun remove(position: Int) {
         synchronized(lock) {
-            if (items == null || position < 0 || position > items.size) {
+            if (position < 0 || position > items.size) {
                 return
             }
+
             items.removeAt(position)
         }
+
         if (notifyOnChange) {
             notifyItemRemoved(position)
         }
@@ -220,13 +197,15 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun swap(positionOne: Int, positionTwo: Int) {
         synchronized(lock) {
-            if (items == null || positionOne == positionTwo || positionOne < 0 || positionOne >= items.size || positionTwo < 0 || positionTwo >= items.size) {
+            if (positionOne == positionTwo || positionOne < 0 || positionOne >= items.size || positionTwo < 0 || positionTwo >= items.size) {
                 return
             }
-            val temp = items.get(positionOne)
-            items.set(positionOne, items.get(positionTwo))
+
+            val temp = items[positionOne]
+            items[positionOne] = items[positionTwo]
             items.set(positionTwo, temp)
         }
+
         if (notifyOnChange) {
             notifyItemsSwapped(positionOne, positionTwo)
         }
@@ -241,23 +220,27 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      * @param endPosition The end position for the item being moved
      */
     fun move(originalPosition: Int, endPosition: Int) {
-        var endPosition = endPosition
+        var destinationPosition = endPosition
         synchronized(lock) {
-            if (items == null || originalPosition < 0 || endPosition < 0 || originalPosition >= items.size) {
+            if (originalPosition < 0 || destinationPosition < 0 || originalPosition >= items.size) {
                 return
             }
-            if (endPosition >= items.size) {
-                endPosition = items.size
+
+            if (destinationPosition >= items.size) {
+                destinationPosition = items.size
             }
-            if (originalPosition == endPosition) {
+
+            if (originalPosition == destinationPosition) {
                 return
             }
-            val temp = items.get(originalPosition)
+
+            val temp = items[originalPosition]
             items.removeAt(originalPosition)
-            items.add(endPosition, temp)
+            items.add(destinationPosition, temp)
         }
+
         if (notifyOnChange) {
-            notifyItemMoved(originalPosition, endPosition)
+            notifyItemMoved(originalPosition, destinationPosition)
         }
     }
 
@@ -276,19 +259,9 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
     fun notifyItemsSwapped(positionOne: Int, positionTwo: Int) {
         val lowerPosition = if (positionOne < positionTwo) positionOne else positionTwo
         val upperPosition = if (positionOne > positionTwo) positionOne else positionTwo
+
         notifyItemMoved(lowerPosition, upperPosition)
         notifyItemMoved(upperPosition - 1, lowerPosition)
-    }
-
-    /**
-     * Control whether methods that change the list automatically call notifyDataSetChanged().
-     * If set to false, caller must manually call notifyDataSetChanged() to have the changes reflected
-     * in the attached view. The default is true, and calling notifyDataSetChanged() resets the flag to true.
-     *
-     * @param notifyOnChange if true, modifications to the list will automatically call notifyDataSetChanged()
-     */
-    fun setNotifyOnChange(notifyOnChange: Boolean) {
-        this.notifyOnChange = notifyOnChange
     }
 
     /**
@@ -298,11 +271,9 @@ abstract class ListAdapter<VH : RecyclerView.ViewHolder?, T> : ActionableAdapter
      */
     fun sort(comparator: Comparator<in T>) {
         synchronized(lock) {
-            if (items == null) {
-                return
-            }
             Collections.sort(items, comparator)
         }
+
         if (notifyOnChange) {
             notifyDataSetChanged()
         }

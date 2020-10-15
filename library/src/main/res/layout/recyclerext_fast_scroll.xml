@@ -8,7 +8,7 @@
     android:clipChildren="false"
     tools:ignore="UseCompoundDrawables">
 
-    <com.devbrackets.android.recyclerext.widget.PositionSupportImageView
+    <ImageView
         android:id="@+id/recyclerext_fast_scroll_handle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -22,7 +22,7 @@
         tools:ignore="ContentDescription,RtlHardcoded,RtlSymmetry"
         tools:visibility="visible"/>
 
-    <com.devbrackets.android.recyclerext.widget.PositionSupportTextView
+    <TextView
         android:id="@+id/recyclerext_fast_scroll_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

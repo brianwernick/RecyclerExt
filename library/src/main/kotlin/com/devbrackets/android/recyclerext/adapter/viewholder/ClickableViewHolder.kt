@@ -37,6 +37,11 @@ abstract class ClickableViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
     private var onLongClickListener: OnLongClickListener? = null
     protected var performLongClickHapticFeedback = true
 
+
+    init {
+        initializeClickListener()
+    }
+
     /**
      * Sets the click and long click listeners on the root
      * view (see [.itemView])
@@ -66,22 +71,16 @@ abstract class ClickableViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
     }
 
     override fun onClick(view: View) {
-        if (onClickListener != null) {
-            onClickListener!!.onClick(this)
-        }
+        onClickListener?.onClick(this)
     }
 
     override fun onLongClick(view: View): Boolean {
-        if (onLongClickListener != null) {
+        return onLongClickListener?.let {
             if (performLongClickHapticFeedback) {
                 itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             }
-            return onLongClickListener!!.onLongClick(this)
-        }
-        return false
-    }
 
-    init {
-        initializeClickListener()
+            it.onLongClick(this)
+        } ?: false
     }
 }

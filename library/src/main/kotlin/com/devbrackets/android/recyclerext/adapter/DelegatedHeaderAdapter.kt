@@ -17,6 +17,7 @@ package com.devbrackets.android.recyclerext.adapter
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateApi
 import com.devbrackets.android.recyclerext.adapter.delegate.DelegateCore
 import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder
@@ -27,41 +28,42 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderApi
  * [RecyclerView.ViewHolder]s with [ViewHolderBinder]s
  * to allow for dynamic lists
  */
-abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<RecyclerView.ViewHolder, RecyclerView.ViewHolder>(), DelegateApi<T> {
-    protected var headerDelegateCore: DelegateCore<RecyclerView.ViewHolder, T>
-    protected var childDelegateCore: DelegateCore<RecyclerView.ViewHolder, T>
-    override fun onCreateHeaderViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<ViewHolder, ViewHolder>(), DelegateApi<T> {
+    protected var headerDelegateCore: DelegateCore<ViewHolder, T> = DelegateCore(HeaderDelegateApi(), this)
+    protected var childDelegateCore: DelegateCore<ViewHolder, T> = DelegateCore(ChildDelegateApi(), this)
+
+    override fun onCreateHeaderViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return headerDelegateCore.onCreateViewHolder(parent, viewType)
     }
 
-    override fun onCreateChildViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateChildViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return childDelegateCore.onCreateViewHolder(parent, viewType)
     }
 
-    override fun onBindHeaderViewHolder(holder: RecyclerView.ViewHolder, firstChildPosition: Int) {
+    override fun onBindHeaderViewHolder(holder: ViewHolder, firstChildPosition: Int) {
         headerDelegateCore.onBindViewHolder(holder, firstChildPosition)
     }
 
-    override fun onBindChildViewHolder(holder: RecyclerView.ViewHolder, childPosition: Int) {
+    override fun onBindChildViewHolder(holder: ViewHolder, childPosition: Int) {
         childDelegateCore.onBindViewHolder(holder, childPosition)
     }
 
-    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+    override fun onViewRecycled(holder: ViewHolder) {
         val delegateCore = if (core.isHeader(holder.adapterPosition)) headerDelegateCore else childDelegateCore
         delegateCore.onViewRecycled(holder)
     }
 
-    override fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
+    override fun onFailedToRecycleView(holder: ViewHolder): Boolean {
         val delegateCore = if (core.isHeader(holder.adapterPosition)) headerDelegateCore else childDelegateCore
         return delegateCore.onFailedToRecycleView(holder)
     }
 
-    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
         val delegateCore = if (core.isHeader(holder.adapterPosition)) headerDelegateCore else childDelegateCore
         delegateCore.onViewAttachedToWindow(holder)
     }
 
-    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
         val delegateCore = if (core.isHeader(holder.adapterPosition)) headerDelegateCore else childDelegateCore
         delegateCore.onViewDetachedFromWindow(holder)
     }
@@ -74,8 +76,8 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<RecyclerView.ViewHolder
      * @param viewType The type of view the [ViewHolderBinder] handles
      * @param binder The [ViewHolderBinder] to handle creating and binding views
      */
-    fun registerHeaderViewHolderBinder(viewType: Int, binder: ViewHolderBinder<*, *>?) {
-        val headerViewType = viewType or HeaderApi.Companion.HEADER_VIEW_TYPE_MASK
+    fun registerHeaderViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
+        val headerViewType = viewType or HeaderApi.HEADER_VIEW_TYPE_MASK
         headerDelegateCore.registerViewHolderBinder(headerViewType, binder)
     }
 
@@ -87,8 +89,8 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<RecyclerView.ViewHolder
      * @param viewType The type of view the [ViewHolderBinder] handles
      * @param binder The [ViewHolderBinder] to handle creating and binding views
      */
-    fun registerChildViewHolderBinder(viewType: Int, binder: ViewHolderBinder<*, *>?) {
-        val childViewType = viewType and HeaderApi.Companion.HEADER_VIEW_TYPE_MASK.inv()
+    fun registerChildViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
+        val childViewType = viewType and HeaderApi.HEADER_VIEW_TYPE_MASK.inv()
         childDelegateCore.registerViewHolderBinder(childViewType, binder)
     }
 
@@ -100,7 +102,7 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<RecyclerView.ViewHolder
      *
      * @param binder The [ViewHolderBinder] to handle creating and binding default views
      */
-    fun registerDefaultHeaderViewHolderBinder(binder: ViewHolderBinder<*, *>?) {
+    fun registerDefaultHeaderViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
         headerDelegateCore.registerDefaultViewHolderBinder(binder)
     }
 
@@ -112,40 +114,41 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<RecyclerView.ViewHolder
      *
      * @param binder The [ViewHolderBinder] to handle creating and binding default views
      */
-    fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<*, *>?) {
+    fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
         childDelegateCore.registerDefaultViewHolderBinder(binder)
     }
 
-    init {
-        headerDelegateCore = DelegateCore(object : DelegateApi<T?> {
-            override fun getItem(position: Int): T? {
-                return this@DelegatedHeaderAdapter.getItem(position)
+    protected inner class HeaderDelegateApi: DelegateApi<T> {
+        override fun getItem(position: Int): T {
+            return this@DelegatedHeaderAdapter.getItem(position)
+        }
+
+        override fun getItemViewType(adapterPosition: Int): Int {
+            if (adapterPosition < 0 || adapterPosition >= headerData.adapterPositionItemMap.size()) {
+                return 0
             }
 
-            override fun getItemViewType(position: Int): Int {
-                if (position < 0 || position >= headerData.adapterPositionItemMap.size()) {
-                    return 0
-                }
-                val item = headerData.adapterPositionItemMap[position]
-                return if (item != null) {
-                    item.itemViewType and HeaderApi.Companion.HEADER_VIEW_TYPE_MASK.inv()
-                } else 0
-            }
-        }, this)
-        childDelegateCore = DelegateCore(object : DelegateApi<T?> {
-            override fun getItem(position: Int): T? {
-                return this@DelegatedHeaderAdapter.getItem(position)
+            val item = headerData.adapterPositionItemMap[adapterPosition]
+            return if (item != null) {
+                item.itemViewType and HeaderApi.HEADER_VIEW_TYPE_MASK.inv()
+            } else 0
+        }
+    }
+
+    protected inner class ChildDelegateApi: DelegateApi<T> {
+        override fun getItem(position: Int): T {
+            return this@DelegatedHeaderAdapter.getItem(position)
+        }
+
+        override fun getItemViewType(adapterPosition: Int): Int {
+            if (adapterPosition < 0 || adapterPosition >= headerData.adapterPositionItemMap.size()) {
+                return 0
             }
 
-            override fun getItemViewType(position: Int): Int {
-                if (position < 0 || position >= headerData.adapterPositionItemMap.size()) {
-                    return 0
-                }
-                val item = headerData.adapterPositionItemMap[position]
-                return if (item != null) {
-                    item.itemViewType and HeaderApi.Companion.HEADER_VIEW_TYPE_MASK.inv()
-                } else 0
-            }
-        }, this)
+            val item = headerData.adapterPositionItemMap[adapterPosition]
+            return if (item != null) {
+                item.itemViewType and HeaderApi.HEADER_VIEW_TYPE_MASK.inv()
+            } else 0
+        }
     }
 }

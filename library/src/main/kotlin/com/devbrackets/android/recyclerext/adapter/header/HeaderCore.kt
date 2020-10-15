@@ -23,8 +23,10 @@ import java.util.*
 
 class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
     var headerData = HeaderData()
-    protected var observer: HeaderAdapterDataObserver
+
+    protected var observer = HeaderAdapterDataObserver(this, headerApi)
     protected var registeredObserver = false
+
     var autoUpdateHeaders = true
         protected set
 
@@ -39,6 +41,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
         if (autoUpdateHeaders == this.autoUpdateHeaders) {
             return
         }
+
         this.autoUpdateHeaders = autoUpdateHeaders
         if (autoUpdateHeaders) {
             registerObserver(adapter)
@@ -58,6 +61,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
         if (headerId == RecyclerView.NO_ID) {
             return 0
         }
+
         val headerItem = headerData.headerItems[headerId]
         return headerItem?.childCount ?: 0
     }
@@ -80,7 +84,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
         get() {
             val positions: MutableList<Int> = ArrayList()
             for (i in 0 until headerData.headerItems.size()) {
-                positions.add(headerData.headerItems[headerData.headerItems.keyAt(i)].getAdapterPosition())
+                positions.add(headerData.headerItems[headerData.headerItems.keyAt(i)]!!.adapterPosition)
             }
             return positions
         }
@@ -103,7 +107,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
      */
     fun isHeader(adapterPosition: Int): Boolean {
         val item = headerData.adapterPositionItemMap[adapterPosition]
-        return item != null && item.headerItem != null
+        return item?.headerItem != null
     }
 
     /**
@@ -112,7 +116,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
      * @return The correct ViewHolder for the specified viewType
      */
     fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType and HeaderApi.Companion.HEADER_VIEW_TYPE_MASK != 0) {
+        return if (viewType and HeaderApi.HEADER_VIEW_TYPE_MASK != 0) {
             headerApi.onCreateHeaderViewHolder(parent, viewType)!!
         } else headerApi.onCreateChildViewHolder(parent, viewType)!!
     }
@@ -153,6 +157,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
             adapter.unregisterAdapterDataObserver(observer)
             registeredObserver = false
         }
+
         if (autoUpdateHeaders) {
             headerData.headerItems.clear()
         }
@@ -180,12 +185,14 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
         if (headerData.showHeaderAsChild) {
             return childPosition
         }
+
         for (i in 0 until headerData.adapterPositionItemMap.size()) {
             val adapterPosition = headerData.adapterPositionItemMap.keyAt(i)
             if (headerData.adapterPositionItemMap[adapterPosition]!!.childPosition == childPosition) {
                 return adapterPosition
             }
         }
+
         return childPosition
     }
 
@@ -200,6 +207,7 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
         if (headerId == RecyclerView.NO_ID) {
             return RecyclerView.NO_POSITION
         }
+
         val headerItem = headerData.headerItems[headerId]
         return headerItem?.adapterPosition ?: RecyclerView.NO_POSITION
     }
@@ -207,9 +215,5 @@ class HeaderCore(protected var headerApi: HeaderApi<*, *>) {
     fun getHeaderForAdapterPosition(@IntRange(from = 0) adapterPosition: Int): HeaderItem? {
         val item = headerData.adapterPositionItemMap[adapterPosition]
         return item?.headerItem
-    }
-
-    init {
-        observer = HeaderAdapterDataObserver(this, headerApi)
     }
 }

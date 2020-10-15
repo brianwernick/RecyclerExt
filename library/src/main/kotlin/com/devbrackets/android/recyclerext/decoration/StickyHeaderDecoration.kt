@@ -32,12 +32,16 @@ import com.devbrackets.android.recyclerext.decoration.header.StickyHeaderTouchIn
  * reach the start of the RecyclerView's frame.
  */
 class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateListener, StickyHeaderCallback {
+    companion object {
+        private const val TAG = "StickyHeaderDecoration"
+    }
+
     enum class LayoutOrientation {
         VERTICAL, HORIZONTAL
     }
 
     protected var parent: RecyclerView?
-    protected var adapter: RecyclerView.Adapter<*>?
+    protected var adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>?
     protected var headerApi: HeaderApi<*, *>?
     protected var dataObserver: StickyHeaderDataObserver?
     protected var scrollListener: StickyHeaderScrollListener
@@ -54,9 +58,47 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
      * to attempt to perform a manual draw at 60/30 fps.
      */
     protected var touchHeaderContainer: ViewGroup? = null
-    protected var orientation = LayoutOrientation.VERTICAL
+
+    /**
+     * The orientation to use for edgeScrolling and position calculations
+     */
+    var orientation = LayoutOrientation.VERTICAL
+        set (value) {
+            field = value
+            stickyHeader.stickyViewOffset.x = 0f
+            stickyHeader.stickyViewOffset.y = 0f
+        }
+
+
     protected var windowLocation = IntArray(2)
     protected var parentStart = Int.MIN_VALUE
+
+    /**
+     * Creates the ItemDecoration that performs the functionality to
+     * have the current header view sticky (persisted at the start of the
+     * RecyclerView).
+     *
+     *
+     * **NOTE:** This will tightly couple to the `parent` and the
+     * adapter.  If you intend to swap out adapters you will need to first call
+     * [.dispose] then replace this decoration with a new one.
+     *
+     * @param parent The RecyclerView to couple the ItemDecoration to
+     */
+    init {
+        if (parent.adapter == null || parent.adapter !is HeaderApi<*, *>) {
+            throw ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter, RecyclerHeaderListAdapter or implement HeaderApi")
+        }
+
+        this.parent = parent
+        adapter = parent.adapter
+        headerApi = adapter as HeaderApi<*, *>?
+        dataObserver = StickyHeaderDataObserver(this)
+        scrollListener = StickyHeaderScrollListener(this)
+        adapter!!.registerAdapterDataObserver(dataObserver!!)
+        parent.addOnScrollListener(scrollListener)
+    }
+
     override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         val stickyView = stickyHeader.getStickyView(headerApi!!) ?: return
 
@@ -67,6 +109,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
             stickyView.translationY = stickyHeader.stickyViewOffset.y
             return
         }
+
         c.save()
         c.translate(stickyHeader.stickyViewOffset.x, stickyHeader.stickyViewOffset.y)
         stickyView.draw(c)
@@ -95,6 +138,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
         if (headerId != stickyHeader.currentStickyId) {
             performHeaderSwap(headerId)
         }
+
         updateHeaderPosition(firstView, childPosition, headerId)
     }
 
@@ -106,6 +150,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
         clearStickyHeader()
         adapter!!.unregisterAdapterDataObserver(dataObserver!!)
         parent!!.removeOnScrollListener(scrollListener)
+
         disableStickyHeaderTouches()
         adapter = null
         headerApi = null
@@ -117,34 +162,8 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
      * Clears the current sticky header from the view.
      */
     fun clearStickyHeader() {
-        if (touchHeaderContainer != null) {
-            val view = stickyView
-            touchHeaderContainer!!.removeView(view)
-        }
+        touchHeaderContainer?.removeView(stickyView)
         stickyHeader.reset()
-    }
-
-    /**
-     * Sets the orientation of the current layout
-     *
-     * @param orientation The layouts orientation
-     */
-    fun setOrientation(orientation: LayoutOrientation) {
-        if (orientation == this.orientation) {
-            return
-        }
-        this.orientation = orientation
-        stickyHeader.stickyViewOffset.x = 0f
-        stickyHeader.stickyViewOffset.y = 0f
-    }
-
-    /**
-     * Retrieves the current orientation to use for edgeScrolling and position calculations.
-     *
-     * @return The current orientation [default: [LayoutOrientation.VERTICAL]]
-     */
-    fun getOrientation(): LayoutOrientation {
-        return orientation
     }
 
     /**
@@ -175,6 +194,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
                 touchInterceptor = StickyHeaderTouchInterceptor(this)
                 parent!!.addOnItemTouchListener(touchInterceptor!!)
             }
+
             touchHeaderContainer = stickyHeaderContainer
             onUpdateStickyHeader()
         }
@@ -189,6 +209,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
             parent!!.removeOnItemTouchListener(touchInterceptor!!)
             touchInterceptor = null
         }
+
         if (touchHeaderContainer != null) {
             val stickyView = stickyView
             if (stickyView != null) {
@@ -216,6 +237,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
         if (headerPosition == RecyclerView.NO_POSITION) {
             return
         }
+
         updateHeader(headerId, headerPosition)
     }
 
@@ -322,7 +344,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
 
     protected fun getHeaderViewType(headerPosition: Int): Int {
         //Make sure that this is treated as a header type
-        return headerApi!!.getHeaderViewType(headerPosition) or HeaderApi.Companion.HEADER_VIEW_TYPE_MASK
+        return headerApi!!.getHeaderViewType(headerPosition) or HeaderApi.HEADER_VIEW_TYPE_MASK
     }
 
     /**
@@ -336,12 +358,14 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
     protected fun getHeaderViewHolder(headerPosition: Int): RecyclerView.ViewHolder? {
         val holder = adapter!!.onCreateViewHolder(parent!!, getHeaderViewType(headerPosition))
         holder.itemView.setTag(R.id.recyclerext_sticky_header_position_tag_key, headerPosition)
-        adapter!!.onBindViewHolder(holder, headerPosition)
+        adapter?.onBindViewHolder(holder, headerPosition)
 
         //Measure it
-        return if (!measureViewHolder(holder)) {
-            null
-        } else holder
+        if (!measureViewHolder(holder)) {
+            return null
+        }
+
+        return holder
     }
 
     /**
@@ -351,7 +375,7 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
      * @return True if the `holder` was correctly sized
      */
     protected fun measureViewHolder(holder: RecyclerView.ViewHolder): Boolean {
-        val params = holder.itemView.layoutParams as RecyclerView.LayoutParams
+        val params = holder.itemView.layoutParams as RecyclerView.LayoutParams?
 
 
         //If the parent ViewGroup wasn't specified when inflating the view (holder.itemView) then the LayoutParams will be null and
@@ -371,34 +395,5 @@ class StickyHeaderDecoration(parent: RecyclerView) : ItemDecoration(), UpdateLis
         //Perform a layout to update the width and height properties of the view
         holder.itemView.layout(0, 0, holder.itemView.measuredWidth, holder.itemView.measuredHeight)
         return holder.itemView.width > 0 && holder.itemView.height > 0
-    }
-
-    companion object {
-        private const val TAG = "StickyHeaderDecoration"
-    }
-
-    /**
-     * Creates the ItemDecoration that performs the functionality to
-     * have the current header view sticky (persisted at the start of the
-     * RecyclerView).
-     *
-     *
-     * **NOTE:** This will tightly couple to the `parent` and the
-     * adapter.  If you intend to swap out adapters you will need to first call
-     * [.dispose] then replace this decoration with a new one.
-     *
-     * @param parent The RecyclerView to couple the ItemDecoration to
-     */
-    init {
-        if (parent.adapter == null || parent.adapter !is HeaderApi<*, *>) {
-            throw ExceptionInInitializerError("The Adapter must be set before this is created and extend RecyclerHeaderAdapter, RecyclerHeaderListAdapter or implement HeaderApi")
-        }
-        this.parent = parent
-        adapter = parent.adapter
-        headerApi = adapter as HeaderApi<*, *>?
-        dataObserver = StickyHeaderDataObserver(this)
-        scrollListener = StickyHeaderScrollListener(this)
-        adapter!!.registerAdapterDataObserver(dataObserver!!)
-        parent.addOnScrollListener(scrollListener)
     }
 }

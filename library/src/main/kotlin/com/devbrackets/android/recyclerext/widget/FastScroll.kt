@@ -33,84 +33,103 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.Animation
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.annotation.*
 import androidx.annotation.IntRange
 import androidx.appcompat.widget.AppCompatDrawableManager
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.devbrackets.android.recyclerext.R
 import com.devbrackets.android.recyclerext.animation.FastScrollBubbleVisibilityAnimation
 import com.devbrackets.android.recyclerext.animation.FastScrollHandleVisibilityAnimation
-import com.devbrackets.android.recyclerext.widget.FastScroll.BubbleAlignment
+import kotlin.math.abs
 
 /**
  * A class that provides the functionality of a fast scroll
  * for the attached [RecyclerView]
  */
 class FastScroll : FrameLayout {
+    companion object {
+        private const val TAG = "FastScroll"
+        const val INVALID_POPUP_ID: Long = -1
+    }
+
     protected var popupCallbacks: PopupCallbacks? = null
-    protected var handle: PositionSupportImageView = null
-    protected var bubble: PositionSupportTextView = null
+    protected lateinit var handle: ImageView
+    protected lateinit var bubble: TextView
     protected var recyclerView: RecyclerView? = null
     protected var scrollListener = RecyclerScrollListener()
     protected var delayHandler = Handler()
     protected var handleHideRunnable = HandleHideRunnable()
     protected var bubbleHideRunnable = BubbleHideRunnable()
-    protected var animationProvider: AnimationProvider? = null
-    protected var bubbleAlignment = BubbleAlignment.TOP
-    protected var height = 0
-    protected var showBubble = false
-    protected var minDisplayPageCount = 4
-    protected var calculatedMinDisplayHeight = 0
+
     /**
-     * Determines if the FastScroll should be hidden when the list is shorter.
-     * This value is determined by [.setMinDisplayPageCount]
-     *
-     * @return `true` if the FastScroll will be hidden on shorter lists [default: `true`]
+     * The provider to override the animations for the popup bubble and drag handle
      */
+    protected var animationProvider: AnimationProvider? = null
+
+    /**
+     * Specifies the alignment the popup bubble has in relation to the drag handle,
+     * see [BubbleAlignment] for more details
+     *
+     * This can also be specified with `re_bubble_alignment` in xml
+     */
+    protected var bubbleAlignment = BubbleAlignment.TOP
+    protected var viewHeight = 0
+
+    @JvmField
+    protected var showBubble = false
+
+    /**
+     * The minimum amount of pages to be contained in the list before the
+     * FastScroll will be displayed. This will only have an affect if [hideOnShortLists]
+     * is enabled. If the `minDisplayPageCount` is set to 0 the FastScroll will always be shown
+     */
+    @IntRange(from = 0L)
+    var minDisplayPageCount = 4
+        set(value) {
+            field = value
+            calculatedMinDisplayHeight = viewHeight * value
+        }
+
+    protected var calculatedMinDisplayHeight = 0
+
+
     /**
      * Specifies if the FastScroll should be hidden when the list is shorter.
      * This value is determined by [.setMinDisplayPageCount]
-     *
-     * @param hideOnShortLists `true` if the FastScroll should be hidden on shorter lists [default: `true`]
      */
     var hideOnShortLists = true
+
+    /**
+     * Specifies if the drag handle can hide after a short delay (see [handleHideDelay])
+     * after scrolling has completely stopped
+     */
     protected var hideHandleAllowed = true
     protected var draggingHandle = false
+
+    /**
+     * Specifies if clicks on the track should scroll to that position
+     */
     protected var trackClicksAllowed = false
 
     // The offset for the finger from the center of the drag handle
     protected var fingerCenterOffset = 0f
-    /**
-     * Retrieves the delay used when hiding the drag handle which occurs after scrolling
-     * has completely stopped.
-     *
-     * @return The millisecond delay used for hiding the drag handle [default: `1_000`]
-     */
-    /**
-     * Sets the delay used when hiding the drag handle, which occurs after scrolling
-     * has completely stopped.
-     *
-     * @param delayMilliseconds the delay to hide the drag handle [default: `1_000`]
-     */
-    var handleHideDelay: Long = 1000 //Milliseconds
-    /**
-     * Retrieves the delay used when hiding the bubble (occurs after the drag handle
-     * is released)
-     *
-     * @return The millisecond delay used for hiding the bubble
-     */
-    /**
-     * Sets the delay used when hiding the bubble which occurs after the drag handle
-     * is released
-     *
-     * @param delayMilliseconds The delay to hide the bubble
-     */
-    var bubbleHideDelay: Long = 0 //Milliseconds
 
     /**
-     * Only `null` before an initial request for a visibility change
+     * The delay used when hiding the drag handle, which occurs after scrolling
+     * has completely stopped in Milliseconds
      */
+    var handleHideDelay: Long = 1_000
+
+    /**
+     * The delay used when hiding the bubble which occurs after the drag handle
+     * is released in Milliseconds
+     */
+    var bubbleHideDelay: Long = 0
+
     protected var requestedHandleVisibility = false
     protected var currentSectionId = INVALID_POPUP_ID
 
@@ -134,14 +153,12 @@ class FastScroll : FrameLayout {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        if (recyclerView != null) {
-            recyclerView!!.removeOnScrollListener(scrollListener)
-        }
+        recyclerView?.removeOnScrollListener(scrollListener)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldW: Int, oldH: Int) {
         super.onSizeChanged(w, h, oldW, oldH)
-        height = h
+        viewHeight = h
         calculatedMinDisplayHeight = h * minDisplayPageCount
     }
 
@@ -150,6 +167,7 @@ class FastScroll : FrameLayout {
         if (!draggingHandle && event.action != MotionEvent.ACTION_DOWN) {
             return super.onTouchEvent(event)
         }
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 //Verifies the event is within the allowed coordinates
@@ -197,10 +215,12 @@ class FastScroll : FrameLayout {
             Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + PopupCallbacks::class.java.simpleName)
             return
         }
+
         this.recyclerView = recyclerView
         if (showBubble) {
             popupCallbacks = recyclerView.adapter as PopupCallbacks?
         }
+
         recyclerView.addOnScrollListener(scrollListener)
         recyclerView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
             override fun onPreDraw(): Boolean {
@@ -221,58 +241,18 @@ class FastScroll : FrameLayout {
         if (this.showBubble == showBubble) {
             return
         }
+
         this.showBubble = showBubble
         if (recyclerView == null || !showBubble) {
             return
         }
+
         if (recyclerView!!.adapter !is PopupCallbacks) {
             Log.e(TAG, "The RecyclerView Adapter specified needs to implement " + PopupCallbacks::class.java.simpleName)
             return
         }
+
         popupCallbacks = recyclerView!!.adapter as PopupCallbacks?
-    }
-
-    /**
-     * Specifies if clicks on the track should scroll to that position.
-     *
-     * @param allowed `true` to allow clicking on the track [default: `false`]
-     */
-    fun setTrackClicksAllowed(allowed: Boolean) {
-        trackClicksAllowed = allowed
-    }
-
-    /**
-     * Specifies if the drag handle can hide after a short delay (see [.setHandleHideDelay])
-     * after scrolling has completely stopped
-     *
-     * @param allowed `true` if the drag handle can hide [default: `true`]
-     */
-    fun setHideHandleAllowed(allowed: Boolean) {
-        hideHandleAllowed = allowed
-    }
-
-    /**
-     * Specifies the minimum amount of pages to be contained in the list before the
-     * FastScroll will be displayed. This will only have an affect if [.setHideOnShortLists]
-     * is enabled. If the `minDisplayPageCount` is set to 0 the FastScroll will always be shown
-     *
-     * @param minDisplayPageCount The minimum amount of pages in the list to show the FastScroll [default: `4`]
-     */
-    fun setMinDisplayPageCount(@IntRange(from = 0) minDisplayPageCount: Int) {
-        this.minDisplayPageCount = minDisplayPageCount
-        calculatedMinDisplayHeight = height * minDisplayPageCount
-    }
-
-    /**
-     * Determines the minimum amount of pages to be contained in the list before the
-     * FastScroll will be displayed. This will only have an affect if [.setHideOnShortLists]
-     * is enabled.
-     *
-     * @return The minimum amount of pages to display the FastScroll [default: `4`]
-     */
-    @IntRange(from = 0)
-    fun getMinDisplayPageCount(): Int {
-        return minDisplayPageCount
     }
 
     /**
@@ -380,27 +360,6 @@ class FastScroll : FrameLayout {
     }
 
     /**
-     * Sets the provider that allows the animations for the popup bubble and drag handle
-     * to be customized or overridden
-     *
-     * @param animationProvider The animation provider for the popup bubble and drag handle
-     */
-    fun setAnimationProvider(animationProvider: AnimationProvider?) {
-        this.animationProvider = animationProvider
-    }
-
-    /**
-     * Specifies the alignment the popup bubble has in relation to the drag handle,
-     * see [BubbleAlignment] for more details
-     * This can also be specified with `re_bubble_alignment` in xml
-     *
-     * @param alignment The alignment type
-     */
-    fun setBubbleAlignment(alignment: BubbleAlignment) {
-        bubbleAlignment = alignment
-    }
-
-    /**
      * The base initialization method (called from constructors) that
      * inflates and configures the widget.
      *
@@ -410,8 +369,10 @@ class FastScroll : FrameLayout {
     protected fun init(context: Context, attrs: AttributeSet?) {
         val inflater = LayoutInflater.from(context)
         inflater.inflate(R.layout.recyclerext_fast_scroll, this, true)
+
         bubble = findViewById(R.id.recyclerext_fast_scroll_bubble)
         handle = findViewById(R.id.recyclerext_fast_scroll_handle)
+
         bubble.visibility = GONE
         readAttributes(context, attrs)
     }
@@ -426,10 +387,11 @@ class FastScroll : FrameLayout {
         if (attrs == null || isInEditMode) {
             return
         }
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.FastScroll) ?: return
-        retrieveBubbleAttributes(typedArray)
-        retrieveHandleAttributes(typedArray)
-        typedArray.recycle()
+
+        context.obtainStyledAttributes(attrs, R.styleable.FastScroll).also {
+            retrieveBubbleAttributes(it)
+            retrieveHandleAttributes(it)
+        }.recycle()
     }
 
     /**
@@ -441,16 +403,21 @@ class FastScroll : FrameLayout {
     protected fun retrieveBubbleAttributes(typedArray: TypedArray) {
         showBubble = typedArray.getBoolean(R.styleable.FastScroll_re_show_bubble, true)
         bubbleAlignment = BubbleAlignment[typedArray.getInt(R.styleable.FastScroll_re_bubble_alignment, 3)]
+
         var textColor = getColor(R.color.recyclerext_fast_scroll_bubble_text_color_default)
         textColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_text_color, textColor)
+
         var textSize = resources.getDimensionPixelSize(R.dimen.recyclerext_fast_scroll_bubble_text_size_default)
         textSize = typedArray.getDimensionPixelSize(R.styleable.FastScroll_re_bubble_text_size, textSize)
+
         var backgroundDrawable = getDrawable(typedArray, R.styleable.FastScroll_re_bubble_background)
         var backgroundColor = getColor(R.color.recyclerext_fast_scroll_bubble_color_default)
+
         backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_bubble_color, backgroundColor)
         if (backgroundDrawable == null) {
             backgroundDrawable = tint(getDrawable(R.drawable.recyclerext_fast_scroll_bubble), backgroundColor)
         }
+
         bubble.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize.toFloat())
         bubble.setTextColor(textColor)
         bubble.background = backgroundDrawable
@@ -465,10 +432,12 @@ class FastScroll : FrameLayout {
     protected fun retrieveHandleAttributes(typedArray: TypedArray) {
         var backgroundDrawable = getDrawable(typedArray, R.styleable.FastScroll_re_handle_background)
         var backgroundColor = getColor(R.color.recyclerext_fast_scroll_handle_color_default)
+
         backgroundColor = typedArray.getColor(R.styleable.FastScroll_re_handle_color, backgroundColor)
         if (backgroundDrawable == null) {
             backgroundDrawable = tint(getDrawable(R.drawable.recyclerext_fast_scroll_handle), backgroundColor)
         }
+
         handle.background = backgroundDrawable
     }
 
@@ -514,10 +483,10 @@ class FastScroll : FrameLayout {
         val halfHandle = handle.height / 2
         ratio = if (y <= halfHandle) {
             0f
-        } else if (y >= height - halfHandle) {
+        } else if (y >= viewHeight - halfHandle) {
             1f
         } else {
-            (y - halfHandle) / (height - handle.height)
+            (y - halfHandle) / (viewHeight - handle.height)
         }
 
         //Performs the scrolling and updates the bubble
@@ -547,7 +516,7 @@ class FastScroll : FrameLayout {
      */
     protected fun setBubbleAndHandlePosition(y: Float) {
         val handleHeight = handle.height
-        val handleY = getValueInRange(0, height - handleHeight, (y - handleHeight / 2).toInt()).toFloat()
+        val handleY = (y - handleHeight / 2).toInt().coerceIn(0, viewHeight - handleHeight).toFloat()
         handle.y = handleY
         if (showBubble) {
             setBubblePosition(handleY)
@@ -561,16 +530,16 @@ class FastScroll : FrameLayout {
      * @param handleY The position the drag handle has for relational alignment
      */
     protected fun setBubblePosition(handleY: Float) {
-        val maxY = height - bubble.height
+        val maxY = viewHeight - bubble.height
         val handleCenter = handleY + handle.height / 2
         val handleBottom = handleY + handle.height
         when (bubbleAlignment) {
-            BubbleAlignment.TOP -> bubble.y = getValueInRange(0, maxY, handleY.toInt()).toFloat()
-            BubbleAlignment.CENTER -> bubble.y = getValueInRange(0, maxY, (handleCenter - bubble.height / 2).toInt()).toFloat()
-            BubbleAlignment.BOTTOM -> bubble.y = getValueInRange(0, maxY, (handleBottom - bubble.height).toInt()).toFloat()
-            BubbleAlignment.BOTTOM_TO_TOP -> bubble.y = getValueInRange(0, maxY, (handleY - bubble.height).toInt()).toFloat()
-            BubbleAlignment.TOP_TO_BOTTOM -> bubble.y = getValueInRange(0, maxY, handleBottom.toInt()).toFloat()
-            BubbleAlignment.BOTTOM_TO_CENTER -> bubble.y = getValueInRange(0, maxY, (handleCenter - bubble.height).toInt()).toFloat()
+            BubbleAlignment.TOP -> bubble.y = handleY.toInt().coerceIn(0, maxY).toFloat()
+            BubbleAlignment.CENTER -> bubble.y = (handleCenter - bubble.height / 2).toInt().coerceIn(0, maxY).toFloat()
+            BubbleAlignment.BOTTOM -> bubble.y = (handleBottom - bubble.height).toInt().coerceIn(0, maxY).toFloat()
+            BubbleAlignment.BOTTOM_TO_TOP -> bubble.y = (handleY - bubble.height).toInt().coerceIn(0, maxY).toFloat()
+            BubbleAlignment.TOP_TO_BOTTOM -> bubble.y = handleBottom.toInt().coerceIn(0, maxY).toFloat()
+            BubbleAlignment.BOTTOM_TO_CENTER -> bubble.y = (handleCenter - bubble.height).toInt().coerceIn(0, maxY).toFloat()
         }
     }
 
@@ -578,8 +547,9 @@ class FastScroll : FrameLayout {
         if (!showBubble || popupCallbacks == null) {
             return
         }
+
         val itemCount = recyclerView!!.adapter!!.itemCount
-        val position = getValueInRange(0, itemCount - 1, (ratio * itemCount).toInt())
+        val position = (ratio * itemCount).toInt().coerceIn(0, itemCount - 1)
         val sectionId = popupCallbacks!!.getSectionId(position)
         if (currentSectionId != sectionId) {
             currentSectionId = sectionId
@@ -598,6 +568,7 @@ class FastScroll : FrameLayout {
         if (!showBubble) {
             return
         }
+
         bubble.clearAnimation()
         Log.d(TAG, "updating bubble visibility $toVisible")
         bubble.startAnimation(getBubbleAnimation(bubble, toVisible))
@@ -613,8 +584,10 @@ class FastScroll : FrameLayout {
         if (requestedHandleVisibility == toVisible) {
             return
         }
+
         requestedHandleVisibility = toVisible
         handle.clearAnimation()
+
         Log.d(TAG, "updating handle visibility $toVisible")
         handle.startAnimation(getHandleAnimation(handle, toVisible))
     }
@@ -649,11 +622,8 @@ class FastScroll : FrameLayout {
      * @return The animation for hiding or showing the bubble
      */
     protected fun getBubbleAnimation(bubble: View, toVisible: Boolean): Animation {
-        var animation = if (animationProvider != null) animationProvider!!.getBubbleAnimation(bubble, toVisible) else null
-        if (animation == null) {
-            animation = FastScrollBubbleVisibilityAnimation(bubble, toVisible)
-        }
-        return animation
+        return animationProvider?.getBubbleAnimation(bubble, toVisible)
+                ?: FastScrollBubbleVisibilityAnimation(bubble, toVisible)
     }
 
     /**
@@ -664,11 +634,8 @@ class FastScroll : FrameLayout {
      * @return The animation for hiding or showing the handle
      */
     protected fun getHandleAnimation(handle: View, toVisible: Boolean): Animation {
-        var animation = if (animationProvider != null) animationProvider!!.getHandleAnimation(handle, toVisible) else null
-        if (animation == null) {
-            animation = FastScrollHandleVisibilityAnimation(handle, toVisible)
-        }
-        return animation
+        return animationProvider?.getHandleAnimation(handle, toVisible)
+                ?: FastScrollHandleVisibilityAnimation(handle, toVisible)
     }
 
     /**
@@ -679,10 +646,9 @@ class FastScroll : FrameLayout {
      * @return The tinted `drawable`
      */
     protected fun tint(drawable: Drawable?, @ColorInt color: Int): Drawable? {
-        if (drawable != null) {
-            drawable.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY)
+        return drawable?.apply {
+            colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY)
         }
-        return drawable
     }
 
     /**
@@ -692,11 +658,8 @@ class FastScroll : FrameLayout {
      * @param resourceId The resource id for the drawable
      * @return The drawable associated with `resourceId`
      */
-    @SuppressLint("RestrictedApi")
     protected fun getDrawable(@DrawableRes resourceId: Int): Drawable? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            resources.getDrawable(resourceId, context.theme)
-        } else AppCompatDrawableManager.get().getDrawable(context, resourceId)
+        return ResourcesCompat.getDrawable(resources, resourceId, context.theme)
     }
 
     /**
@@ -728,21 +691,6 @@ class FastScroll : FrameLayout {
         } else resources.getColor(res)
     }
 
-    /**
-     * Enforces the restrictions on range provided by `min` and `max`
-     * on `value`. If `value` is greater than `max` then the result will
-     * be `max`. Likewise if `value` is less than `min` then the result
-     * will be `min`.
-     *
-     * @param min The minimum amount `value` can represent
-     * @param max The maximum amount `value` can represent
-     * @param value The amount to constrain
-     * @return `value`, `min` or `max` when constrained
-     */
-    protected fun getValueInRange(min: Int, max: Int, value: Int): Int {
-        val minimum = Math.max(min, value)
-        return Math.min(minimum, max)
-    }
 
     /**
      * Enforces a restriction on the `value` to be at most or at least
@@ -753,9 +701,10 @@ class FastScroll : FrameLayout {
      * @return The value boxed to the amount
      */
     protected fun boxValue(value: Float, amount: Float): Float {
-        if (Math.abs(value) < Math.abs(amount)) {
+        if (abs(value) < abs(amount)) {
             return value
         }
+
         return if (value < 0) -amount else amount
     }
 
@@ -779,10 +728,11 @@ class FastScroll : FrameLayout {
             if (handle.isSelected) {
                 return
             }
+
             hideHandleDelayed()
             val ratio = recyclerView.computeVerticalScrollOffset().toFloat() / (verticalRange - recyclerView.computeVerticalScrollExtent()).toFloat()
             val halfHandleHeight = (handle.height / 2).toFloat()
-            setBubbleAndHandlePosition((height - handle.height) * ratio + halfHandleHeight)
+            setBubbleAndHandlePosition((viewHeight - handle.height) * ratio + halfHandleHeight)
         }
     }
 
@@ -896,10 +846,5 @@ class FastScroll : FrameLayout {
                 return values()[index]
             }
         }
-    }
-
-    companion object {
-        private const val TAG = "FastScroll"
-        const val INVALID_POPUP_ID: Long = -1
     }
 }

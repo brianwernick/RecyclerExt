@@ -1,9 +1,6 @@
 package com.devbrackets.android.recyclerextdemo.ui.fragment;
 
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +13,10 @@ import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO;
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.GridViewHolder;
 
 import java.util.List;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * An example of the {@link AutoColumnGridLayoutManager}
@@ -54,7 +55,7 @@ public class GridFragment extends Fragment {
         //Sets up the AutoColumnGridLayoutManager
         int width = getActivity().getResources().getDimensionPixelSize(R.dimen.grid_item_width);
         AutoColumnGridLayoutManager layoutManager = new AutoColumnGridLayoutManager(getActivity(), width);
-        layoutManager.setMatchRowAndColumnSpacing(true);
+        layoutManager.setMatchSpacing(true);
         layoutManager.setMinEdgeSpacing(120); //This is a pixel value, normally you would retrieve the size similar to the width above
         layoutManager.setMinColumnSpacing(60); //This is a pixel value, normally you would retrieve the size similar to the width above
         layoutManager.setSpacingMethod(AutoColumnGridLayoutManager.SpacingMethod.ALL);
@@ -80,7 +81,7 @@ public class GridFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(GridViewHolder holder, int position) {
-            ItemDAO item = items.get(position);
+            ItemDAO item = getItems().get(position);
             holder.setText(item.getText() != null ? item.getText() : "");
         }
     }

@@ -31,11 +31,18 @@ class StickyHeaderTouchInterceptor(protected var stickyHeaderCallback: StickyHea
 
     protected var allowInterception = true
     protected var capturedTouchDown = false
+
+    protected val interceptView: View?
+        get() = if (!allowInterception) {
+            null
+        } else stickyHeaderCallback.stickyView
+
     override fun onInterceptTouchEvent(recyclerView: RecyclerView, event: MotionEvent): Boolean {
         // Ignores touch events we don't want to intercept
         if (event.action != MotionEvent.ACTION_DOWN && !capturedTouchDown) {
             return false
         }
+
         val stickyView = interceptView
         if (stickyView == null) {
             capturedTouchDown = false
@@ -48,8 +55,10 @@ class StickyHeaderTouchInterceptor(protected var stickyHeaderCallback: StickyHea
         }
 
         // Determine if the event is boxed by the view and pass the event through
-        val bounded = event.x >= stickyView.x && event.x <= stickyView.x + stickyView.measuredWidth &&
-                event.y >= stickyView.y && event.y <= stickyView.y + stickyView.measuredHeight
+        val bounded = event.x >= stickyView.x &&
+                event.x <= stickyView.x + stickyView.measuredWidth &&
+                event.y >= stickyView.y &&
+                event.y <= stickyView.y + stickyView.measuredHeight
         if (!bounded) {
             return false
         }
@@ -58,6 +67,7 @@ class StickyHeaderTouchInterceptor(protected var stickyHeaderCallback: StickyHea
         if (event.action == MotionEvent.ACTION_DOWN) {
             capturedTouchDown = true
         }
+
         return dispatchChildTouchEvent(recyclerView, stickyView, event)
     }
 
@@ -66,6 +76,7 @@ class StickyHeaderTouchInterceptor(protected var stickyHeaderCallback: StickyHea
         if (event.action == MotionEvent.ACTION_UP) {
             capturedTouchDown = false
         }
+
         val stickyView = interceptView ?: return
         dispatchChildTouchEvent(recyclerView, stickyView, event)
     }
@@ -74,17 +85,13 @@ class StickyHeaderTouchInterceptor(protected var stickyHeaderCallback: StickyHea
         allowInterception = !disallowIntercept
     }
 
-    protected val interceptView: View?
-        protected get() = if (!allowInterception) {
-            null
-        } else stickyHeaderCallback.stickyView
-
     protected fun dispatchChildTouchEvent(recyclerView: RecyclerView, child: View, event: MotionEvent): Boolean {
         // Pass the event through
         val handledEvent = child.dispatchTouchEvent(event)
         if (handledEvent) {
             recyclerView.postInvalidate()
         }
+
         return handledEvent
     }
 }

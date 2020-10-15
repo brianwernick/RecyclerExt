@@ -28,34 +28,45 @@ import java.lang.ref.WeakReference
  * or grids
  */
 class SpacerDecoration @JvmOverloads constructor(horizontalSpace: Int = 0, verticalSpace: Int = 0) : ItemDecoration() {
+    companion object {
+        const val EDGE_SPACING_TOP = 1
+        const val EDGE_SPACING_RIGHT = 1 shl 1
+        const val EDGE_SPACING_BOTTOM = 1 shl 2
+        const val EDGE_SPACING_LEFT = 1 shl 3
+    }
+
     protected var horizontalSpace = 0
     protected var verticalSpace = 0
-
-    @EdgeSpacing
-    protected var allowedEdgeSpacing = 0
     protected var spanLookup: SpanLookup? = null
+
+    /**
+     * Edges are:
+     *  - The left side of the left-most items
+     *  - The right side of the right-most items
+     *  - The top side of the top-most items
+     *  - The bottom side of the bottom-most items
+     */
+    @EdgeSpacing
+    var allowedEdgeSpacing = 0
+
+
+
+    init {
+        update(horizontalSpace, verticalSpace)
+    }
+
     fun update(horizontalSpace: Int, verticalSpace: Int) {
         this.horizontalSpace = horizontalSpace
         this.verticalSpace = verticalSpace
     }
 
-    /**
-     * Sets the edges that are allowed to add spacing.  Edges are
-     * the left side of the left-most items, the right side of the right-most items,
-     * the top side of the top-most items, and the bottom side of the bottom-most items.
-     *
-     * @param edgeSpacingFlags The flags for which edges to add padding to
-     */
-    fun setAllowedEdgeSpacing(@EdgeSpacing edgeSpacingFlags: Int) {
-        allowedEdgeSpacing = edgeSpacingFlags
-    }
-
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State?) {
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
         val position = (view.layoutParams as RecyclerView.LayoutParams).viewAdapterPosition
         val childCount = parent.adapter!!.itemCount
         if (spanLookup == null) {
             spanLookup = SpanLookup(parent)
         }
+
         outRect.left = if (allowedEdgeSpacing and EDGE_SPACING_LEFT == 0 && isLeftEdge(spanLookup!!, position)) 0 else horizontalSpace
         outRect.right = if (allowedEdgeSpacing and EDGE_SPACING_RIGHT == 0 && isRightEdge(spanLookup!!, position)) 0 else horizontalSpace
         outRect.top = if (allowedEdgeSpacing and EDGE_SPACING_TOP == 0 && isTopEdge(spanLookup!!, position, childCount)) 0 else verticalSpace
@@ -79,6 +90,7 @@ class SpacerDecoration @JvmOverloads constructor(horizontalSpace: Int = 0, verti
             }
             latestCheckedPosition++
         }
+
         return position <= latestCheckedPosition
     }
 
@@ -111,6 +123,7 @@ class SpacerDecoration @JvmOverloads constructor(horizontalSpace: Int = 0, verti
             }
             latestCheckedPosition--
         }
+
         return position >= latestCheckedPosition
     }
 
@@ -153,16 +166,5 @@ class SpacerDecoration @JvmOverloads constructor(horizontalSpace: Int = 0, verti
                 gridLayoutManager = WeakReference(layoutManager as GridLayoutManager?)
             }
         }
-    }
-
-    companion object {
-        const val EDGE_SPACING_TOP = 1
-        const val EDGE_SPACING_RIGHT = 1 shl 1
-        const val EDGE_SPACING_BOTTOM = 1 shl 2
-        const val EDGE_SPACING_LEFT = 1 shl 3
-    }
-
-    init {
-        update(horizontalSpace, verticalSpace)
     }
 }

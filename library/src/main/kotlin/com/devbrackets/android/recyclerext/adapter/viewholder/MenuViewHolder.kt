@@ -57,8 +57,12 @@ abstract class MenuViewHolder(itemView: View) : ClickableViewHolder(itemView), P
         onMenuItemSelectedListener = listener
     }
 
+    init {
+        initializeMenuClickListener()
+    }
+
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        return onMenuItemSelectedListener != null && onMenuItemSelectedListener!!.onMenuItemSelected(this, item)
+        return onMenuItemSelectedListener?.onMenuItemSelected(this, item) == true
     }
 
     /**
@@ -80,8 +84,10 @@ abstract class MenuViewHolder(itemView: View) : ClickableViewHolder(itemView), P
     protected fun showMenu(anchor: View, @MenuRes menuResourceId: Int) {
         val menu = PopupMenu(anchor.context, anchor)
         val inflater = menu.menuInflater
+
         inflater.inflate(menuResourceId, menu.menu)
         onPreparePopupMenu(menu.menu)
+
         menu.setOnMenuItemClickListener(this)
         menu.show()
     }
@@ -103,9 +109,5 @@ abstract class MenuViewHolder(itemView: View) : ClickableViewHolder(itemView), P
         override fun onClick(view: View) {
             showMenu(view, menuResourceId)
         }
-    }
-
-    init {
-        initializeMenuClickListener()
     }
 }
