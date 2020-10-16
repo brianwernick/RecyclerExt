@@ -28,7 +28,9 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator.He
  * @param <H> The Header [ViewHolder]
  * @param <C> The Child or content [ViewHolder]
  */
-abstract class HeaderListAdapter<H : ViewHolder, C : ViewHolder, T> : ListAdapter<ViewHolder, T>(), HeaderApi<H, C> {
+abstract class HeaderListAdapter<H : ViewHolder, C : ViewHolder, T>(
+        items: List<T> = emptyList()
+) : ListAdapter<ViewHolder, T>(items), HeaderApi<H, C> {
     /**
      * Contains the base processing for the header adapters
      */

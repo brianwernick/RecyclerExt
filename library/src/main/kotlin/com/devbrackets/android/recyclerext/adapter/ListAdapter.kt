@@ -15,7 +15,7 @@
  */
 package com.devbrackets.android.recyclerext.adapter
 
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.*
 
 /**
@@ -24,9 +24,11 @@ import java.util.*
  * @param <VH> The ViewHolder to use
  * @param <T>  The object type for the list
  */
-abstract class ListAdapter<VH : RecyclerView.ViewHolder, T>(
-        protected var items: MutableList<T> = mutableListOf()
+abstract class ListAdapter<VH : ViewHolder, T>(
+        items: List<T> = emptyList()
 ) : ActionableAdapter<VH>() {
+    protected var items: MutableList<T> = items.toMutableList()
+
     protected val lock = Any()
 
     /**

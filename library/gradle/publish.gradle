@@ -28,6 +28,9 @@ task androidSourcesJar(type: Jar) {
 /**
  * Bintray Deploy
  * `$ ./gradlew clean library:assembleRelease androidJavaDocJar androidSourcesJar generatePomFileForJcenterPublication bintrayUpload`
+ *
+ * NOTE:
+ * To publish locally for testing you can use the default maven command `$ ./gradlew library:publishToMavenLocal`
  */
 publishing {
     publications {

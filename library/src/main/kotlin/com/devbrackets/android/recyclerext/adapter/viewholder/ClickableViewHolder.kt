@@ -25,11 +25,11 @@ import androidx.recyclerview.widget.RecyclerView
  * of a position when clicked
  */
 abstract class ClickableViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
-    interface OnClickListener {
+    fun interface OnClickListener {
         fun onClick(viewHolder: ClickableViewHolder)
     }
 
-    interface OnLongClickListener {
+    fun interface OnLongClickListener {
         fun onLongClick(viewHolder: ClickableViewHolder): Boolean
     }
 

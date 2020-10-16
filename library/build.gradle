@@ -57,3 +57,8 @@ android {
         exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 }
+
+// Disables javadoc because it fails on kotlin files
+tasks.withType(Javadoc).all {
+    enabled = false
+}
