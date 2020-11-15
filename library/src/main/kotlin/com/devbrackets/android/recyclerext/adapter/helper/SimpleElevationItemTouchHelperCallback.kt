@@ -16,7 +16,6 @@
 package com.devbrackets.android.recyclerext.adapter.helper
 
 import android.graphics.Canvas
-import android.os.Build
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -43,67 +42,67 @@ abstract class SimpleElevationItemTouchHelperCallback @JvmOverloads
  * @param activeElevationChange The elevation change to use when an item becomes active
  */
 constructor(
-        dragDirs: Int,
-        swipeDirs: Int,
-        protected var activeElevationChange: Float = DEFAULT_ACTIVE_ELEVATION_CHANGE
+    dragDirs: Int,
+    swipeDirs: Int,
+    protected var activeElevationChange: Float = DEFAULT_ACTIVE_ELEVATION_CHANGE
 ) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
-    companion object {
-        const val DEFAULT_ACTIVE_ELEVATION_CHANGE = 1F //NOTE: the support library implementation uses 1F as the default
-    }
+  companion object {
+    const val DEFAULT_ACTIVE_ELEVATION_CHANGE = 1F //NOTE: the support library implementation uses 1F as the default
+  }
 
-    protected var isElevated = false
-    protected var originalElevation = 0F
+  protected var isElevated = false
+  protected var originalElevation = 0F
 
-    override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
-        //To avoid elevation conflicts with the Lollipop+ implementation, we will always inform the super that we aren't active
-        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, false)
-        if (isCurrentlyActive && !isElevated) {
-            updateElevation(recyclerView, viewHolder, true)
-        }
+  override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+    //To avoid elevation conflicts with the Lollipop+ implementation, we will always inform the super that we aren't active
+    super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, false)
+    if (isCurrentlyActive && !isElevated) {
+      updateElevation(recyclerView, viewHolder, true)
     }
+  }
 
-    override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-        super.clearView(recyclerView, viewHolder)
-        updateElevation(recyclerView, viewHolder, false)
-    }
+  override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+    super.clearView(recyclerView, viewHolder)
+    updateElevation(recyclerView, viewHolder, false)
+  }
 
-    /**
-     * Updates the elevation for the specified `holder` by either increasing
-     * or decreasing by the specified amount
-     *
-     * @param recyclerView The recyclerView to use when calculating the new elevation
-     * @param holder The ViewHolder to increase or decrease the elevation for
-     * @param elevate True if the `holder` should have it's elevation increased
-     */
-    protected fun updateElevation(recyclerView: RecyclerView, holder: RecyclerView.ViewHolder, elevate: Boolean) {
-        if (elevate) {
-            originalElevation = ViewCompat.getElevation(holder.itemView)
-            val newElevation = activeElevationChange + findMaxElevation(recyclerView)
-            ViewCompat.setElevation(holder.itemView, newElevation)
-            isElevated = true
-        } else {
-            ViewCompat.setElevation(holder.itemView, originalElevation)
-            originalElevation = 0f
-            isElevated = false
-        }
+  /**
+   * Updates the elevation for the specified `holder` by either increasing
+   * or decreasing by the specified amount
+   *
+   * @param recyclerView The recyclerView to use when calculating the new elevation
+   * @param holder The ViewHolder to increase or decrease the elevation for
+   * @param elevate True if the `holder` should have it's elevation increased
+   */
+  protected fun updateElevation(recyclerView: RecyclerView, holder: RecyclerView.ViewHolder, elevate: Boolean) {
+    if (elevate) {
+      originalElevation = ViewCompat.getElevation(holder.itemView)
+      val newElevation = activeElevationChange + findMaxElevation(recyclerView)
+      ViewCompat.setElevation(holder.itemView, newElevation)
+      isElevated = true
+    } else {
+      ViewCompat.setElevation(holder.itemView, originalElevation)
+      originalElevation = 0f
+      isElevated = false
     }
+  }
 
-    /**
-     * Finds the elevation of the highest visible viewHolder to make sure the elevated view
-     * from [.updateElevation] is above
-     * all others.
-     *
-     * @param recyclerView The RecyclerView to use when determining the height of all the visible ViewHolders
-     */
-    protected fun findMaxElevation(recyclerView: RecyclerView): Float {
-        var maxChildElevation = 0f
-        for (i in 0 until recyclerView.childCount) {
-            val child = recyclerView.getChildAt(i)
-            val elevation = ViewCompat.getElevation(child)
-            if (elevation > maxChildElevation) {
-                maxChildElevation = elevation
-            }
-        }
-        return maxChildElevation
+  /**
+   * Finds the elevation of the highest visible viewHolder to make sure the elevated view
+   * from [.updateElevation] is above
+   * all others.
+   *
+   * @param recyclerView The RecyclerView to use when determining the height of all the visible ViewHolders
+   */
+  protected fun findMaxElevation(recyclerView: RecyclerView): Float {
+    var maxChildElevation = 0f
+    for (i in 0 until recyclerView.childCount) {
+      val child = recyclerView.getChildAt(i)
+      val elevation = ViewCompat.getElevation(child)
+      if (elevation > maxChildElevation) {
+        maxChildElevation = elevation
+      }
     }
+    return maxChildElevation
+  }
 }

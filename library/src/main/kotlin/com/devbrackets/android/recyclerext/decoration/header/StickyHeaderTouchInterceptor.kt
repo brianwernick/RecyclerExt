@@ -25,73 +25,73 @@ import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
  * sticky header.
  */
 class StickyHeaderTouchInterceptor(protected var stickyHeaderCallback: StickyHeaderCallback) : OnItemTouchListener {
-    interface StickyHeaderCallback {
-        val stickyView: View?
+  interface StickyHeaderCallback {
+    val stickyView: View?
+  }
+
+  protected var allowInterception = true
+  protected var capturedTouchDown = false
+
+  protected val interceptView: View?
+    get() = if (!allowInterception) {
+      null
+    } else stickyHeaderCallback.stickyView
+
+  override fun onInterceptTouchEvent(recyclerView: RecyclerView, event: MotionEvent): Boolean {
+    // Ignores touch events we don't want to intercept
+    if (event.action != MotionEvent.ACTION_DOWN && !capturedTouchDown) {
+      return false
     }
 
-    protected var allowInterception = true
-    protected var capturedTouchDown = false
-
-    protected val interceptView: View?
-        get() = if (!allowInterception) {
-            null
-        } else stickyHeaderCallback.stickyView
-
-    override fun onInterceptTouchEvent(recyclerView: RecyclerView, event: MotionEvent): Boolean {
-        // Ignores touch events we don't want to intercept
-        if (event.action != MotionEvent.ACTION_DOWN && !capturedTouchDown) {
-            return false
-        }
-
-        val stickyView = interceptView
-        if (stickyView == null) {
-            capturedTouchDown = false
-            return false
-        }
-
-        // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
-        if (event.action == MotionEvent.ACTION_UP) {
-            capturedTouchDown = false
-        }
-
-        // Determine if the event is boxed by the view and pass the event through
-        val bounded = event.x >= stickyView.x &&
-                event.x <= stickyView.x + stickyView.measuredWidth &&
-                event.y >= stickyView.y &&
-                event.y <= stickyView.y + stickyView.measuredHeight
-        if (!bounded) {
-            return false
-        }
-
-        // Updates the filter
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            capturedTouchDown = true
-        }
-
-        return dispatchChildTouchEvent(recyclerView, stickyView, event)
+    val stickyView = interceptView
+    if (stickyView == null) {
+      capturedTouchDown = false
+      return false
     }
 
-    override fun onTouchEvent(recyclerView: RecyclerView, event: MotionEvent) {
-        // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
-        if (event.action == MotionEvent.ACTION_UP) {
-            capturedTouchDown = false
-        }
-
-        val stickyView = interceptView ?: return
-        dispatchChildTouchEvent(recyclerView, stickyView, event)
+    // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
+    if (event.action == MotionEvent.ACTION_UP) {
+      capturedTouchDown = false
     }
 
-    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
-        allowInterception = !disallowIntercept
+    // Determine if the event is boxed by the view and pass the event through
+    val bounded = event.x >= stickyView.x &&
+        event.x <= stickyView.x + stickyView.measuredWidth &&
+        event.y >= stickyView.y &&
+        event.y <= stickyView.y + stickyView.measuredHeight
+    if (!bounded) {
+      return false
     }
 
-    protected fun dispatchChildTouchEvent(recyclerView: RecyclerView, child: View, event: MotionEvent): Boolean {
-        // Pass the event through
-        val handledEvent = child.dispatchTouchEvent(event)
-        if (handledEvent) {
-            recyclerView.postInvalidate()
-        }
-
-        return handledEvent
+    // Updates the filter
+    if (event.action == MotionEvent.ACTION_DOWN) {
+      capturedTouchDown = true
     }
+
+    return dispatchChildTouchEvent(recyclerView, stickyView, event)
+  }
+
+  override fun onTouchEvent(recyclerView: RecyclerView, event: MotionEvent) {
+    // Makes sure to un-register capturing so that we don't accidentally interfere with scrolling
+    if (event.action == MotionEvent.ACTION_UP) {
+      capturedTouchDown = false
+    }
+
+    val stickyView = interceptView ?: return
+    dispatchChildTouchEvent(recyclerView, stickyView, event)
+  }
+
+  override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+    allowInterception = !disallowIntercept
+  }
+
+  protected fun dispatchChildTouchEvent(recyclerView: RecyclerView, child: View, event: MotionEvent): Boolean {
+    // Pass the event through
+    val handledEvent = child.dispatchTouchEvent(event)
+    if (handledEvent) {
+      recyclerView.postInvalidate()
+    }
+
+    return handledEvent
+  }
 }

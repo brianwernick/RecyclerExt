@@ -25,63 +25,63 @@ import androidx.recyclerview.widget.RecyclerView
  * changes (enter, exit) so they can perform the appropriate animations.
  */
 abstract class ActionableAdapter<VH : RecyclerView.ViewHolder> : RecyclerView.Adapter<VH>() {
-    companion object {
-        private const val TAG = "ActionableAdapter"
+  companion object {
+    private const val TAG = "ActionableAdapter"
+  }
+
+  interface ActionableView {
+    fun onActionModeChange(actionModeEnabled: Boolean)
+  }
+
+  protected var boundRecyclerView: RecyclerView? = null
+  protected var inActionMode = false
+
+  override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+    super.onAttachedToRecyclerView(recyclerView)
+    boundRecyclerView = recyclerView
+  }
+
+  override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+    super.onDetachedFromRecyclerView(recyclerView)
+    boundRecyclerView = null
+  }
+
+  var actionModeEnabled: Boolean
+    get() = inActionMode
+    set(enabled) {
+      if (enabled == inActionMode) {
+        return
+      }
+
+      inActionMode = enabled
+      updateVisibleViewHolders()
     }
 
-    interface ActionableView {
-        fun onActionModeChange(actionModeEnabled: Boolean)
+  fun updateVisibleViewHolders() {
+    val recyclerView = boundRecyclerView
+    if (recyclerView == null) {
+      Log.d(TAG, "Ignoring updateVisibleViewHolders() when no RecyclerView is bound")
+      return
     }
 
-    protected var boundRecyclerView: RecyclerView? = null
-    protected var inActionMode = false
-
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        boundRecyclerView = recyclerView
+    val layoutManager = recyclerView.layoutManager
+    if (layoutManager == null) {
+      Log.d(TAG, "Ignoring updateVisibleViewHolders() when no LayoutManager is bound")
+      return
     }
 
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        boundRecyclerView = null
+    if (layoutManager !is LinearLayoutManager) {
+      Log.e(TAG, "updateVisibleViewHolders() currently only supports LinearLayoutManager and it's subclasses")
+      return
     }
 
-    var actionModeEnabled: Boolean
-        get() = inActionMode
-        set(enabled) {
-            if (enabled == inActionMode) {
-                return
-            }
+    var i = layoutManager.findFirstVisibleItemPosition()
+    var holder = recyclerView.findViewHolderForAdapterPosition(i)
 
-            inActionMode = enabled
-            updateVisibleViewHolders()
-        }
-
-    fun updateVisibleViewHolders() {
-        val recyclerView = boundRecyclerView
-        if (recyclerView == null) {
-            Log.d(TAG, "Ignoring updateVisibleViewHolders() when no RecyclerView is bound")
-            return
-        }
-
-        val layoutManager = recyclerView.layoutManager
-        if (layoutManager == null) {
-            Log.d(TAG, "Ignoring updateVisibleViewHolders() when no LayoutManager is bound")
-            return
-        }
-
-        if (layoutManager !is LinearLayoutManager) {
-            Log.e(TAG, "updateVisibleViewHolders() currently only supports LinearLayoutManager and it's subclasses")
-            return
-        }
-
-        var i = layoutManager.findFirstVisibleItemPosition()
-        var holder = recyclerView.findViewHolderForAdapterPosition(i)
-
-        while (holder != null && i < itemCount) {
-            holder = recyclerView.findViewHolderForAdapterPosition(i)
-            (holder as? ActionableView)?.onActionModeChange(inActionMode)
-            i++
-        }
+    while (holder != null && i < itemCount) {
+      holder = recyclerView.findViewHolderForAdapterPosition(i)
+      (holder as? ActionableView)?.onActionModeChange(inActionMode)
+      i++
     }
+  }
 }

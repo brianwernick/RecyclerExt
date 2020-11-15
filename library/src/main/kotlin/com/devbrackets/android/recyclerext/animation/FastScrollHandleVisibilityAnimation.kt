@@ -21,45 +21,45 @@ import android.view.animation.AnimationSet
 import android.view.animation.TranslateAnimation
 
 class FastScrollHandleVisibilityAnimation(handle: View, protected val toVisible: Boolean) : AnimationSet(false) {
-    companion object {
-        protected const val DURATION = 250 //milliseconds
+  companion object {
+    protected const val DURATION = 250 //milliseconds
+  }
+
+  init {
+    setup(handle)
+  }
+
+  protected fun setup(handle: View) {
+    val xDelta = handle.width.toFloat()
+    val startPos = if (toVisible) xDelta else 0f
+    val endPos = if (toVisible) 0f else xDelta
+    val translateAnimation = TranslateAnimation(startPos, endPos, 0f, 0f)
+
+    translateAnimation.duration = DURATION.toLong()
+    addAnimation(translateAnimation)
+    setAnimationListener(HandleAnimationListener(handle, toVisible))
+
+    //Works around the issue of the animation never starting because the view is GONE
+    if (handle.visibility == View.GONE) {
+      handle.visibility = View.INVISIBLE
+    }
+  }
+
+  /**
+   * Listens to the [FastScrollBubbleVisibilityAnimation]
+   * making sure the handle has the correct visibilities at the start and end of the animation
+   */
+  protected class HandleAnimationListener(protected var handle: View, protected var toVisible: Boolean) : AnimationListener {
+    override fun onAnimationStart(animation: Animation) {
+      handle.visibility = View.VISIBLE
     }
 
-    init {
-        setup(handle)
+    override fun onAnimationEnd(animation: Animation) {
+      handle.visibility = if (toVisible) View.VISIBLE else View.INVISIBLE
     }
 
-    protected fun setup(handle: View) {
-        val xDelta = handle.width.toFloat()
-        val startPos = if (toVisible) xDelta else 0f
-        val endPos = if (toVisible) 0f else xDelta
-        val translateAnimation = TranslateAnimation(startPos, endPos, 0f, 0f)
-
-        translateAnimation.duration = DURATION.toLong()
-        addAnimation(translateAnimation)
-        setAnimationListener(HandleAnimationListener(handle, toVisible))
-
-        //Works around the issue of the animation never starting because the view is GONE
-        if (handle.visibility == View.GONE) {
-            handle.visibility = View.INVISIBLE
-        }
+    override fun onAnimationRepeat(animation: Animation) {
+      //Purposefully left blank
     }
-
-    /**
-     * Listens to the [FastScrollBubbleVisibilityAnimation]
-     * making sure the handle has the correct visibilities at the start and end of the animation
-     */
-    protected class HandleAnimationListener(protected var handle: View, protected var toVisible: Boolean) : AnimationListener {
-        override fun onAnimationStart(animation: Animation) {
-            handle.visibility = View.VISIBLE
-        }
-
-        override fun onAnimationEnd(animation: Animation) {
-            handle.visibility = if (toVisible) View.VISIBLE else View.INVISIBLE
-        }
-
-        override fun onAnimationRepeat(animation: Animation) {
-            //Purposefully left blank
-        }
-    }
+  }
 }

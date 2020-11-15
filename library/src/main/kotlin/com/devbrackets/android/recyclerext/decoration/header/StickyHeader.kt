@@ -21,34 +21,34 @@ import androidx.recyclerview.widget.RecyclerView
 import com.devbrackets.android.recyclerext.adapter.header.HeaderApi
 
 class StickyHeader {
-    protected var stickyViewHolder: RecyclerView.ViewHolder? = null
-    protected var cachedStickyView: View? = null
+  protected var stickyViewHolder: RecyclerView.ViewHolder? = null
+  protected var cachedStickyView: View? = null
 
-    var stickyViewOffset = PointF(0F, 0F)
-    var currentStickyId = RecyclerView.NO_ID
+  var stickyViewOffset = PointF(0F, 0F)
+  var currentStickyId = RecyclerView.NO_ID
 
-    fun reset() {
-        update(RecyclerView.NO_ID, null)
-        stickyViewOffset.x = 0f
-        stickyViewOffset.y = 0f
+  fun reset() {
+    update(RecyclerView.NO_ID, null)
+    stickyViewOffset.x = 0f
+    stickyViewOffset.y = 0f
+  }
+
+  fun update(stickyId: Long, holder: RecyclerView.ViewHolder?) {
+    stickyViewHolder = holder
+    cachedStickyView = null
+    currentStickyId = stickyId
+  }
+
+  fun getStickyView(headerApi: HeaderApi<*, *>): View? {
+    if (cachedStickyView != null) {
+      return cachedStickyView
     }
 
-    fun update(stickyId: Long, holder: RecyclerView.ViewHolder?) {
-        stickyViewHolder = holder
-        cachedStickyView = null
-        currentStickyId = stickyId
-    }
+    val holder = stickyViewHolder ?: return null
 
-    fun getStickyView(headerApi: HeaderApi<*, *>): View? {
-        if (cachedStickyView != null) {
-            return cachedStickyView
-        }
-
-        val holder = stickyViewHolder ?: return null
-
-        // If we have a ViewHolder we should have a view, but just to be safe we check
-        val stickyViewId = headerApi.customStickyHeaderViewId
-        cachedStickyView = if (stickyViewId != 0) holder.itemView.findViewById(stickyViewId) else holder.itemView
-        return cachedStickyView
-    }
+    // If we have a ViewHolder we should have a view, but just to be safe we check
+    val stickyViewId = headerApi.customStickyHeaderViewId
+    cachedStickyView = if (stickyViewId != 0) holder.itemView.findViewById(stickyViewId) else holder.itemView
+    return cachedStickyView
+  }
 }

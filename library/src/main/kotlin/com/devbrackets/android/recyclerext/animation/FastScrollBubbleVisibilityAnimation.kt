@@ -21,44 +21,44 @@ import android.view.animation.Animation
 import android.view.animation.AnimationSet
 
 class FastScrollBubbleVisibilityAnimation(bubble: View, private val toVisible: Boolean) : AnimationSet(false) {
-    companion object {
-        private const val DURATION = 100 //milliseconds
+  companion object {
+    private const val DURATION = 100 //milliseconds
+  }
+
+  init {
+    setup(bubble)
+  }
+
+  private fun setup(bubble: View) {
+    val startAlpha: Float = if (toVisible) 0F else 1F
+    val endAlpha: Float = if (toVisible) 1F else 0F
+    val alphaAnimation = AlphaAnimation(startAlpha, endAlpha)
+
+    alphaAnimation.duration = DURATION.toLong()
+    addAnimation(alphaAnimation)
+    setAnimationListener(BubbleVisibilityAnimationListener(bubble, toVisible))
+
+    //Works around the issue of the animation never starting because the view is GONE
+    if (bubble.visibility == View.GONE) {
+      bubble.visibility = View.INVISIBLE
+    }
+  }
+
+  /**
+   * Listens to the [FastScrollBubbleVisibilityAnimation]
+   * making sure the bubble has the correct visibilities at the start and end of the animation
+   */
+  protected class BubbleVisibilityAnimationListener(private val bubble: View, private val toVisible: Boolean) : AnimationListener {
+    override fun onAnimationStart(animation: Animation) {
+      bubble.visibility = View.VISIBLE
     }
 
-    init {
-        setup(bubble)
+    override fun onAnimationEnd(animation: Animation) {
+      bubble.visibility = if (toVisible) View.VISIBLE else View.GONE
     }
 
-    private fun setup(bubble: View) {
-        val startAlpha: Float = if (toVisible) 0F else 1F
-        val endAlpha: Float = if (toVisible) 1F else 0F
-        val alphaAnimation = AlphaAnimation(startAlpha, endAlpha)
-
-        alphaAnimation.duration = DURATION.toLong()
-        addAnimation(alphaAnimation)
-        setAnimationListener(BubbleVisibilityAnimationListener(bubble, toVisible))
-
-        //Works around the issue of the animation never starting because the view is GONE
-        if (bubble.visibility == View.GONE) {
-            bubble.visibility = View.INVISIBLE
-        }
+    override fun onAnimationRepeat(animation: Animation) {
+      //Purposefully left blank
     }
-
-    /**
-     * Listens to the [FastScrollBubbleVisibilityAnimation]
-     * making sure the bubble has the correct visibilities at the start and end of the animation
-     */
-    protected class BubbleVisibilityAnimationListener(private val bubble: View, private val toVisible: Boolean) : AnimationListener {
-        override fun onAnimationStart(animation: Animation) {
-            bubble.visibility = View.VISIBLE
-        }
-
-        override fun onAnimationEnd(animation: Animation) {
-            bubble.visibility = if (toVisible) View.VISIBLE else View.GONE
-        }
-
-        override fun onAnimationRepeat(animation: Animation) {
-            //Purposefully left blank
-        }
-    }
+  }
 }

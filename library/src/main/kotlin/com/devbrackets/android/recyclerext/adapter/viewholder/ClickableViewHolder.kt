@@ -25,62 +25,62 @@ import androidx.recyclerview.widget.RecyclerView
  * of a position when clicked
  */
 abstract class ClickableViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
-    fun interface OnClickListener {
-        fun onClick(viewHolder: ClickableViewHolder)
-    }
+  fun interface OnClickListener {
+    fun onClick(viewHolder: ClickableViewHolder)
+  }
 
-    fun interface OnLongClickListener {
-        fun onLongClick(viewHolder: ClickableViewHolder): Boolean
-    }
+  fun interface OnLongClickListener {
+    fun onLongClick(viewHolder: ClickableViewHolder): Boolean
+  }
 
-    private var onClickListener: OnClickListener? = null
-    private var onLongClickListener: OnLongClickListener? = null
-    protected var performLongClickHapticFeedback = true
+  private var onClickListener: OnClickListener? = null
+  private var onLongClickListener: OnLongClickListener? = null
+  protected var performLongClickHapticFeedback = true
 
 
-    init {
-        initializeClickListener()
-    }
+  init {
+    initializeClickListener()
+  }
 
-    /**
-     * Sets the click and long click listeners on the root
-     * view (see [.itemView])
-     */
-    protected fun initializeClickListener() {
-        itemView.setOnClickListener(this)
-        itemView.setOnLongClickListener(this)
-    }
+  /**
+   * Sets the click and long click listeners on the root
+   * view (see [.itemView])
+   */
+  protected fun initializeClickListener() {
+    itemView.setOnClickListener(this)
+    itemView.setOnLongClickListener(this)
+  }
 
-    /**
-     * Enables or Disables haptic feedback on long clicks.  If a
-     * long click listener has not been set with [.setOnLongClickListener]
-     * then no haptic feedback will be performed.
-     *
-     * @param enabled True if the long click should perform a haptic feedback [default: true]
-     */
-    fun setHapticFeedbackEnabled(enabled: Boolean) {
-        performLongClickHapticFeedback = enabled
-    }
+  /**
+   * Enables or Disables haptic feedback on long clicks.  If a
+   * long click listener has not been set with [.setOnLongClickListener]
+   * then no haptic feedback will be performed.
+   *
+   * @param enabled True if the long click should perform a haptic feedback [default: true]
+   */
+  fun setHapticFeedbackEnabled(enabled: Boolean) {
+    performLongClickHapticFeedback = enabled
+  }
 
-    fun setOnClickListener(onClickListener: OnClickListener?) {
-        this.onClickListener = onClickListener
-    }
+  fun setOnClickListener(onClickListener: OnClickListener?) {
+    this.onClickListener = onClickListener
+  }
 
-    fun setOnLongClickListener(onLongClickListener: OnLongClickListener?) {
-        this.onLongClickListener = onLongClickListener
-    }
+  fun setOnLongClickListener(onLongClickListener: OnLongClickListener?) {
+    this.onLongClickListener = onLongClickListener
+  }
 
-    override fun onClick(view: View) {
-        onClickListener?.onClick(this)
-    }
+  override fun onClick(view: View) {
+    onClickListener?.onClick(this)
+  }
 
-    override fun onLongClick(view: View): Boolean {
-        return onLongClickListener?.let {
-            if (performLongClickHapticFeedback) {
-                itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-            }
+  override fun onLongClick(view: View): Boolean {
+    return onLongClickListener?.let {
+      if (performLongClickHapticFeedback) {
+        itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+      }
 
-            it.onLongClick(this)
-        } ?: false
-    }
+      it.onLongClick(this)
+    } ?: false
+  }
 }

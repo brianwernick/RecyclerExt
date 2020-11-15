@@ -1,23 +1,23 @@
 package androidx.recyclerview.widget
 
 class StatefulItemTouchHelper(callback: Callback?) : ItemTouchHelper(callback!!) {
-    private var actionState = ACTION_STATE_IDLE
-    private var onActionStateChangedListener: OnActionStateChangedListener? = null
+  private var actionState = ACTION_STATE_IDLE
+  private var onActionStateChangedListener: OnActionStateChangedListener? = null
 
-    public override fun select(selected: RecyclerView.ViewHolder?, actionState: Int) {
-        if (this.actionState != actionState) {
-            onActionStateChangedListener?.onActionStateChanged(actionState)
-        }
-
-        this.actionState = actionState
-        super.select(selected, actionState)
+  public override fun select(selected: RecyclerView.ViewHolder?, actionState: Int) {
+    if (this.actionState != actionState) {
+      onActionStateChangedListener?.onActionStateChanged(actionState)
     }
 
-    fun setOnActionStateChangedListener(onActionStateChangedListener: OnActionStateChangedListener?) {
-        this.onActionStateChangedListener = onActionStateChangedListener
-    }
+    this.actionState = actionState
+    super.select(selected, actionState)
+  }
 
-    interface OnActionStateChangedListener {
-        fun onActionStateChanged(actionState: Int)
-    }
+  fun setOnActionStateChangedListener(onActionStateChangedListener: OnActionStateChangedListener?) {
+    this.onActionStateChangedListener = onActionStateChangedListener
+  }
+
+  interface OnActionStateChangedListener {
+    fun onActionStateChanged(actionState: Int)
+  }
 }

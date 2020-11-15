@@ -29,169 +29,173 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator.He
  * @param <C> The Child or content [ViewHolder]
  */
 abstract class HeaderListAdapter<H : ViewHolder, C : ViewHolder, T>(
-        items: List<T> = emptyList()
+    items: List<T> = emptyList()
 ) : ListAdapter<ViewHolder, T>(items), HeaderApi<H, C> {
-    /**
-     * Contains the base processing for the header adapters
-     */
-    protected lateinit var core: HeaderCore
+  /**
+   * Contains the base processing for the header adapters
+   */
+  protected lateinit var core: HeaderCore
 
-    /**
-     * Initializes the non-super components for the Adapter
-     */
-    protected fun init() {
-        core = HeaderCore(this)
+  /**
+   * Initializes the non-super components for the Adapter
+   */
+  protected fun init() {
+    core = HeaderCore(this)
+  }
+
+  init {
+    init()
+  }
+
+  /**
+   * Called to display the header information with the `firstChildPosition` being the
+   * position of the first child after this header.
+   *
+   * @param holder The ViewHolder which should be updated
+   * @param firstChildPosition The position of the child immediately after this header
+   */
+  abstract fun onBindHeaderViewHolder(holder: H, firstChildPosition: Int)
+
+  /**
+   * Called to display the child information with the `childPosition` being the
+   * position of the child, excluding headers.
+   *
+   * @param holder The ViewHolder which should be updated
+   * @param childPosition The position of the child
+   */
+  abstract fun onBindChildViewHolder(holder: C, childPosition: Int)
+
+  /**
+   * This method shouldn't be used directly, instead use
+   * [.onCreateHeaderViewHolder] and
+   * [.onCreateChildViewHolder]
+   *
+   * @param parent The parent ViewGroup for the ViewHolder
+   * @param viewType The type for the ViewHolder
+   * @return The correct ViewHolder for the specified viewType
+   */
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    return core.onCreateViewHolder(parent, viewType)
+  }
+
+  /**
+   * This method shouldn't be used directly, instead use
+   * [.onBindHeaderViewHolder] and
+   * [.onBindChildViewHolder]
+   *
+   * @param holder The ViewHolder to update
+   * @param position The position to update the `holder` with
+   */
+  @Suppress("UNCHECKED_CAST")
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    val viewType = getItemViewType(position)
+    val childPosition = getChildPosition(position)
+
+    if (viewType and HeaderApi.HEADER_VIEW_TYPE_MASK != 0) {
+      onBindHeaderViewHolder(holder as H, childPosition)
+      return
     }
 
-    init {
-        init()
+    onBindChildViewHolder(holder as C, childPosition)
+  }
+
+  override var headerData: HeaderData
+    get() = core.headerData
+    set(headerData) {
+      core.headerData = headerData
     }
 
-    /**
-     * Called to display the header information with the `firstChildPosition` being the
-     * position of the first child after this header.
-     *
-     * @param holder The ViewHolder which should be updated
-     * @param firstChildPosition The position of the child immediately after this header
-     */
-    abstract fun onBindHeaderViewHolder(holder: H, firstChildPosition: Int)
-
-    /**
-     * Called to display the child information with the `childPosition` being the
-     * position of the child, excluding headers.
-     *
-     * @param holder The ViewHolder which should be updated
-     * @param childPosition The position of the child
-     */
-    abstract fun onBindChildViewHolder(holder: C, childPosition: Int)
-
-    /**
-     * This method shouldn't be used directly, instead use
-     * [.onCreateHeaderViewHolder] and
-     * [.onCreateChildViewHolder]
-     *
-     * @param parent The parent ViewGroup for the ViewHolder
-     * @param viewType The type for the ViewHolder
-     * @return The correct ViewHolder for the specified viewType
-     */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return core.onCreateViewHolder(parent, viewType)
+  override var autoUpdateHeaders: Boolean
+    get() = core.autoUpdateHeaders
+    set(autoUpdateHeaders) {
+      core.setAutoUpdateHeaders(this, autoUpdateHeaders)
     }
 
-    /**
-     * This method shouldn't be used directly, instead use
-     * [.onBindHeaderViewHolder] and
-     * [.onBindChildViewHolder]
-     *
-     * @param holder The ViewHolder to update
-     * @param position The position to update the `holder` with
-     */
-    //Unchecked cast
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val viewType = getItemViewType(position)
-        val childPosition = getChildPosition(position)
+  /**
+   * Retrieves the view type for the specified position.
+   *
+   * @param adapterPosition The position to determine the view type for
+   * @return The type of ViewHolder for the `adapterPosition`
+   */
+  override fun getItemViewType(adapterPosition: Int): Int {
+    return core.getItemViewType(adapterPosition)
+  }
 
-        if (viewType and HeaderApi.HEADER_VIEW_TYPE_MASK != 0) {
-            onBindHeaderViewHolder(holder as H, childPosition)
-            return
-        }
+  /**
+   * When the RecyclerView is attached a data observer is registered
+   * in order to determine when to re-calculate the headers
+   *
+   * @param recyclerView The RecyclerView that was attached
+   */
+  override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+    super.onAttachedToRecyclerView(recyclerView)
+    core.registerObserver(this)
+  }
 
-        onBindChildViewHolder(holder as C, childPosition)
-    }
+  /**
+   * When the RecyclerView is detached the registered data observer
+   * will be unregistered.  See [.onAttachedToRecyclerView]
+   * for more information
+   *
+   * @param recyclerView The RecyclerView that has been detached
+   */
+  override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+    super.onDetachedFromRecyclerView(recyclerView)
+    core.unregisterObserver(this)
+  }
 
-    override var headerData: HeaderData
-        get() = core.headerData
-        set(headerData) {
-            core.headerData = headerData
-        }
+  /**
+   * Returns the total number of items in the data set hold by the adapter, this includes
+   * both the Headers and the Children views
+   *
+   *
+   * **NOTE:** [.getChildCount] should be overridden instead of this method
+   *
+   * @return The total number of items in this adapter.
+   */
+  override fun getItemCount(): Int {
+    return core.itemCount
+  }
 
-    override var autoUpdateHeaders: Boolean
-        get() = core.autoUpdateHeaders
-        set(autoUpdateHeaders) {
-            core.setAutoUpdateHeaders(this, autoUpdateHeaders)
-        }
+  override fun getHeaderViewType(childPosition: Int): Int {
+    return HeaderApi.HEADER_VIEW_TYPE_MASK
+  }
 
-    /**
-     * Retrieves the view type for the specified position.
-     *
-     * @param adapterPosition The position to determine the view type for
-     * @return The type of ViewHolder for the `adapterPosition`
-     */
-    override fun getItemViewType(adapterPosition: Int): Int {
-        return core.getItemViewType(adapterPosition)
-    }
+  override fun getChildViewType(childPosition: Int): Int {
+    return 0
+  }
 
-    /**
-     * When the RecyclerView is attached a data observer is registered
-     * in order to determine when to re-calculate the headers
-     *
-     * @param recyclerView The RecyclerView that was attached
-     */
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        core.registerObserver(this)
-    }
+  override fun getChildCount(headerId: Long): Int {
+    return core.getChildCount(headerId)
+  }
 
-    /**
-     * When the RecyclerView is detached the registered data observer
-     * will be unregistered.  See [.onAttachedToRecyclerView]
-     * for more information
-     *
-     * @param recyclerView The RecyclerView that has been detached
-     */
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        core.unregisterObserver(this)
-    }
+  override val childCount: Int
+    get() = super.getItemCount()
 
-    /**
-     * Returns the total number of items in the data set hold by the adapter, this includes
-     * both the Headers and the Children views
-     *
-     *
-     * **NOTE:** [.getChildCount] should be overridden instead of this method
-     *
-     * @return The total number of items in this adapter.
-     */
-    override fun getItemCount(): Int {
-        return core.itemCount
-    }
+  override fun getHeaderId(childPosition: Int): Long {
+    return RecyclerView.NO_ID
+  }
 
-    override fun getHeaderViewType(childPosition: Int): Int {
-        return HeaderApi.HEADER_VIEW_TYPE_MASK
-    }
+  override fun getChildPosition(adapterPosition: Int): Int {
+    return core.getChildPosition(adapterPosition)
+  }
 
-    override fun getChildViewType(childPosition: Int): Int {
-        return 0
-    }
+  override fun getChildIndex(adapterPosition: Int): Int? {
+    return core.getChildIndex(adapterPosition)
+  }
 
-    override fun getChildCount(headerId: Long): Int {
-        return core.getChildCount(headerId)
-    }
+  override fun getAdapterPositionForChild(childPosition: Int): Int {
+    return core.getAdapterPositionForChild(childPosition)
+  }
 
-    override val childCount: Int
-        get() = super.getItemCount()
+  override fun getHeaderPosition(headerId: Long): Int {
+    return core.getHeaderPosition(headerId)
+  }
 
-    override fun getHeaderId(childPosition: Int): Long {
-        return RecyclerView.NO_ID
-    }
+  override fun showHeaderAsChild(enabled: Boolean) {
+    core.showHeaderAsChild(enabled)
+  }
 
-    override fun getChildPosition(adapterPosition: Int): Int {
-        return core.getChildPosition(adapterPosition)
-    }
-
-    override fun getAdapterPositionForChild(childPosition: Int): Int {
-        return core.getAdapterPositionForChild(childPosition)
-    }
-
-    override fun getHeaderPosition(headerId: Long): Int {
-        return core.getHeaderPosition(headerId)
-    }
-
-    override fun showHeaderAsChild(enabled: Boolean) {
-        core.showHeaderAsChild(enabled)
-    }
-
-    override val customStickyHeaderViewId: Int
-        get() = 0
+  override val customStickyHeaderViewId: Int
+    get() = 0
 }

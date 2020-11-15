@@ -27,87 +27,87 @@ import androidx.appcompat.widget.PopupMenu
  * functionality for providing and registering for popup menu selection events
  */
 abstract class MenuViewHolder(itemView: View) : ClickableViewHolder(itemView), PopupMenu.OnMenuItemClickListener {
-    /**
-     * Used to listen for menu item selections
-     */
-    interface OnMenuItemSelectedListener {
-        fun onMenuItemSelected(viewHolder: MenuViewHolder, menuItem: MenuItem): Boolean
+  /**
+   * Used to listen for menu item selections
+   */
+  interface OnMenuItemSelectedListener {
+    fun onMenuItemSelected(viewHolder: MenuViewHolder, menuItem: MenuItem): Boolean
+  }
+
+  private var onMenuItemSelectedListener: OnMenuItemSelectedListener? = null
+
+  /**
+   * Retrieves the id for the view that will be used to show the
+   * popup menu when clicked.
+   *
+   * @return The resource id for the menu view
+   */
+  @get:IdRes
+  protected abstract val menuViewId: Int
+
+  /**
+   * Retrieves the id for the xml menu resource that specifies
+   * the options for the popup menu.
+   *
+   * @return The resource id for the xml menu
+   */
+  @get:MenuRes
+  protected abstract val menuResourceId: Int
+  fun setOnMenuItemSelectedListener(listener: OnMenuItemSelectedListener?) {
+    onMenuItemSelectedListener = listener
+  }
+
+  init {
+    initializeMenuClickListener()
+  }
+
+  override fun onMenuItemClick(item: MenuItem): Boolean {
+    return onMenuItemSelectedListener?.onMenuItemSelected(this, item) == true
+  }
+
+  /**
+   * Registers the view specified with [.getMenuViewId] to
+   * show the popup menu specified with [.getMenuResourceId]
+   */
+  protected fun initializeMenuClickListener() {
+    val menuView = itemView.findViewById<View>(menuViewId)
+    menuView?.setOnClickListener(MenuClickListener())
+  }
+
+  /**
+   * Shows the menu specified with the `menuResourceId` starting
+   * at the `anchor`
+   *
+   * @param anchor The view to show the popup menu from
+   * @param menuResourceId The resource id for the menu to show
+   */
+  protected fun showMenu(anchor: View, @MenuRes menuResourceId: Int) {
+    val menu = PopupMenu(anchor.context, anchor)
+    val inflater = menu.menuInflater
+
+    inflater.inflate(menuResourceId, menu.menu)
+    onPreparePopupMenu(menu.menu)
+
+    menu.setOnMenuItemClickListener(this)
+    menu.show()
+  }
+
+  /**
+   * Allows the user to customize the popup menu specified with [.getMenuResourceId]
+   * before it is shown
+   *
+   * @param menu The menu to customize
+   */
+  protected fun onPreparePopupMenu(menu: Menu) {
+    //Purposefully left blank
+  }
+
+  /**
+   * A simple click listener class to handle menu view clicks
+   */
+  protected inner class MenuClickListener : View.OnClickListener {
+    override fun onClick(view: View) {
+      showMenu(view, menuResourceId)
     }
-
-    private var onMenuItemSelectedListener: OnMenuItemSelectedListener? = null
-
-    /**
-     * Retrieves the id for the view that will be used to show the
-     * popup menu when clicked.
-     *
-     * @return The resource id for the menu view
-     */
-    @get:IdRes
-    protected abstract val menuViewId: Int
-
-    /**
-     * Retrieves the id for the xml menu resource that specifies
-     * the options for the popup menu.
-     *
-     * @return The resource id for the xml menu
-     */
-    @get:MenuRes
-    protected abstract val menuResourceId: Int
-    fun setOnMenuItemSelectedListener(listener: OnMenuItemSelectedListener?) {
-        onMenuItemSelectedListener = listener
-    }
-
-    init {
-        initializeMenuClickListener()
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        return onMenuItemSelectedListener?.onMenuItemSelected(this, item) == true
-    }
-
-    /**
-     * Registers the view specified with [.getMenuViewId] to
-     * show the popup menu specified with [.getMenuResourceId]
-     */
-    protected fun initializeMenuClickListener() {
-        val menuView = itemView.findViewById<View>(menuViewId)
-        menuView?.setOnClickListener(MenuClickListener())
-    }
-
-    /**
-     * Shows the menu specified with the `menuResourceId` starting
-     * at the `anchor`
-     *
-     * @param anchor The view to show the popup menu from
-     * @param menuResourceId The resource id for the menu to show
-     */
-    protected fun showMenu(anchor: View, @MenuRes menuResourceId: Int) {
-        val menu = PopupMenu(anchor.context, anchor)
-        val inflater = menu.menuInflater
-
-        inflater.inflate(menuResourceId, menu.menu)
-        onPreparePopupMenu(menu.menu)
-
-        menu.setOnMenuItemClickListener(this)
-        menu.show()
-    }
-
-    /**
-     * Allows the user to customize the popup menu specified with [.getMenuResourceId]
-     * before it is shown
-     *
-     * @param menu The menu to customize
-     */
-    protected fun onPreparePopupMenu(menu: Menu) {
-        //Purposefully left blank
-    }
-
-    /**
-     * A simple click listener class to handle menu view clicks
-     */
-    protected inner class MenuClickListener : View.OnClickListener {
-        override fun onClick(view: View) {
-            showMenu(view, menuResourceId)
-        }
-    }
+  }
 }

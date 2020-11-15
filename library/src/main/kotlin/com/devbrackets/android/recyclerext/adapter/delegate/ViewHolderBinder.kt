@@ -23,30 +23,30 @@ import androidx.recyclerview.widget.RecyclerView
  * that the [DelegatedAdapter] uses to create and bind each view type
  */
 abstract class ViewHolderBinder<VH : RecyclerView.ViewHolder, T> {
-    abstract fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH
-    abstract fun onBindViewHolder(holder: VH, item: T, position: Int)
+  abstract fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH
+  abstract fun onBindViewHolder(holder: VH, item: T, position: Int)
 
-    fun onAttachedToAdapter(adapter: RecyclerView.Adapter<VH>) {
-        // Purposefully left blank
-    }
+  fun onAttachedToAdapter(adapter: RecyclerView.Adapter<VH>) {
+    // Purposefully left blank
+  }
 
-    fun onDetachedFromAdapter(adapter: RecyclerView.Adapter<VH>) {
-        // Purposefully left blank
-    }
+  fun onDetachedFromAdapter(adapter: RecyclerView.Adapter<VH>) {
+    // Purposefully left blank
+  }
 
-    fun onViewRecycled(holder: VH) {
-        // Purposefully left blank
-    }
+  fun onViewRecycled(holder: VH) {
+    // Purposefully left blank
+  }
 
-    fun onFailedToRecycleView(holder: VH): Boolean {
-        return false
-    }
+  fun onFailedToRecycleView(holder: VH): Boolean {
+    return false
+  }
 
-    fun onViewAttachedToWindow(holder: VH) {
-        // Purposefully left blank
-    }
+  fun onViewAttachedToWindow(holder: VH) {
+    // Purposefully left blank
+  }
 
-    fun onViewDetachedFromWindow(holder: VH) {
-        // Purposefully left blank
-    }
+  fun onViewDetachedFromWindow(holder: VH) {
+    // Purposefully left blank
+  }
 }

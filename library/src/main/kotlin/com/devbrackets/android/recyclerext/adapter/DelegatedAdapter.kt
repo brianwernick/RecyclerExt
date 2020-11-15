@@ -28,54 +28,54 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder
  * to allow for dynamic lists
  */
 abstract class DelegatedAdapter<T> : ActionableAdapter<ViewHolder>(), DelegateApi<T> {
-    protected var delegateCore: DelegateCore<ViewHolder, T> = DelegateCore(this, this)
+  protected var delegateCore: DelegateCore<ViewHolder, T> = DelegateCore(this, this)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return delegateCore.onCreateViewHolder(parent, viewType)
-    }
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    return delegateCore.onCreateViewHolder(parent, viewType)
+  }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        delegateCore.onBindViewHolder(holder, position)
-    }
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    delegateCore.onBindViewHolder(holder, position)
+  }
 
-    override fun onViewRecycled(holder: ViewHolder) {
-        delegateCore.onViewRecycled(holder)
-    }
+  override fun onViewRecycled(holder: ViewHolder) {
+    delegateCore.onViewRecycled(holder)
+  }
 
-    override fun onFailedToRecycleView(holder: ViewHolder): Boolean {
-        return delegateCore.onFailedToRecycleView(holder)
-    }
+  override fun onFailedToRecycleView(holder: ViewHolder): Boolean {
+    return delegateCore.onFailedToRecycleView(holder)
+  }
 
-    override fun onViewAttachedToWindow(holder: ViewHolder) {
-        delegateCore.onViewAttachedToWindow(holder)
-    }
+  override fun onViewAttachedToWindow(holder: ViewHolder) {
+    delegateCore.onViewAttachedToWindow(holder)
+  }
 
-    override fun onViewDetachedFromWindow(holder: ViewHolder) {
-        delegateCore.onViewDetachedFromWindow(holder)
-    }
+  override fun onViewDetachedFromWindow(holder: ViewHolder) {
+    delegateCore.onViewDetachedFromWindow(holder)
+  }
 
-    /**
-     * Registers the `binder` to handle creating and binding the views of type
-     * `viewType`. If a [ViewHolderBinder] has already been specified
-     * for the `viewType` then the value will be overwritten with `binder`
-     *
-     * @param viewType The type of view the [ViewHolderBinder] handles
-     * @param binder The [ViewHolderBinder] to handle creating and binding views
-     */
-    fun registerViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
-        delegateCore.registerViewHolderBinder(viewType, binder)
-    }
+  /**
+   * Registers the `binder` to handle creating and binding the views of type
+   * `viewType`. If a [ViewHolderBinder] has already been specified
+   * for the `viewType` then the value will be overwritten with `binder`
+   *
+   * @param viewType The type of view the [ViewHolderBinder] handles
+   * @param binder The [ViewHolderBinder] to handle creating and binding views
+   */
+  fun registerViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
+    delegateCore.registerViewHolderBinder(viewType, binder)
+  }
 
-    /**
-     * Registers the `binder` to handle creating and binding the views that aren't
-     * handled by any binders registered with [registerViewHolderBinder].
-     * If a [ViewHolderBinder] has already been specified as the default then the value will be
-     * overwritten with `binder`
-     *
-     * @param binder The [ViewHolderBinder] to handle creating and binding default views
-     */
-    fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
-        delegateCore.registerDefaultViewHolderBinder(binder)
-    }
+  /**
+   * Registers the `binder` to handle creating and binding the views that aren't
+   * handled by any binders registered with [registerViewHolderBinder].
+   * If a [ViewHolderBinder] has already been specified as the default then the value will be
+   * overwritten with `binder`
+   *
+   * @param binder The [ViewHolderBinder] to handle creating and binding default views
+   */
+  fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
+    delegateCore.registerDefaultViewHolderBinder(binder)
+  }
 
 }

@@ -22,23 +22,23 @@ import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
  * sticky header
  */
 class StickyHeaderDataObserver(protected var updateListener: UpdateListener) : AdapterDataObserver() {
-    override fun onChanged() {
-        updateListener.onUpdateStickyHeader()
-    }
+  override fun onChanged() {
+    updateListener.onUpdateStickyHeader()
+  }
 
-    override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-        updateListener.onUpdateStickyHeader()
-    }
+  override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+    updateListener.onUpdateStickyHeader()
+  }
 
-    override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-        updateListener.onUpdateStickyHeader()
-    }
+  override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+    updateListener.onUpdateStickyHeader()
+  }
 
-    override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
-        updateListener.onUpdateStickyHeader()
-    }
+  override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+    updateListener.onUpdateStickyHeader()
+  }
 
-    override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
-        updateListener.onUpdateStickyHeader()
-    }
+  override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+    updateListener.onUpdateStickyHeader()
+  }
 }

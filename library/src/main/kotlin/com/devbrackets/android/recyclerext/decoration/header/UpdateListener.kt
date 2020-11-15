@@ -16,5 +16,5 @@
 package com.devbrackets.android.recyclerext.decoration.header
 
 interface UpdateListener {
-    fun onUpdateStickyHeader()
+  fun onUpdateStickyHeader()
 }

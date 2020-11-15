@@ -20,7 +20,7 @@ package com.devbrackets.android.recyclerext.adapter.header
  * [HeaderAdapter]
  */
 data class HeaderItem(
-        val id: Long,
-        val adapterPosition: Int,
-        var childCount: Int = 0
+    val id: Long,
+    val adapterPosition: Int,
+    var childCount: Int = 0
 )

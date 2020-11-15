@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
  * start, the headers will be transitioned smoothly
  */
 class StickyHeaderScrollListener(protected var updateListener: UpdateListener) : RecyclerView.OnScrollListener() {
-    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-        updateListener.onUpdateStickyHeader()
-    }
+  override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+    updateListener.onUpdateStickyHeader()
+  }
 }
