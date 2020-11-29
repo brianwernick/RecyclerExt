@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import java.util.*
 
 /**
  * A simple database object
@@ -13,6 +12,10 @@ import java.util.*
  * Ideally the [.C_ORDER] column would have a UNIQUE constraint however since sql updates columns in
  * arbitrary order the shuffling on a reorder would hit constraint issues.  Additionally, since SQLite doesn't
  * support dropping constraints we cannot temporarily remove it.
+ *
+ * NOTE 2:
+ * In production situations an order column should follow Lexicographic ordering which supports single item
+ * insertions and re-ordering which a number does not.
  */
 class ItemDAO {
     var id = NEW_ITEM_ID.toLong()
@@ -129,13 +132,15 @@ class ItemDAO {
             return item
         }
 
-        fun findAll(database: SQLiteDatabase?): List<ItemDAO?> {
+        fun findAll(database: SQLiteDatabase?): List<ItemDAO> {
             if (database == null) {
-                return LinkedList()
+                return emptyList()
             }
-            val cursor = database.query(TABLE_NAME, COLUMNS, null, null, null, null, C_ORDER + " ASC", null)
-                    ?: return LinkedList()
-            val items: MutableList<ItemDAO?> = LinkedList()
+
+            val items = mutableListOf<ItemDAO>()
+
+            val cursor = database.query(TABLE_NAME, COLUMNS, null, null, null, null, "$C_ORDER ASC", null)
+                    ?: return items
             if (cursor.moveToFirst()) {
                 do {
                     val item = ItemDAO()

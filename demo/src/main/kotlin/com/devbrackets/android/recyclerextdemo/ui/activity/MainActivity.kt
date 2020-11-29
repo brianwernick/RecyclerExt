@@ -19,7 +19,7 @@ import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolde
  * An activity that lists the example items.
  */
 class MainActivity : AppCompatActivity() {
-    private var recyclerView: RecyclerView? = null
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,20 +29,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerExt() {
-        recyclerView!!.layoutManager = LinearLayoutManager(this)
-        recyclerView!!.adapter = ListAdapter(this)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = ListAdapter(this)
 
-        val reorderDecoration = ReorderDecoration(recyclerView!!)
+        val reorderDecoration = ReorderDecoration(recyclerView)
         reorderDecoration.setDragHandleId(R.id.simple_drag_item_handle)
 
-        recyclerView!!.addItemDecoration(reorderDecoration)
-        recyclerView!!.addOnItemTouchListener(reorderDecoration)
-        recyclerView!!.itemAnimator = null
+        recyclerView.addItemDecoration(reorderDecoration)
+        recyclerView.addOnItemTouchListener(reorderDecoration)
+        recyclerView.itemAnimator = null
     }
 
     private fun startFragmentActivity(fragmentType: Example?) {
         val intent = Intent(this, SingleFragmentActivity::class.java)
-        intent.putExtra(SingleFragmentActivity.Companion.EXTRA_FRAGMENT_TYPE, fragmentType)
+        intent.putExtra(SingleFragmentActivity.EXTRA_FRAGMENT_TYPE, fragmentType)
         startActivity(intent)
     }
 
@@ -60,8 +60,8 @@ class MainActivity : AppCompatActivity() {
             holder.setOnClickListener(this)
         }
 
-        override fun onClick(holder: ClickableViewHolder) {
-            startFragmentActivity(getItem(holder.adapterPosition))
+        override fun onClick(viewHolder: ClickableViewHolder) {
+            startFragmentActivity(getItem(viewHolder.adapterPosition))
         }
 
         init {

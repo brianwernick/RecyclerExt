@@ -19,38 +19,24 @@ class SingleFragmentActivity : AppCompatActivity() {
         //Retrieves the type of example to display
         val extras = intent.extras
         val example = extras!!.getSerializable(EXTRA_FRAGMENT_TYPE) as Example? ?: return
-        when (example) {
-            Example.REORDER_LIST_HORIZONTAL -> pushHorizontalReorderListFragment()
-            Example.REORDER_LIST_VERTICAL -> pushReorderListFragment()
-            Example.HEADER_LIST -> pushHeaderListFragment()
-            Example.HEADER_AS_CHILD_LIST -> pushHeaderAsChildListFragment()
-            Example.GRID -> pushGridFragment()
+
+        val fragment = when (example) {
+            Example.REORDER_LIST_HORIZONTAL -> ReorderListHorizontalFragment()
+            Example.REORDER_LIST_VERTICAL -> ReorderListFragment()
+            Example.HEADER_LIST -> HeaderListFragment()
+            Example.HEADER_AS_CHILD_LIST -> HeaderAsChildListFragment()
+            Example.GRID -> GridFragment()
+            Example.DELEGATED -> DelegatedFragment()
         }
+
+        pushFragment(fragment)
     }
 
-    private fun pushHorizontalReorderListFragment() {
-        val fragment: Fragment = ReorderListHorizontalFragment.Companion.newInstance()
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
-    }
-
-    private fun pushReorderListFragment() {
-        val fragment: Fragment = ReorderListFragment.Companion.newInstance()
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
-    }
-
-    private fun pushGridFragment() {
-        val fragment: Fragment = GridFragment.Companion.newInstance()
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
-    }
-
-    private fun pushHeaderListFragment() {
-        val fragment: Fragment = HeaderListFragment.Companion.newInstance()
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
-    }
-
-    private fun pushHeaderAsChildListFragment() {
-        val fragment: Fragment = HeaderAsChildListFragment.Companion.newInstance()
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
+    private fun pushFragment(fragment: Fragment) {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 
     companion object {

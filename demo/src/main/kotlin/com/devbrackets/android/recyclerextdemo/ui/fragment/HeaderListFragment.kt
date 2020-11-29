@@ -1,64 +1,35 @@
 package com.devbrackets.android.recyclerextdemo.ui.fragment
 
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IntRange
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.devbrackets.android.recyclerext.adapter.HeaderListAdapter
 import com.devbrackets.android.recyclerext.adapter.viewholder.ClickableViewHolder
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration
-import com.devbrackets.android.recyclerext.widget.FastScroll
 import com.devbrackets.android.recyclerext.widget.FastScroll.PopupCallbacks
-import com.devbrackets.android.recyclerextdemo.R
-import com.devbrackets.android.recyclerextdemo.data.database.DBHelper
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderListFragment.HeaderAdapter
+import com.devbrackets.android.recyclerextdemo.ui.fragment.shared.BaseFragment
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder
 
 /**
  * An example of the [HeaderAdapter]
  * and using the [StickyHeaderDecoration] to keep the header at the top of the screen when reached.
  */
-class HeaderListFragment : Fragment() {
-    private var dbHelper: DBHelper? = null
-    private var recyclerView: RecyclerView? = null
-    private var parent: ViewGroup? = null
-    private var fastScroll: FastScroll? = null
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_recycler, container, false)
-        parent = view.findViewById(R.id.parent)
-        recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler)
-        fastScroll = view.findViewById(R.id.recyclerext_fast_scroll)
-        return view
-    }
+class HeaderListFragment : BaseFragment() {
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        //Makes sure the database is initialized and open for use
-        dbHelper = DBHelper(activity)
-        setupRecyclerExt()
-    }
-
-    /**
-     * Retrieves the items from the database, and sets the layout manager, adapter, and sticky decoration
-     * on the RecyclerView.
-     */
-    private fun setupRecyclerExt() {
-        val adapter = HeaderAdapter(requireContext(), ItemDAO.findAll(dbHelper!!.writableDatabase))
-        recyclerView!!.adapter = adapter
-        recyclerView!!.layoutManager = LinearLayoutManager(activity)
-        fastScroll!!.attach(recyclerView!!)
+    override fun onSetupRecyclerView() {
+        val adapter = HeaderAdapter(requireContext(), getItems())
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(activity)
+        fastScroll.attach(recyclerView)
 
         //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
-        val decoration = StickyHeaderDecoration(recyclerView!!)
-        decoration.enableStickyHeaderTouches(parent!!)
-        recyclerView!!.addItemDecoration(decoration)
+        val decoration = StickyHeaderDecoration(recyclerView)
+        decoration.enableStickyHeaderTouches(parent)
+        recyclerView.addItemDecoration(decoration)
     }
 
     /**
@@ -104,12 +75,6 @@ class HeaderListFragment : Fragment() {
 
         init {
             inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        }
-    }
-
-    companion object {
-        fun newInstance(): HeaderListFragment {
-            return HeaderListFragment()
         }
     }
 }

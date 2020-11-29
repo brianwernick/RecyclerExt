@@ -1,19 +1,15 @@
 package com.devbrackets.android.recyclerextdemo.ui.fragment
 
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.devbrackets.android.recyclerext.adapter.HeaderListAdapter
 import com.devbrackets.android.recyclerext.decoration.StickyHeaderDecoration
 import com.devbrackets.android.recyclerextdemo.R
-import com.devbrackets.android.recyclerextdemo.data.database.DBHelper
 import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO
 import com.devbrackets.android.recyclerextdemo.ui.fragment.HeaderAsChildListFragment.HeaderAdapter
+import com.devbrackets.android.recyclerextdemo.ui.fragment.shared.BaseFragment
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.ContactsHeaderViewHolder
 import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolder
 
@@ -22,34 +18,15 @@ import com.devbrackets.android.recyclerextdemo.ui.viewholder.SimpleTextViewHolde
  * that has the display style of the Lollipop and Marshmallow Contacts app
  * using the [StickyHeaderDecoration] to keep the header at the top of the screen when reached.
  */
-class HeaderAsChildListFragment : Fragment() {
-    private var dbHelper: DBHelper? = null
-    private var recyclerView: RecyclerView? = null
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_recycler, container, false)
-        recyclerView = view.findViewById(R.id.recyclerext_fragment_recycler)
-        return view
-    }
+class HeaderAsChildListFragment : BaseFragment() {
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onSetupRecyclerView() {
+        val adapter = HeaderAdapter(requireContext(), getItems())
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(activity)
 
-        //Makes sure the database is initialized and open for use
-        dbHelper = DBHelper(activity)
-        setupRecyclerExt()
-    }
-
-    /**
-     * Retrieves the items from the database, and sets the layout manager, adapter, and sticky decoration
-     * on the RecyclerView.
-     */
-    private fun setupRecyclerExt() {
-        val adapter = HeaderAdapter(requireContext(), ItemDAO.findAll(dbHelper!!.writableDatabase))
-        recyclerView!!.adapter = adapter
-        recyclerView!!.layoutManager = LinearLayoutManager(activity)
-
-        //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
-        recyclerView!!.addItemDecoration(StickyHeaderDecoration(recyclerView!!))
+        // OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
+        recyclerView.addItemDecoration(StickyHeaderDecoration(recyclerView))
     }
 
     /**
@@ -99,12 +76,6 @@ class HeaderAsChildListFragment : Fragment() {
             // whereas normally the header doesn't interfere with the child items
             // e.g. CHILD(position=9, getItem(9)), HEADER(position=10, getItem(10)), CHILD(position=11, getItem(10))
             showHeaderAsChild(true)
-        }
-    }
-
-    companion object {
-        fun newInstance(): HeaderAsChildListFragment {
-            return HeaderAsChildListFragment()
         }
     }
 }
