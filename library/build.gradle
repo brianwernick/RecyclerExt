@@ -16,7 +16,7 @@ class LibraryInfo {
 
     static String artifactId = 'recyclerext'
     static String groupId = 'com.devbrackets.android'
-    static String versionName = "${versionMajor}.${versionMinor}.${versionPatch}-beta2"
+    static String versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
     static Integer versionCode = versionMajor * 10_000 + versionMinor * 1_000 + versionPatch * 100
 }
 
