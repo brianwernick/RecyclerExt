@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - 2018 Brian Wernick
+ * Copyright (C) 2016 - 2020 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.*
  * @param <VH> The ViewHolder to use
  * @param <T>  The object type for the list
  */
-abstract class ListAdapter<VH : ViewHolder, T>(items: List<T> = emptyList()) : ActionableAdapter<VH>() {
+abstract class ListAdapter<T, VH : ViewHolder>(items: List<T> = emptyList()) : ActionableAdapter<VH>() {
   protected var items: MutableList<T> = items.toMutableList()
 
   protected val lock = Any()
@@ -65,9 +65,7 @@ abstract class ListAdapter<VH : ViewHolder, T>(items: List<T> = emptyList()) : A
    * @return The index of the first occurrence of the object or -1 if the object was not found
    */
   fun getPosition(item: T): Int {
-    return if (items.isEmpty()) {
-      -1
-    } else items.indexOf(item)
+    return items.indexOf(item)
   }
 
   /**

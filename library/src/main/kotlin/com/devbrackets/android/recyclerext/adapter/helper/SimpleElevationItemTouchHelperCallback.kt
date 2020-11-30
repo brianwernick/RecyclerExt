@@ -28,8 +28,7 @@ abstract class SimpleElevationItemTouchHelperCallback @JvmOverloads
 /**
  * Creates a Callback for the given drag and swipe allowance. These values serve as
  * defaults and if you want to customize behavior per ViewHolder, you can override
- * [.getSwipeDirs]
- * and / or [.getDragDirs].
+ * [getSwipeDirs] and / or [getDragDirs].
  *
  * @param dragDirs  Binary OR of direction flags in which the Views can be dragged. Must be composed of
  * [ItemTouchHelper.LEFT], [ItemTouchHelper.RIGHT],

@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
  * A delegated handler for the [RecyclerView.ViewHolder]s
  * that the [DelegatedAdapter] uses to create and bind each view type
  */
-abstract class ViewHolderBinder<VH : RecyclerView.ViewHolder, T> {
+abstract class ViewHolderBinder<T, VH : RecyclerView.ViewHolder> {
   abstract fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH
   abstract fun onBindViewHolder(holder: VH, item: T, position: Int)
 

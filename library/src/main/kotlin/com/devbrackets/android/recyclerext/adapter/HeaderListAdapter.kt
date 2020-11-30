@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Brian Wernick
+ * Copyright (C) 2016 - 2020 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderDataGenerator.He
  * @param <H> The Header [ViewHolder]
  * @param <C> The Child or content [ViewHolder]
  */
-abstract class HeaderListAdapter<H : ViewHolder, C : ViewHolder, T>(
+abstract class HeaderListAdapter<T, H : ViewHolder, C : ViewHolder>(
     items: List<T> = emptyList()
-) : ListAdapter<ViewHolder, T>(items), HeaderApi<H, C> {
+) : ListAdapter<T, ViewHolder>(items), HeaderApi<H, C> {
   /**
    * Contains the base processing for the header adapters
    */
@@ -67,8 +67,8 @@ abstract class HeaderListAdapter<H : ViewHolder, C : ViewHolder, T>(
 
   /**
    * This method shouldn't be used directly, instead use
-   * [.onCreateHeaderViewHolder] and
-   * [.onCreateChildViewHolder]
+   * [onCreateHeaderViewHolder] and
+   * [onCreateChildViewHolder]
    *
    * @param parent The parent ViewGroup for the ViewHolder
    * @param viewType The type for the ViewHolder
@@ -80,8 +80,8 @@ abstract class HeaderListAdapter<H : ViewHolder, C : ViewHolder, T>(
 
   /**
    * This method shouldn't be used directly, instead use
-   * [.onBindHeaderViewHolder] and
-   * [.onBindChildViewHolder]
+   * [onBindHeaderViewHolder] and
+   * [onBindChildViewHolder]
    *
    * @param holder The ViewHolder to update
    * @param position The position to update the `holder` with

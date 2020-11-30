@@ -30,14 +30,14 @@ class GridFragment : BaseFragment() {
      * The adapter that extends the [com.devbrackets.android.recyclerext.adapter.ListAdapter] to provide the
      * minimum number of methods to function
      */
-    private inner class GridAdapter(itemList: List<ItemDAO?>?) : ListAdapter<GridViewHolder, ItemDAO?>(itemList.orEmpty()) {
+    private inner class GridAdapter(itemList: List<ItemDAO>) : ListAdapter<ItemDAO, GridViewHolder>(itemList) {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GridViewHolder {
             return GridViewHolder.newInstance(parent)
         }
 
         override fun onBindViewHolder(holder: GridViewHolder, position: Int) {
             val item = items[position]
-            holder.setText(item?.text ?: "")
+            holder.setText(item.text ?: "")
         }
     }
 }

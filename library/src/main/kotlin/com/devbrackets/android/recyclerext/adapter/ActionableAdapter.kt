@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Brian Wernick
+ * Copyright (C) 2017 - 2020 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ package com.devbrackets.android.recyclerext.adapter
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**
  * A [RecyclerView.Adapter] that handles the process of notifying
  * [RecyclerView.ViewHolder]s of action mode
  * changes (enter, exit) so they can perform the appropriate animations.
  */
-abstract class ActionableAdapter<VH : RecyclerView.ViewHolder> : RecyclerView.Adapter<VH>() {
+abstract class ActionableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
   companion object {
     private const val TAG = "ActionableAdapter"
   }

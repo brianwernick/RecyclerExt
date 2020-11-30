@@ -26,7 +26,7 @@ class HeaderListFragment : BaseFragment() {
         recyclerView.layoutManager = LinearLayoutManager(activity)
         fastScroll.attach(recyclerView)
 
-        //OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
+        // OPTIONAL: The StickyHeaderDecoration is used to keep the current header always visible
         val decoration = StickyHeaderDecoration(recyclerView)
         decoration.enableStickyHeaderTouches(parent)
         recyclerView.addItemDecoration(decoration)
@@ -36,8 +36,9 @@ class HeaderListFragment : BaseFragment() {
      * The adapter that extends the [com.devbrackets.android.recyclerext.adapter.HeaderAdapter] to provide the
      * minimum number of methods to function
      */
-    private inner class HeaderAdapter(context: Context, items: List<ItemDAO?>) : HeaderListAdapter<SimpleTextViewHolder, SimpleTextViewHolder, ItemDAO?>(items), PopupCallbacks {
-        private val inflater: LayoutInflater
+    private inner class HeaderAdapter(context: Context, items: List<ItemDAO>) : HeaderListAdapter<ItemDAO, SimpleTextViewHolder, SimpleTextViewHolder>(items), PopupCallbacks {
+        private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         override fun onCreateHeaderViewHolder(parent: ViewGroup, viewType: Int): SimpleTextViewHolder {
             val holder: SimpleTextViewHolder = SimpleTextViewHolder.newInstance(inflater, parent)
             holder.setOnClickListener { viewHolder: ClickableViewHolder -> viewHolder.itemView.setBackgroundColor(-0xbb5534) }
@@ -54,7 +55,7 @@ class HeaderListFragment : BaseFragment() {
         }
 
         override fun onBindChildViewHolder(holder: SimpleTextViewHolder, childPosition: Int) {
-            holder.setText(items[childPosition]?.text)
+            holder.setText(items[childPosition].text)
         }
 
         /**
@@ -62,7 +63,7 @@ class HeaderListFragment : BaseFragment() {
          * You should provide an actual id.
          */
         override fun getHeaderId(childPosition: Int): Long {
-            return (items[childPosition]?.order ?: 0 + 1) / 10
+            return (items[childPosition].order + 1) / 10
         }
 
         override fun getSectionId(@IntRange(from = 0) position: Int): Long {
@@ -73,8 +74,5 @@ class HeaderListFragment : BaseFragment() {
             return sectionId.toString() + "0s"
         }
 
-        init {
-            inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        }
     }
 }

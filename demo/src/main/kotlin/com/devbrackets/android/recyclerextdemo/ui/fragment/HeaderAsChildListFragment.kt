@@ -33,8 +33,9 @@ class HeaderAsChildListFragment : BaseFragment() {
      * The adapter that extends the [com.devbrackets.android.recyclerext.adapter.HeaderAdapter] to provide the
      * minimum number of methods to function
      */
-    private inner class HeaderAdapter(context: Context, items: List<ItemDAO?>) : HeaderListAdapter<ContactsHeaderViewHolder, SimpleTextViewHolder, ItemDAO?>(items) {
-        private val inflater: LayoutInflater
+    private inner class HeaderAdapter(context: Context, items: List<ItemDAO>) : HeaderListAdapter<ItemDAO, ContactsHeaderViewHolder, SimpleTextViewHolder>(items) {
+        private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         override fun onCreateHeaderViewHolder(parent: ViewGroup, viewType: Int): ContactsHeaderViewHolder {
             return ContactsHeaderViewHolder.newInstance(inflater, parent)
         }
@@ -50,7 +51,7 @@ class HeaderAsChildListFragment : BaseFragment() {
         }
 
         override fun onBindChildViewHolder(holder: SimpleTextViewHolder, childPosition: Int) {
-            holder.setText(items[childPosition]?.text)
+            holder.setText(items[childPosition].text)
             holder.setSpacingVisible(true)
         }
 
@@ -69,7 +70,6 @@ class HeaderAsChildListFragment : BaseFragment() {
             get() = R.id.contacts_header_item_region_text_view
 
         init {
-            inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
             //This is the call that makes the adapter treat the headers position as a child
             // e.g. CHILD(position=9, getItem(9)), HEADER(position=10, getItem(10)), CHILD(position=11, getItem(11))

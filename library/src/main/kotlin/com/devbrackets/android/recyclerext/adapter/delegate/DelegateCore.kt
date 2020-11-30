@@ -21,30 +21,38 @@ import androidx.recyclerview.widget.RecyclerView
 import com.devbrackets.android.recyclerext.R
 import java.util.*
 
-class DelegateCore<VH : RecyclerView.ViewHolder, T>(
+class DelegateCore<T, VH: RecyclerView.ViewHolder>(
     protected var delegateApi: DelegateApi<T>,
     protected var adapter: RecyclerView.Adapter<VH>
 ) {
-  protected val binders = SparseArrayCompat<ViewHolderBinder<VH, T>>()
-  var defaultViewHolderBinder: ViewHolderBinder<VH, T>? = null
-    protected set
+  protected val binders = SparseArrayCompat<Any>()
+  var defaultViewHolderBinder: Any? = null
+
+  val viewHolderBinders: List<ViewHolderBinder<T, VH>>
+    get() {
+      val binderList: MutableList<ViewHolderBinder<T, VH>> = LinkedList()
+      for (i in 0 until binders.size()) {
+        binderList.add(binders[binders.keyAt(i)] as ViewHolderBinder<T, VH>)
+      }
+      return binderList
+    }
 
   fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-    return getBinderOrThrow(viewType).onCreateViewHolder(parent, viewType)
+    return (getBinderOrThrow(viewType) as ViewHolderBinder<T, VH>).onCreateViewHolder(parent, viewType)
   }
 
   fun onBindViewHolder(holder: VH, position: Int) {
     val itemViewType = delegateApi.getItemViewType(holder.adapterPosition)
-    getBinderOrThrow(itemViewType).onBindViewHolder(holder, delegateApi.getItem(position), position)
+    (getBinderOrThrow(itemViewType) as ViewHolderBinder<T, VH>).onBindViewHolder(holder, delegateApi.getItem(position), position)
     holder.itemView.setTag(R.id.recyclerext_view_type, itemViewType)
   }
 
   /**
    * @see RecyclerView.Adapter.onViewRecycled
    */
-  fun onViewRecycled(holder: RecyclerView.ViewHolder) {
-    invokeBinderMethod(holder) { binder ->
-      binder.onViewRecycled(holder as VH)
+  fun onViewRecycled(holder: VH) {
+    holder.invoke {
+      it.onViewRecycled(holder)
       true
     }
   }
@@ -52,16 +60,16 @@ class DelegateCore<VH : RecyclerView.ViewHolder, T>(
   /**
    * @see RecyclerView.Adapter.onFailedToRecycleView
    */
-  fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
-    return invokeBinderMethod(holder) { binder -> binder.onFailedToRecycleView(holder as VH) }
+  fun onFailedToRecycleView(holder: VH): Boolean {
+    return holder.invoke { it.onFailedToRecycleView(holder) }
   }
 
   /**
    * @see RecyclerView.Adapter.onViewAttachedToWindow
    */
-  fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
-    invokeBinderMethod(holder) { binder ->
-      binder.onViewAttachedToWindow(holder as VH)
+  fun onViewAttachedToWindow(holder: VH) {
+    holder.invoke {
+      it.onViewAttachedToWindow(holder)
       true
     }
   }
@@ -69,9 +77,9 @@ class DelegateCore<VH : RecyclerView.ViewHolder, T>(
   /**
    * @see RecyclerView.Adapter.onViewDetachedFromWindow
    */
-  fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
-    invokeBinderMethod(holder) { binder ->
-      binder.onViewDetachedFromWindow(holder as VH)
+  fun onViewDetachedFromWindow(holder: VH) {
+    holder.invoke {
+      it.onViewDetachedFromWindow(holder)
       true
     }
   }
@@ -84,8 +92,8 @@ class DelegateCore<VH : RecyclerView.ViewHolder, T>(
    * @param viewType The type of view the [ViewHolderBinder] handles
    * @param binder The [ViewHolderBinder] to handle creating and binding views
    */
-  fun registerViewHolderBinder(viewType: Int, binder: ViewHolderBinder<VH, T>) {
-    val oldBinder = binders[viewType]
+  fun <B: ViewHolderBinder<T, VH>> registerViewHolderBinder(viewType: Int, binder: B) {
+    val oldBinder = binders[viewType] as B?
     if (oldBinder != null && oldBinder === binder) {
       return
     }
@@ -103,25 +111,16 @@ class DelegateCore<VH : RecyclerView.ViewHolder, T>(
    *
    * @param binder The [ViewHolderBinder] to handle creating and binding default views
    */
-  fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<VH, T>?) {
+  fun <B: ViewHolderBinder<T, VH>> registerDefaultViewHolderBinder(binder: B?) {
     if (defaultViewHolderBinder === binder) {
       return
     }
 
-    defaultViewHolderBinder?.onDetachedFromAdapter(adapter)
+    (defaultViewHolderBinder as B?)?.onDetachedFromAdapter(adapter)
     defaultViewHolderBinder = binder?.apply {
       onAttachedToAdapter(adapter)
     }
   }
-
-  val viewHolderBinders: List<ViewHolderBinder<VH, T>>
-    get() {
-      val binderList: MutableList<ViewHolderBinder<VH, T>> = LinkedList()
-      for (i in 0 until binders.size()) {
-        binderList.add(binders[binders.keyAt(i)]!!)
-      }
-      return binderList
-    }
 
   /**
    * Retrieves the [ViewHolderBinder] associated with the `viewType` or
@@ -131,7 +130,7 @@ class DelegateCore<VH : RecyclerView.ViewHolder, T>(
    * @param viewType The type of the view to retrieve the [ViewHolderBinder] for
    * @return The [ViewHolderBinder] that handles the `viewType`
    */
-  protected fun getBinderOrThrow(viewType: Int): ViewHolderBinder<VH, T> {
+  protected fun <B: ViewHolderBinder<T, VH>> getBinderOrThrow(viewType: Int): B {
     return getBinder(viewType)
         ?: throw IllegalStateException("Unable to create or bind ViewHolders of viewType $viewType because no ViewHolderBinder has been registered for that viewType")
   }
@@ -142,33 +141,27 @@ class DelegateCore<VH : RecyclerView.ViewHolder, T>(
    * @param viewType The type of the view to retrieve the [ViewHolderBinder] for
    * @return The [ViewHolderBinder] that handles the `viewType`
    */
-  protected fun getBinder(viewType: Int): ViewHolderBinder<VH, T>? {
-    return binders[viewType] ?: defaultViewHolderBinder
+  protected fun <B: ViewHolderBinder<T, VH>> getBinder(viewType: Int): B? {
+    return (binders[viewType] ?: defaultViewHolderBinder) as B?
   }
 
   /**
    * Handles invoking a method on a [ViewHolderBinder] if it handles the specified `holder`,
    * catching any exceptions thrown.
    *
-   * @param holder The holder used to determine the correct [ViewHolderBinder]
    * @param binderMethodInvoker The method to run on the [ViewHolderBinder]
    * @return The result of `binderMethodInvoker` or `false` if an exception is thrown or no binder handles the `holder`
    */
-  protected fun invokeBinderMethod(holder: RecyclerView.ViewHolder, binderMethodInvoker: BinderMethodInvoker<VH, T>): Boolean {
-    val itemViewType = holder.itemView.getTag(R.id.recyclerext_view_type) as? Int ?: return false
-
-    getBinder(itemViewType)?.let { binder ->
+  private fun VH.invoke(action: (binder: ViewHolderBinder<T, VH>) -> Boolean): Boolean {
+    val itemViewType = itemView.getTag(R.id.recyclerext_view_type) as? Int ?: return false
+    getBinder<ViewHolderBinder<T,VH>>(itemViewType)?.let { binder ->
       try {
-        return binderMethodInvoker.binderMethod(binder)
+        return action(binder)
       } catch (e: Exception) {
         // Purposefully left blank
       }
     }
 
     return false
-  }
-
-  protected fun interface BinderMethodInvoker<VH : RecyclerView.ViewHolder, T> {
-    fun binderMethod(binder: ViewHolderBinder<VH, T>): Boolean
   }
 }

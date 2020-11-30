@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 - 2018 Brian Wernick
+ * Copyright (C) 2017 - 2020 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import com.devbrackets.android.recyclerext.adapter.header.HeaderApi
  * to allow for dynamic lists
  */
 abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<ViewHolder, ViewHolder>(), DelegateApi<T> {
-  protected var headerDelegateCore: DelegateCore<ViewHolder, T> = DelegateCore(HeaderDelegateApi(), this)
-  protected var childDelegateCore: DelegateCore<ViewHolder, T> = DelegateCore(ChildDelegateApi(), this)
+  protected var headerDelegateCore: DelegateCore<T, ViewHolder> = DelegateCore(HeaderDelegateApi(), this)
+  protected var childDelegateCore: DelegateCore<T, ViewHolder> = DelegateCore(ChildDelegateApi(), this)
 
   override fun onCreateHeaderViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     return headerDelegateCore.onCreateViewHolder(parent, viewType)
@@ -76,9 +76,9 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<ViewHolder, ViewHolder>
    * @param viewType The type of view the [ViewHolderBinder] handles
    * @param binder The [ViewHolderBinder] to handle creating and binding views
    */
-  fun registerHeaderViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
+  fun <B: ViewHolderBinder<T, *>> registerHeaderViewHolderBinder(viewType: Int, binder: B) {
     val headerViewType = viewType or HeaderApi.HEADER_VIEW_TYPE_MASK
-    headerDelegateCore.registerViewHolderBinder(headerViewType, binder)
+    headerDelegateCore.registerViewHolderBinder(headerViewType, binder as ViewHolderBinder<T, ViewHolder>)
   }
 
   /**
@@ -89,9 +89,9 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<ViewHolder, ViewHolder>
    * @param viewType The type of view the [ViewHolderBinder] handles
    * @param binder The [ViewHolderBinder] to handle creating and binding views
    */
-  fun registerChildViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
+  fun <B: ViewHolderBinder<T, *>> registerChildViewHolderBinder(viewType: Int, binder: B) {
     val childViewType = viewType and HeaderApi.HEADER_VIEW_TYPE_MASK.inv()
-    childDelegateCore.registerViewHolderBinder(childViewType, binder)
+    childDelegateCore.registerViewHolderBinder(childViewType, binder as ViewHolderBinder<T, ViewHolder>)
   }
 
   /**
@@ -102,8 +102,8 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<ViewHolder, ViewHolder>
    *
    * @param binder The [ViewHolderBinder] to handle creating and binding default views
    */
-  fun registerDefaultHeaderViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
-    headerDelegateCore.registerDefaultViewHolderBinder(binder)
+  fun <B: ViewHolderBinder<T, *>> registerDefaultHeaderViewHolderBinder(binder: B?) {
+    headerDelegateCore.registerDefaultViewHolderBinder(binder as ViewHolderBinder<T, ViewHolder>)
   }
 
   /**
@@ -114,8 +114,8 @@ abstract class DelegatedHeaderAdapter<T> : HeaderAdapter<ViewHolder, ViewHolder>
    *
    * @param binder The [ViewHolderBinder] to handle creating and binding default views
    */
-  fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
-    childDelegateCore.registerDefaultViewHolderBinder(binder)
+  fun <B: ViewHolderBinder<T, *>> registerDefaultViewHolderBinder(binder: B?) {
+    childDelegateCore.registerDefaultViewHolderBinder(binder as ViewHolderBinder<T, ViewHolder>)
   }
 
   protected inner class HeaderDelegateApi : DelegateApi<T> {

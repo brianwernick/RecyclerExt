@@ -15,9 +15,7 @@ import com.devbrackets.android.recyclerextdemo.data.database.ItemDAO
  * A simple base fragment to handle the boilerplate of the demo fragments to help
  * focus on the use of this library.
  */
-abstract class BaseFragment(
-
-): Fragment() {
+abstract class BaseFragment: Fragment() {
     protected lateinit var dbHelper: DBHelper
     protected lateinit var recyclerView: RecyclerView
     protected lateinit var parent: ViewGroup

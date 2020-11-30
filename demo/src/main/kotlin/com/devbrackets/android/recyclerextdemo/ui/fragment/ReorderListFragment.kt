@@ -62,8 +62,9 @@ open class ReorderListFragment: BaseFragment(), ReorderListener {
      * minimum number of methods to function.  Any adapter could be used here, but for simplicity the
      * List adapter was used
      */
-    private inner class ListAdapter(context: Context) : com.devbrackets.android.recyclerext.adapter.ListAdapter<SimpleDragItemViewHolder, String?>() {
-        private val inflater: LayoutInflater
+    private inner class ListAdapter(context: Context) : com.devbrackets.android.recyclerext.adapter.ListAdapter<String?, SimpleDragItemViewHolder>() {
+        private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleDragItemViewHolder {
             return SimpleDragItemViewHolder.newInstance(inflater, parent)
         }
@@ -94,7 +95,6 @@ open class ReorderListFragment: BaseFragment(), ReorderListener {
         }
 
         init {
-            inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             for (i in 1..4) {
                 add("Reorderable Item $i")
             }

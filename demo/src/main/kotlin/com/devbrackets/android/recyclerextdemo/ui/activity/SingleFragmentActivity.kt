@@ -27,6 +27,7 @@ class SingleFragmentActivity : AppCompatActivity() {
             Example.HEADER_AS_CHILD_LIST -> HeaderAsChildListFragment()
             Example.GRID -> GridFragment()
             Example.DELEGATED -> DelegatedFragment()
+            Example.DELEGATED_HEADER -> DelegatedHeaderFragment()
         }
 
         pushFragment(fragment)

@@ -6,6 +6,7 @@ package com.devbrackets.android.recyclerextdemo.data
  */
 enum class Example(val title: String) {
     DELEGATED("Delegated"),
+    DELEGATED_HEADER("Delegated Header"),
     GRID("Grid"),
     HEADER_LIST("Header List"),
     HEADER_AS_CHILD_LIST("Contacts Header List"),

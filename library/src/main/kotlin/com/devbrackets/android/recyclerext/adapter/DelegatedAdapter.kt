@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 - 2018 Brian Wernick
+ * Copyright (C) 2017 - 2020 Brian Wernick
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.devbrackets.android.recyclerext.adapter.delegate.ViewHolderBinder
  * to allow for dynamic lists
  */
 abstract class DelegatedAdapter<T> : ActionableAdapter<ViewHolder>(), DelegateApi<T> {
-  protected var delegateCore: DelegateCore<ViewHolder, T> = DelegateCore(this, this)
+  protected var delegateCore: DelegateCore<T, ViewHolder> = DelegateCore(this, this)
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     return delegateCore.onCreateViewHolder(parent, viewType)
@@ -62,8 +62,8 @@ abstract class DelegatedAdapter<T> : ActionableAdapter<ViewHolder>(), DelegateAp
    * @param viewType The type of view the [ViewHolderBinder] handles
    * @param binder The [ViewHolderBinder] to handle creating and binding views
    */
-  fun registerViewHolderBinder(viewType: Int, binder: ViewHolderBinder<ViewHolder, T>) {
-    delegateCore.registerViewHolderBinder(viewType, binder)
+  fun <VH: ViewHolder, B: ViewHolderBinder<T, VH>> registerViewHolderBinder(viewType: Int, binder: B) {
+    delegateCore.registerViewHolderBinder(viewType, binder as ViewHolderBinder<T, ViewHolder>)
   }
 
   /**
@@ -74,8 +74,8 @@ abstract class DelegatedAdapter<T> : ActionableAdapter<ViewHolder>(), DelegateAp
    *
    * @param binder The [ViewHolderBinder] to handle creating and binding default views
    */
-  fun registerDefaultViewHolderBinder(binder: ViewHolderBinder<ViewHolder, T>?) {
-    delegateCore.registerDefaultViewHolderBinder(binder)
+  fun <VH: ViewHolder, B: ViewHolderBinder<T, VH>> registerDefaultViewHolderBinder(binder: B?) {
+    delegateCore.registerDefaultViewHolderBinder(binder as ViewHolderBinder<T, ViewHolder>)
   }
 
 }

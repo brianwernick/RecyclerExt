@@ -49,8 +49,9 @@ class MainActivity : AppCompatActivity() {
     /**
      * A simple [com.devbrackets.android.recyclerext.adapter.ListAdapter] to display the options for the examples
      */
-    private inner class ListAdapter(context: Context) : com.devbrackets.android.recyclerext.adapter.ListAdapter<SimpleTextViewHolder, Example?>(), ClickableViewHolder.OnClickListener {
-        private val inflater: LayoutInflater
+    private inner class ListAdapter(context: Context) : com.devbrackets.android.recyclerext.adapter.ListAdapter<Example, SimpleTextViewHolder>(), ClickableViewHolder.OnClickListener {
+        private val inflater: LayoutInflater = context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleTextViewHolder {
             return SimpleTextViewHolder.newInstance(inflater, parent)
         }
@@ -65,8 +66,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         init {
-            inflater = context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-
             //Adds all the items from the Example enum
             for (example in Example.values()) {
                 add(example)
