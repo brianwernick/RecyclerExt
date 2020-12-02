@@ -1,34 +1,52 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'kotlin-android'
 
-def versionMajor = 4
-def versionMinor = 0
-def versionPatch = 0
+afterEvaluate {
+    apply from: 'gradle/publish.gradle'
+}
 
-def libraryGroupId = 'com.devbrackets.android'
-def libraryBaseName = 'recyclerext'
-def libraryVersion = "${versionMajor}.${versionMinor}.${versionPatch}"
+/**
+ * Holds the information associated with the library needed for the
+ * bintray plugin to publish the artifact
+ */
+class LibraryInfo {
+    static Integer versionMajor = 4
+    static Integer versionMinor = 0
+    static Integer versionPatch = 0
+
+    static String artifactId = 'recyclerext'
+    static String groupId = 'com.devbrackets.android'
+    static String versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
+    static Integer versionCode = versionMajor * 10_000 + versionMinor * 1_000 + versionPatch * 100
+}
+
+static def getLibraryInfo() {
+    return new LibraryInfo()
+}
 
 dependencies {
-    api 'androidx.appcompat:appcompat:1.0.2'
-    api 'androidx.recyclerview:recyclerview:1.0.0'
+    api 'androidx.appcompat:appcompat:1.2.0'
+    api 'androidx.recyclerview:recyclerview:1.1.0'
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdkVersion 21
+        targetSdkVersion 30
 
-        versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100
-        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+        versionCode getLibraryInfo().versionCode
+        versionName getLibraryInfo().versionName
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
     }
 
     lintOptions {
@@ -40,28 +58,7 @@ android {
     }
 }
 
-// ======== MAVEN DEPLOY to local cache or nexus repo (to make accessible to local projects) (command: ./gradlew clean aRel uploadArchives) ========
-uploadArchives {
-    repositories {
-        // deploy to local
-        mavenDeployer {
-            repository (url: "file://${System.env.HOME}/.m2/repository/")
-            pom.groupId = libraryGroupId
-            pom.artifactId = libraryBaseName
-            pom.version = libraryVersion
-            pom.packaging = 'aar'
-        }
-    }
-}
-
-// ======= BINTRAY DEPLOY (command: $ ./gradlew clean build bintrayUpload -PbintrayUser=BINTRAY_USERNAME -PbintrayKey=BINTRAY_KEY -PdryRun=false) ====
-publish {
-    userOrg = ""
-    groupId = libraryGroupId
-    artifactId = libraryBaseName
-    uploadName = 'RecyclerExt'
-    publishVersion = libraryVersion
-    desc = ""
-    autoPublish = false
-    dryRun = false
+// Disables javadoc because it fails on kotlin files
+tasks.withType(Javadoc).all {
+    enabled = false
 }

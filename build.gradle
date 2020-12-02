@@ -1,12 +1,15 @@
 buildscript {
+    ext.kotlinVersion = '1.4.20'
+
     repositories {
         jcenter()
         google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
-        classpath 'com.novoda:bintray-release:0.9'
+        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }
 
