@@ -26,12 +26,12 @@ Or included in your gradle dependencies
 
 ```gradle
 repositories {
-    jcenter();
+    jcenter()
 }
 
 dependencies {
     //...
-    implementation 'com.devbrackets.android:recyclerext:3.0.1'
+    implementation 'com.devbrackets.android:recyclerext:4.0.0'
 }
 ```
 
@@ -39,7 +39,7 @@ dependencies {
 License
 -------
 
-    Copyright 2015-2018 Brian Wernick
+    Copyright 2015-2020 Brian Wernick
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

@@ -4,6 +4,7 @@
  */
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'org.jetbrains.dokka'
 
 task androidJavaDoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
@@ -15,13 +16,13 @@ task androidJavaDoc(type: Javadoc) {
     failOnError false
 }
 
-task androidJavaDocJar(type: Jar, dependsOn: androidJavaDoc) {
-    classifier = 'javadoc'
-    from androidJavaDoc.destinationDir
+task androidJavaDocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc
 }
 
 task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from android.sourceSets.main.java.srcDirs
 }
 
